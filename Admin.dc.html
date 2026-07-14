@@ -261,9 +261,14 @@
                   </div>
                 </div>
               </sc-for>
-              <label style="aspect-ratio:1;border:1.5px dashed #D0D0D0;border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:#9A9A9A;font-size:12px;text-align:center;padding:6px;">
+              <div onDragOver="{{ g.onDragOverZone }}" onDrop="{{ g.onDropFiles }}" style="grid-column:span 2;aspect-ratio:2/1;border:1.5px dashed #D0D0D0;border-radius:2px;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:10px;color:#9A9A9A;font-size:11px;text-align:center;padding:6px;">
+<label style="display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;">
                 <input type="file" accept="image/*" multiple onChange="{{ g.addPhotos }}" style="display:none;" />
-                <span style="font-size:20px;">＋</span>ajouter<br>+ scan
+                <span style="font-size:18px;">＋</span>photos<br>+ scan
+</label>
+<label style="display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;border-left:1px solid #EEE;padding-left:10px;">
+<input type="file" webkitdirectory directory multiple onChange="{{ g.addPhotos }}" style="display:none;" />
+<span style="font-size:18px;">📁</span>dossier
               </label>
             </div>
           </section>
@@ -358,9 +363,14 @@
                       </div>
                     </div>
                   </sc-for>
-                  <label style="aspect-ratio:1;border:1.5px dashed #D0D0D0;border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:#9A9A9A;font-size:11px;text-align:center;padding:4px;">
+                  <div onDragOver="{{ g.onDragOverZone }}" onDrop="{{ g.onDropFiles }}" style="grid-column:span 2;aspect-ratio:2/1;border:1.5px dashed #D0D0D0;border-radius:2px;display:flex;flex-direction:row;align-items:center;justify-content:center;gap:8px;color:#9A9A9A;font-size:11px;text-align:center;padding:4px;">
+<label style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;">
                     <input type="file" accept="image/*" multiple onChange="{{ g.addPhotos }}" style="display:none;" />
-                    <span style="font-size:18px;">＋</span>ajouter
+                    <span style="font-size:18px;">＋</span>photos
+</label>
+<label style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;border-left:1px solid #EEE;padding-left:8px;">
+<input type="file" webkitdirectory directory multiple onChange="{{ g.addPhotos }}" style="display:none;" />
+<span style="font-size:18px;">📁</span>dossier
                   </label>
                 </div>
               </div>
@@ -522,7 +532,7 @@ class Component extends DCLogic {
   }
 
   async addPhotosTo(galleryId, fileList) {
-    const files = Array.from(fileList || []);
+    const files = Array.from(fileList || []).filter((f) => f && f.type && f.type.indexOf('image/') === 0);
     if (!files.length) return;
     this.setState({ scanning: true, scanMsg: 'Préparation…', scanPct: '0%' });
     try {
@@ -551,6 +561,34 @@ class Component extends DCLogic {
     } finally {
       setTimeout(() => this.setState({ scanning: false }), 300);
     }
+  }
+
+  filesFromDataTransfer(dt) {
+    const items = dt && dt.items ? Array.from(dt.items) : [];
+    const supportsEntries = items.length > 0 && typeof items[0].webkitGetAsEntry === 'function';
+    if (!supportsEntries) return Promise.resolve(Array.from((dt && dt.files) || []));
+    const entries = items.map((it) => it.webkitGetAsEntry()).filter(Boolean);
+    const out = [];
+    const readAllEntries = (reader) => new Promise((resolve) => {
+      const all = [];
+      const readBatch = () => {
+        reader.readEntries((batch) => {
+          if (!batch.length) { resolve(all); return; }
+          all.push(...batch);
+          readBatch();
+        }, () => resolve(all));
+      };
+      readBatch();
+    });
+    const walk = (entry) => {
+      if (entry.isFile) return new Promise((resolve) => entry.file((file) => { out.push(file); resolve(); }, () => resolve()));
+      if (entry.isDirectory) {
+        const reader = entry.createReader();
+        return readAllEntries(reader).then((children) => children.reduce((p, c) => p.then(() => walk(c)), Promise.resolve()));
+      }
+      return Promise.resolve();
+    };
+    return entries.reduce((p, e) => p.then(() => walk(e)), Promise.resolve()).then(() => out);
   }
 
   async scanMissing() {
@@ -740,7 +778,9 @@ class Component extends DCLogic {
         expiresAt: g.expiresAt || '',
         setExpires: onInput((st, v) => { const gg = st.galleries.find(x => x.id === g.id); if (v) gg.expiresAt = v; else delete gg.expiresAt; }),
         photos,
-        addPhotos: (e) => this.addPhotosTo(g.id, e.target.files),
+        addPhotos: (e) => { this.addPhotosTo(g.id, e.target.files); e.target.value = ''; },
+        onDragOverZone: (e) => { e.preventDefault(); try { e.dataTransfer.dropEffect = 'copy'; } catch (x) {} },
+        onDropFiles: (e) => { e.preventDefault(); this.filesFromDataTransfer(e.dataTransfer).then((files) => this.addPhotosTo(g.id, files)); },
         remove: () => { if (confirm('Supprimer la galerie « ' + g.name + ' » ?')) this.upd((st) => { g.photoIds.forEach(pid => delete st.photos[pid]); st.galleries = st.galleries.filter(x => x.id !== g.id); st.clients.forEach(c => { c.galleryIds = c.galleryIds.filter(id => id !== g.id); }); }); }
       };
     };
