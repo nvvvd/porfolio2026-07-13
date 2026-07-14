@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<title>Mentions légales — Nicolas Vivaudou</title>
+<meta name="description" content="Mentions légales et politique de confidentialité du site de Nicolas Vivaudou, photographe à Montréal.">
+<meta name="robots" content="noindex">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<style>
+  :root { --bg:#FFFFFF; --ink:#161310; --ink-2:#3D3833; --muted:#8A8378; --line:#E8E4DD; --accent:#F2C13C; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#141210; --ink:#F3EFE8; --ink-2:#C9C2B8; --muted:#8A8378; --line:#2C2823; } }
+  html[data-theme="dark"] { --bg:#141210; --ink:#F3EFE8; --ink-2:#C9C2B8; --muted:#8A8378; --line:#2C2823; }
+  html[data-theme="light"] { --bg:#FFFFFF; --ink:#161310; --ink-2:#3D3833; --muted:#8A8378; --line:#E8E4DD; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Helvetica Neue",Helvetica,Arial,sans-serif; -webkit-font-smoothing:antialiased; }
+</style>
+<script src="nv-theme.js"></script>
+<script src="nv-ux.js"></script>
+</helmet>
+<div class="nv-page" style="max-width:720px;margin:0 auto;padding:28px 20px 80px;">
+  <sc-if value="{{ showBack }}" hint-placeholder-val="{{ true }}">
+  <a href="Accueil.dc.html" style="display:inline-block;font-size:13px;color:var(--muted);text-decoration:none;margin-bottom:40px;">← Nicolas Vivaudou</a>
+  </sc-if>
+  <h1 style="margin:0 0 6px;font-size:clamp(30px,7vw,44px);font-weight:400;letter-spacing:-.03em;line-height:1.02;">Mentions légales</h1>
+  <p style="margin:0 0 44px;font-size:13px;color:var(--muted);">Dernière mise à jour : juillet 2026</p>
+
+  <div style="display:flex;flex-direction:column;gap:34px;font-size:15px;line-height:1.65;color:var(--ink-2);">
+    <section>
+      <h2 style="margin:0 0 8px;font-size:16px;font-weight:500;color:var(--ink);letter-spacing:-.01em;">Éditeur du site</h2>
+      <p style="margin:0;">Nicolas Vivaudou, photographe — Montréal, QC, Canada.<br>Contact : hello@nicolasvivaudou.com</p>
+    </section>
+    <section>
+      <h2 style="margin:0 0 8px;font-size:16px;font-weight:500;color:var(--ink);letter-spacing:-.01em;">Propriété intellectuelle</h2>
+      <p style="margin:0;">Toutes les photographies et contenus présentés sur ce site sont la propriété exclusive de Nicolas Vivaudou. Toute reproduction, diffusion ou utilisation sans autorisation écrite préalable est interdite.</p>
+    </section>
+    <section>
+      <h2 style="margin:0 0 8px;font-size:16px;font-weight:500;color:var(--ink);letter-spacing:-.01em;">Données personnelles</h2>
+      <p style="margin:0;">Les informations transmises via le formulaire de contact (nom, courriel, message) servent uniquement à répondre à votre demande. Elles ne sont ni vendues ni partagées avec des tiers. Les accès à l'espace client (courriel et code) servent uniquement à protéger vos galeries privées. Vous pouvez demander la consultation ou la suppression de vos données à tout moment en écrivant à hello@nicolasvivaudou.com.</p>
+    </section>
+    <section>
+      <h2 style="margin:0 0 8px;font-size:16px;font-weight:500;color:var(--ink);letter-spacing:-.01em;">Cookies et mesure d'audience</h2>
+      <p style="margin:0;">Ce site n'utilise aucun cookie publicitaire ni traceur tiers. La mesure d'audience éventuelle (Plausible) est anonyme, sans cookie, et ne collecte aucune donnée personnelle. Le stockage local du navigateur est utilisé uniquement pour vos préférences (langue, thème) et votre session client.</p>
+    </section>
+    <section>
+      <h2 style="margin:0 0 8px;font-size:16px;font-weight:500;color:var(--ink);letter-spacing:-.01em;">Photos de personnes</h2>
+      <p style="margin:0;">Les photographies de personnes publiées dans les galeries publiques le sont avec le consentement des sujets. Si vous apparaissez sur une image et souhaitez son retrait, contactez-moi : elle sera retirée dans les plus brefs délais.</p>
+    </section>
+    <section>
+      <h2 style="margin:0 0 8px;font-size:16px;font-weight:500;color:var(--ink);letter-spacing:-.01em;">Hébergement</h2>
+      <p style="margin:0;">Site hébergé de façon statique (Netlify ou équivalent). Les photos des galeries privées sont stockées sur un service de stockage externe sécurisé.</p>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    // En mode "embed" (ouverte en surcouche depuis une autre page), pas de lien retour.
+    var embedded = typeof location !== 'undefined' && /[?&]embed/.test(location.search);
+    return { showBack: !embedded };
+  }
+}
+</script>
+</body>
+</html>

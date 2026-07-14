@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Espace client — Nicolas Vivaudou</title>
+<meta name="description" content="Espace client privé — galeries, sélection de photos et factures.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#100F0D" media="(prefers-color-scheme: dark)">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="nv-theme.js"></script>
+<script src="nv-config.js"></script>
+<script src="nv-i18n.js"></script>
+<script src="nv-storage.js"></script>
+<script src="nv-backend.js"></script>
+<script src="nv-auth.js"></script>
+<script src="store.js"></script>
+<script src="nv-ux.js"></script>
+<script src="face.js"></script>
+<style>
+  :root{--bg:#FFFFFF;--bg-2:#FAFAFA;--card:#FFFFFF;--header-bg:rgba(255,255,255,.92);--ink:#111111;--ink-2:#4A4A4A;--muted:#767171;--faint:#B0AAA2;--line:#E6E6E6;--ph:#EEEEEE;--accent:#F2C13C;--on-accent:#161310;--error:#C0392B;--btn-bg:#111111;--btn-fg:#FFFFFF;--ok-bg:#E8F0EA;--ok-fg:#2F6B3F;--warn-bg:#FBF1D8;--warn-line:#F0DCA0;--warn-fg:#7A610F;}
+  [data-theme="dark"]{--bg:#100F0D;--bg-2:#1A1815;--card:#1A1815;--header-bg:rgba(18,16,14,.86);--ink:#F1EDE6;--ink-2:#B4AEA3;--muted:#86817A;--faint:#4C4840;--line:#2A2723;--ph:#1E1B17;--accent:#F2C13C;--on-accent:#161310;--error:#E8746A;--btn-bg:#F1EDE6;--btn-fg:#100F0D;--ok-bg:#15241B;--ok-fg:#83C49B;--warn-bg:#2A2113;--warn-line:#4A3A1A;--warn-fg:#E2B85E;color-scheme:dark;}
+  html{background:var(--bg);transition:background .35s ease;}
+  body{transition:background .35s ease,color .35s ease;}
+  html[data-nv-leaving] body{opacity:0;transition:opacity .2s ease;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px;}
+  a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none;}
+  .nv-page{transition:background .35s ease,color .35s ease;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  a{color:inherit;}
+  input{font-family:inherit;}
+  input::placeholder{color:var(--faint);}
+  input:focus{outline:none;border-color:var(--ink);}
+  @keyframes nvspin{to{transform:rotate(360deg);}}
+  @keyframes nvscan{0%{top:0;}100%{top:100%;}}
+  @keyframes nvpop{0%{transform:scale(.6);}60%{transform:scale(1.15);}100%{transform:scale(1);}}
+</style>
+</helmet>
+
+<div class="nv-page" style="background:var(--bg);min-height:100vh;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--ink);">
+
+  <!-- LOGIN -->
+  <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ true }}">
+  <div style="min-height:100vh;display:flex;flex-direction:column;">
+    <header style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;">
+      <a href="Accueil.dc.html" style="text-decoration:none;font-size:14px;color:var(--ink);letter-spacing:-.01em;">{{ brandName }}<span style="color:var(--muted);"> — {{ brandRole }}</span></a>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="{{ langWrap }}"><button onClick="{{ setFr }}" style="{{ frBtn }}">FR</button><span style="color:var(--faint);font-size:13px;">/</span><button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button></div> <button onClick="{{ toggleTheme }}" aria-label="{{ themeLabel }}" title="{{ themeLabel }}" style="{{ themeBtn }}">{{ themeIcon }}</button>
+        <a href="Accueil.dc.html" style="text-decoration:none;font-size:13px;color:var(--muted);">{{ siteLink }}</a>
+      </div>
+    </header>
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px 20px 60px;">
+      <form onSubmit="{{ onLogin }}" style="width:100%;max-width:400px;">
+        <div style="font-size:13px;color:var(--muted);letter-spacing:-.01em;">{{ privateLabel }}</div>
+        <h1 style="margin:8px 0 0;font-size:clamp(44px,12vw,60px);font-weight:400;line-height:.95;letter-spacing:-.035em;">{{ loginTitle }}</h1>
+        <p style="margin:14px 0 30px;font-size:14px;line-height:1.55;color:var(--ink-2);">{{ loginIntro }}</p>
+        <label style="display:block;margin-bottom:20px;">
+          <span style="display:block;font-size:13px;color:var(--muted);margin-bottom:6px;">{{ lblEmail }}</span>
+          <input type="text" value="{{ loginEmail }}" onInput="{{ setEmail }}" placeholder="camille@exemple.com" style="width:100%;padding:13px 0;border:none;border-bottom:1px solid var(--line);background:transparent;font-size:16px;" />
+        </label>
+        <label style="display:block;margin-bottom:10px;">
+          <span style="display:block;font-size:13px;color:var(--muted);margin-bottom:6px;">{{ lblAccessCode }}</span>
+          <input type="password" value="{{ loginPass }}" onInput="{{ setPass }}" placeholder="••••••" style="width:100%;padding:13px 0;border:none;border-bottom:1px solid var(--line);background:transparent;font-size:16px;" />
+        </label>
+        <sc-if value="{{ loginError }}"><div style="margin-bottom:16px;font-size:13px;color:var(--error);">{{ badCreds }}</div></sc-if>
+        <button type="submit" style="width:100%;margin-top:14px;padding:16px;border:none;border-radius:2px;background:var(--accent);color:var(--on-accent);font-size:15px;font-weight:500;cursor:pointer;">{{ signIn }}</button>
+        <div style="margin-top:16px;font-size:13px;color:var(--muted);text-align:center;line-height:1.5;">{{ demoPrefix }}{{ demoHint }}</div>
+      </form>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- APP -->
+  <sc-if value="{{ showApp }}">
+  <div style="min-height:100vh;{{ appPad }}">
+    <header style="position:sticky;top:0;z-index:30;background:var(--header-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);">
+      <div style="max-width:1180px;margin:0 auto;padding:13px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <div style="display:flex;align-items:center;gap:12px;min-width:0;">
+          <sc-if value="{{ inGallery }}"><button onClick="{{ backToGalleries }}" aria-label="Retour" style="border:none;background:none;font-size:22px;cursor:pointer;color:var(--ink);padding:0 2px;line-height:1;">←</button></sc-if>
+          <div style="min-width:0;">
+            <div style="font-size:12px;color:var(--muted);letter-spacing:-.01em;">{{ spaceLabel }}</div>
+            <div style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ clientName }}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="{{ langWrap }}"><button onClick="{{ setFr }}" style="{{ frBtn }}">FR</button><span style="color:var(--faint);font-size:13px;">/</span><button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button></div> <button onClick="{{ toggleTheme }}" aria-label="{{ themeLabel }}" title="{{ themeLabel }}" style="{{ themeBtn }}">{{ themeIcon }}</button>
+          <button onClick="{{ logout }}" aria-label="Déconnexion" style="border:1px solid var(--line);background:var(--card);border-radius:2px;padding:8px 13px;font-size:12px;cursor:pointer;color:var(--ink-2);">{{ quitLabel }}</button>
+        </div>
+      </div>
+      <div style="{{ deskTabs }}">
+        <div style="max-width:1180px;margin:0 auto;padding:0 20px;display:flex;gap:24px;">
+          <sc-for list="{{ navTabs }}" as="t" hint-placeholder-count="3">
+            <button onClick="{{ t.go }}" style="{{ t.deskStyle }}">{{ t.label }}{{ t.badge }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </header>
+
+    <div style="max-width:1180px;margin:0 auto;padding:clamp(20px,4vw,34px) 20px;">
+
+      <!-- GALLERIES -->
+      <sc-if value="{{ viewGalleries }}">
+        <h1 style="margin:0 0 4px;font-size:clamp(34px,9vw,52px);font-weight:400;line-height:1;letter-spacing:-.035em;">{{ yourGalleries }}</h1>
+        <p style="margin:0 0 24px;font-size:14px;color:var(--muted);">{{ selSummary }}</p>
+        <sc-if value="{{ hasGalleries }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;">
+          <sc-for list="{{ galleryCards }}" as="g" hint-placeholder-count="2">
+            <button onClick="{{ g.open }}" style="text-align:left;border:1px solid var(--line);background:var(--card);border-radius:2px;overflow:hidden;cursor:pointer;padding:0;transition:opacity .2s;" style-hover="opacity:.92;">
+              <div style="position:relative;aspect-ratio:16/10;background:var(--ph);">
+                <img src="{{ g.cover }}" alt="{{ g.name }}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                <sc-if value="{{ g.faceSearch }}"><span style="position:absolute;left:10px;top:10px;font-size:11px;color:var(--on-accent);background:var(--accent);padding:4px 8px;border-radius:2px;">{{ faceBadge }}</span></sc-if>
+                <sc-if value="{{ g.expired }}" hint-placeholder-val=""><span style="position:absolute;inset:0;background:rgba(17,17,17,.55);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;letter-spacing:.08em;text-transform:uppercase;">{{ expiredWord }}</span></sc-if>
+              </div>
+              <div style="padding:14px 16px 16px;">
+                <div style="font-size:24px;font-weight:400;letter-spacing:-.02em;line-height:1.05;">{{ g.name }}</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:5px;">{{ g.sub }}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:13px;color:var(--ink-2);border-top:1px solid var(--ph);padding-top:10px;">
+                  <span>{{ g.total }} {{ photosWord }}</span>
+                  <span style="color:var(--warn-fg);">{{ g.liked }} {{ likedSel }}</span>
+                </div>
+              </div>
+            </button>
+          </sc-for>
+        </div>
+        </sc-if>
+        <sc-if value="{{ noGalleries }}"><div style="padding:40px 24px;text-align:center;border:1px dashed var(--line);border-radius:2px;color:var(--muted);">{{ noGalleriesMsg }}</div></sc-if>
+      </sc-if>
+
+      <!-- SINGLE GALLERY -->
+      <sc-if value="{{ viewGallery }}">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;">
+          <div>
+            <h1 style="margin:0;font-size:clamp(30px,8vw,46px);font-weight:400;line-height:1;letter-spacing:-.035em;">{{ galName }}</h1>
+            <div style="font-size:13px;color:var(--muted);margin-top:6px;">{{ galSub }} · {{ galTotal }} {{ photosWord }}</div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <sc-if value="{{ canDownload }}" hint-placeholder-val=""><button onClick="{{ downloadGallery }}" style="border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:2px;padding:11px 16px;font-size:13px;cursor:pointer;">↓ {{ dlGalleryLabel }}</button></sc-if>
+            <button onClick="{{ shareGallery }}" style="border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:2px;padding:11px 16px;font-size:13px;cursor:pointer;">{{ shareLabel }}</button>
+            <sc-if value="{{ galFace }}">
+            <button onClick="{{ openFace }}" style="display:flex;align-items:center;gap:8px;border:1px solid var(--btn-bg);background:var(--btn-bg);color:var(--btn-fg);border-radius:2px;padding:11px 16px;font-size:13px;cursor:pointer;">
+              <span style="display:inline-block;width:13px;height:13px;border:1.5px solid var(--btn-fg);border-radius:4px;position:relative;"><span style="position:absolute;inset:2px;border:1.4px solid var(--btn-fg);border-radius:50%;"></span></span>
+              {{ findMyPhotos }}
+            </button>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="position:sticky;top:{{ stickyTop }};z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:18px 0 20px;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:2px;">
+          <div style="flex:1;min-width:160px;">
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px;"><span style="color:var(--ink-2);">{{ selectionWord }}</span><span style="color:var(--ink);">{{ likeCount }} / {{ limit }}</span></div>
+            <div style="height:5px;background:var(--ph);border-radius:99px;overflow:hidden;"><div style="height:100%;width:{{ likePct }};background:var(--accent);border-radius:99px;transition:width .25s;"></div></div>
+          </div>
+          <sc-if value="{{ faceActive }}">
+            <button onClick="{{ clearFace }}" style="flex:none;border:none;background:var(--btn-bg);color:var(--btn-fg);border-radius:2px;padding:8px 14px;font-size:12px;cursor:pointer;">{{ faceResultsLabel }}</button>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ limitReached }}">
+        <div style="margin-bottom:16px;padding:11px 15px;background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:2px;font-size:13px;color:var(--warn-fg);">{{ limitMsg }}</div>
+        </sc-if>
+
+        <sc-if value="{{ faceEmpty }}">
+        <div style="margin-bottom:16px;padding:11px 15px;background:var(--bg-2);border:1px solid var(--line);border-radius:2px;font-size:13px;color:var(--ink-2);">{{ faceEmptyMsg }}</div>
+        </sc-if>
+
+        <div style="columns:{{ colWidth }};column-gap:clamp(8px,2vw,14px);">
+          <sc-for list="{{ photos }}" as="p" hint-placeholder-count="9">
+            <div style="position:relative;margin:0 0 clamp(8px,2vw,14px);break-inside:avoid;border-radius:2px;overflow:hidden;background:var(--ph);">
+              <img src="{{ p.src }}" alt="photo" loading="lazy" style="width:100%;display:block;cursor:zoom-in;" onClick="{{ p.zoom }}" />
+              <span aria-hidden="true" style="{{ wmStyle }}">{{ wmText }}</span>
+              <sc-if value="{{ canDownload }}" hint-placeholder-val=""><a href="{{ p.src }}" download aria-label="Télécharger" style="position:absolute;left:8px;bottom:8px;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:999px;background:rgba(17,17,17,.42);color:#fff;font-size:16px;text-decoration:none;line-height:1;">↓</a></sc-if>
+              <button onClick="{{ p.toggle }}" aria-label="Aimer" style="{{ p.heartStyle }}">{{ p.heart }}</button>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- GALLERY UNAVAILABLE (expirée ou supprimée) -->
+      <sc-if value="{{ viewUnavailable }}" hint-placeholder-val="">
+        <div style="max-width:520px;margin:40px auto;padding:56px 28px;text-align:center;border:1px dashed var(--line);border-radius:2px;">
+          <div style="font-size:38px;color:var(--faint);line-height:1;">{{ unavailIcon }}</div>
+          <h1 style="margin:16px 0 8px;font-size:clamp(28px,7vw,38px);font-weight:400;line-height:1.05;letter-spacing:-.03em;">{{ unavailTitle }}</h1>
+          <p style="margin:0 0 26px;font-size:14px;line-height:1.55;color:var(--ink-2);">{{ unavailMsg }}</p>
+          <button onClick="{{ backToGalleries }}" style="border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:2px;padding:12px 18px;font-size:14px;cursor:pointer;">{{ unavailBack }}</button>
+        </div>
+      </sc-if>
+
+      <!-- INVOICES -->
+      <sc-if value="{{ viewInvoices }}">
+        <h1 style="margin:0 0 4px;font-size:clamp(34px,9vw,52px);font-weight:400;line-height:1;letter-spacing:-.035em;">{{ invoicesTitle }}</h1>
+        <p style="margin:0 0 24px;font-size:14px;color:var(--muted);">{{ invoicesSub }}</p>
+        <sc-if value="{{ hasInvoices }}">
+        <div style="border:1px solid var(--line);border-radius:2px;overflow:hidden;">
+          <sc-for list="{{ invoices }}" as="i" hint-placeholder-count="3">
+            <div style="display:flex;align-items:center;gap:14px;padding:16px;border-bottom:1px solid var(--ph);">
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:15px;font-weight:500;">{{ i.label }}</div>
+                <div style="font-size:13px;color:var(--muted);margin-top:3px;">{{ i.num }} · {{ i.date }}</div>
+              </div>
+              <div style="font-size:18px;flex:none;letter-spacing:-.02em;">{{ i.amount }}</div>
+              <span style="{{ i.badge }}">{{ i.statusLabel }}</span>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+        <sc-if value="{{ noInvoices }}"><div style="padding:40px 24px;text-align:center;border:1px dashed var(--line);border-radius:2px;color:var(--muted);">{{ noInvoicesMsg }}</div></sc-if>
+      </sc-if>
+
+      <!-- SELECTION -->
+      <sc-if value="{{ viewSelection }}">
+        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;">
+          <div>
+            <h1 style="margin:0;font-size:clamp(34px,9vw,52px);font-weight:400;line-height:1;letter-spacing:-.035em;">{{ mySelectionTitle }}</h1>
+            <p style="margin:6px 0 0;font-size:14px;color:var(--muted);">{{ selSummary }}</p>
+          </div>
+          <sc-if value="{{ hasSelection }}">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <sc-if value="{{ canDownload }}" hint-placeholder-val=""><button onClick="{{ downloadAll }}" style="border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:2px;padding:12px 18px;font-size:14px;cursor:pointer;">{{ dlAllLabel }}</button></sc-if>
+            <sc-if value="{{ selNotSent }}" hint-placeholder-val="{{ true }}">
+            <button onClick="{{ sendSelection }}" style="border:none;background:var(--accent);color:var(--on-accent);border-radius:2px;padding:12px 18px;font-size:14px;font-weight:500;cursor:pointer;">{{ sendLabel }}</button>
+            </sc-if>
+          </div>
+          </sc-if>
+        </div>
+        <sc-if value="{{ dlLocked }}" hint-placeholder-val="">
+        <div style="margin-top:18px;padding:12px 16px;background:var(--bg-2);border:1px solid var(--line);border-radius:2px;font-size:13px;color:var(--ink-2);">{{ dlLockedMsg }}</div>
+        </sc-if>
+        <sc-if value="{{ selSent }}" hint-placeholder-val="">
+        <div role="status" style="margin-top:18px;padding:16px;background:var(--bg-2);border:1px solid var(--accent);border-radius:6px;display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:500;letter-spacing:-.02em;"><span style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:13px;flex:none;">✓</span>{{ sentRecapTitle }}</div>
+          <p style="margin:0;font-size:13px;line-height:1.5;color:var(--ink-2);">{{ sentRecapBody }}</p>
+          <button type="button" onClick="{{ editSelection }}" style="align-self:flex-start;border:none;background:none;padding:0;font-family:inherit;font-size:13px;color:var(--muted);text-decoration:underline;cursor:pointer;">{{ editSelLabel }}</button>
+        </div>
+        </sc-if>
+        <sc-if value="{{ hasSelection }}">
+        <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px;">
+          <sc-for list="{{ selGroups }}" as="grp" hint-placeholder-count="2">
+            <div style="margin-top:22px;">
+              <div style="display:flex;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:8px;">
+                <span style="font-size:15px;letter-spacing:-.02em;color:var(--ink);">{{ grp.name }}</span>
+              </div>
+              <div style="columns:{{ colWidth }};column-gap:clamp(8px,2vw,14px);margin-top:14px;">
+                <sc-for list="{{ grp.items }}" as="p" hint-placeholder-count="3">
+                  <div style="position:relative;margin:0 0 clamp(8px,2vw,14px);break-inside:avoid;border-radius:2px;overflow:hidden;background:var(--ph);">
+                    <img src="{{ p.src }}" alt="photo sélectionnée" loading="lazy" style="width:100%;display:block;" />
+                    <button onClick="{{ p.toggle }}" aria-label="Retirer" style="position:absolute;right:8px;top:8px;border:none;width:44px;height:44px;border-radius:999px;background:rgba(17,17,17,.55);color:#fff;font-size:16px;cursor:pointer;line-height:1;">×</button>
+                    <sc-if value="{{ canDownload }}" hint-placeholder-val=""><a href="{{ p.src }}" download aria-label="Télécharger la photo" style="position:absolute;right:8px;bottom:8px;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:999px;background:rgba(17,17,17,.55);color:#fff;font-size:15px;text-decoration:none;line-height:1;">↓</a></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+        <sc-if value="{{ noSelection }}">
+        <div style="margin-top:28px;padding:40px 24px;text-align:center;border:1px dashed var(--line);border-radius:2px;color:var(--muted);">
+          <div style="font-size:30px;">♡</div>
+          <p style="margin:10px 0 0;font-size:15px;">{{ noSelTitle }}<br>{{ noSelHint }}</p>
+        </div>
+        </sc-if>
+      </sc-if>
+    </div>
+
+    <div style="{{ bottomBar }}">
+      <sc-for list="{{ navTabs }}" as="t" hint-placeholder-count="3">
+        <button onClick="{{ t.go }}" style="{{ t.botStyle }}">
+          <span style="font-size:17px;line-height:1;">{{ t.icon }}</span>
+          <span style="font-size:11px;letter-spacing:-.01em;">{{ t.label }}{{ t.badge }}</span>
+        </button>
+      </sc-for>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- LIGHTBOX -->
+  <sc-if value="{{ zoomOpen }}">
+  <div onClick="{{ closeZoom }}" onTouchStart="{{ tStart }}" onTouchEnd="{{ tEnd }}" style="position:fixed;inset:0;z-index:85;background:rgba(17,17,17,.96);touch-action:pan-y;display:flex;align-items:center;justify-content:center;padding:clamp(12px,4vw,48px);">
+    <button onClick="{{ closeZoom }}" aria-label="Fermer" style="position:absolute;top:16px;right:18px;border:none;background:none;color:#fff;font-size:34px;line-height:1;cursor:pointer;z-index:2;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">×</button>
+    <button onClick="{{ zoomPrev }}" aria-label="Précédent" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px;border-radius:999px;font-size:20px;cursor:pointer;z-index:2;">‹</button>
+    <button onClick="{{ zoomNext }}" aria-label="Suivant" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px;border-radius:999px;font-size:20px;cursor:pointer;z-index:2;">›</button>
+    <img src="{{ zoomSrc }}" alt="" onClick="{{ zoomStop }}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:2px;" />
+    <span aria-hidden="true" style="{{ wmZoomStyle }}">{{ wmText }}</span>
+    <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;z-index:2;">
+      <span style="font-size:13px;color:rgba(255,255,255,.7);letter-spacing:-.01em;">{{ zoomIdx }} / {{ zoomTotal }}</span>
+      <sc-if value="{{ zoomCanLike }}" hint-placeholder-val=""><button onClick="{{ zoomToggle }}" aria-label="Aimer cette photo" style="{{ zoomHeartStyle }}"><span style="font-size:16px;line-height:1;">{{ zoomHeart }}</span>{{ zoomHeartLbl }}</button></sc-if>
+      <sc-if value="{{ canDownload }}" hint-placeholder-val=""><a href="{{ zoomSrc }}" download onClick="{{ zoomStop }}" style="font-size:13px;color:#fff;background:rgba(255,255,255,.14);border-radius:2px;padding:8px 13px;text-decoration:none;">↓ {{ dlWord }}</a></sc-if>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- FACE SEARCH MODAL -->
+  <sc-if value="{{ faceModal }}">
+  <div style="position:fixed;inset:0;z-index:90;background:rgba(17,17,17,.5);display:flex;align-items:flex-end;justify-content:center;">
+    <div style="width:100%;max-width:460px;background:var(--bg);border-radius:14px 14px 0 0;padding:22px 22px 30px;{{ sheetDesktop }}">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:13px;color:var(--muted);letter-spacing:-.01em;">{{ faceTitle }}</div>
+        <button onClick="{{ closeFace }}" aria-label="Fermer" style="border:none;background:none;font-size:26px;line-height:1;cursor:pointer;color:var(--ink);">×</button>
+      </div>
+
+      <sc-if value="{{ faceIdle }}">
+        <h2 style="margin:14px 0 6px;font-size:30px;font-weight:400;line-height:1.05;letter-spacing:-.03em;">{{ faceHead }}</h2>
+        <p style="margin:0 0 18px;font-size:14px;line-height:1.55;color:var(--ink-2);">{{ faceIntro1 }}{{ galTotal }}{{ faceIntro2 }}</p>
+        <label style="display:block;width:100%;padding:15px;border:1.5px dashed var(--faint);border-radius:2px;background:var(--bg-2);cursor:pointer;text-align:center;color:var(--ink-2);">
+          <input type="file" accept="image/*" onChange="{{ onSelfie }}" style="display:none;" />
+          <div style="font-size:24px;">⬆</div>
+          <div style="font-size:14px;margin-top:4px;">{{ faceUpload }}</div>
+        </label>
+        <div style="margin:18px 0 10px;font-size:12px;color:var(--muted);text-align:center;">{{ faceOrSample }}</div>
+        <div style="display:flex;gap:8px;justify-content:center;">
+          <sc-for list="{{ sampleFaces }}" as="sf" hint-placeholder-count="3">
+            <button onClick="{{ sf.pick }}" style="border:1px solid var(--line);background:var(--card);border-radius:2px;padding:6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;width:88px;">
+              <span style="width:72px;height:72px;border-radius:2px;overflow:hidden;background:var(--ph);display:block;"><img src="{{ sf.src }}" alt="{{ sf.label }}" style="width:100%;height:100%;object-fit:cover;display:block;" /></span>
+              <span style="font-size:12px;color:var(--ink-2);">{{ sf.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="margin-top:16px;font-size:12px;color:var(--muted);text-align:center;line-height:1.5;">{{ facePrivacy }}</div>
+      </sc-if>
+
+      <sc-if value="{{ faceScanning }}">
+        <div style="padding:30px 0 24px;text-align:center;">
+          <div style="position:relative;width:120px;height:120px;margin:0 auto;border-radius:8px;overflow:hidden;background:var(--bg-2);">
+            <img src="{{ scanPreview }}" alt="" style="width:100%;height:100%;object-fit:cover;display:{{ scanPreviewShow }};" />
+            <span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:38px;color:var(--faint);display:{{ scanFaceShow }};">☺</span>
+            <div style="position:absolute;left:0;width:100%;height:2px;background:var(--accent);box-shadow:0 0 12px 2px rgba(242,193,60,.7);animation:nvscan 1.4s ease-in-out infinite alternate;"></div>
+          </div>
+          <div style="display:inline-block;margin-top:24px;width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:999px;animation:nvspin .8s linear infinite;"></div>
+          <p style="margin:14px 0 0;font-size:13px;color:var(--ink-2);">{{ scanMsg }}</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ faceNoface }}">
+        <div style="padding:18px 0 6px;text-align:center;">
+          <div style="font-size:34px;">😕</div>
+          <h2 style="margin:8px 0 4px;font-size:26px;font-weight:400;letter-spacing:-.03em;">{{ noFaceTitle }}</h2>
+          <p style="margin:0 0 20px;font-size:14px;color:var(--ink-2);">{{ noFaceHint }}</p>
+          <button onClick="{{ retryFace }}" style="width:100%;padding:14px;border:1px solid var(--line);border-radius:2px;background:var(--card);font-size:14px;cursor:pointer;">{{ retryLabel }}</button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ faceDone }}">
+        <div style="padding:18px 0 6px;text-align:center;">
+          <div style="font-size:40px;animation:nvpop .4s ease;color:var(--ink);">✓</div>
+          <h2 style="margin:8px 0 4px;font-size:30px;font-weight:400;letter-spacing:-.03em;">{{ faceResultCount }} {{ faceFoundWord }}</h2>
+          <p style="margin:0 0 20px;font-size:14px;color:var(--ink-2);">{{ faceResultMsg }}</p>
+          <button onClick="{{ applyFace }}" style="width:100%;padding:15px;border:none;border-radius:2px;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:500;cursor:pointer;">{{ faceApplyLabel }}</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    ready: false, tick: 0, mobile: typeof window !== 'undefined' && window.innerWidth < 820,
+    clientId: null, loginEmail: '', loginPass: '', loginError: false,
+    view: 'galleries', galleryId: null,
+    faceModal: false, faceStep: 'idle', faceActive: null, faceCount: 0, faceTried: false,
+    scanPreview: '', scanMsg: '', sent: false, lb: -1, lbList: [], shareCopied: false
+  };
+  componentDidMount() {
+    this._wait = setInterval(() => {
+      if (window.NVStore) {
+        clearInterval(this._wait);
+        const cid = window.NVAuth.currentClientId();
+        const valid = cid && window.NVStore.client(cid) ? cid : null;
+        this.setState({ ready: true, clientId: valid });
+        if (valid) this.recordVisit(valid);
+        else this.tryLinkLogin();
+        this._unsub = window.NVStore.subscribe(() => this.setState(s => ({ tick: s.tick + 1 })));
+        if (window.NVFace) window.NVFace.ready();
+      }
+    }, 30);
+    this._r = () => this.setState({ mobile: window.innerWidth < 820 });
+    window.addEventListener('resize', this._r);
+    this._ulang = window.NVI18n.onChange(() => this.setState(s => ({ tick: s.tick + 1 })));
+    // Lightbox : navigation clavier.
+    this._k = (e) => {
+      if (this.state.lb < 0) return;
+      if (e.key === 'Escape') this.setState({ lb: -1 });
+      if (e.key === 'ArrowRight') this.moveLb(1);
+      if (e.key === 'ArrowLeft') this.moveLb(-1);
+    };
+    window.addEventListener('keydown', this._k);
+  }
+  componentWillUnmount() { clearInterval(this._wait); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); window.removeEventListener('keydown', this._k); }
+
+  // Connexion automatique via lien d'accès direct (?acces=… copié depuis l'admin).
+  tryLinkLogin() {
+    try {
+      const raw = new URLSearchParams(location.search).get('acces');
+      if (!raw) return;
+      const dec = decodeURIComponent(escape(atob(raw.replace(/-/g, '+').replace(/_/g, '/'))));
+      const i = dec.indexOf(':');
+      if (i < 0) return;
+      window.NVAuth.loginClient(dec.slice(0, i), dec.slice(i + 1)).then((id) => {
+        if (id) {
+          this.setState({ clientId: id, view: 'galleries' });
+          this.recordVisit(id);
+          try { history.replaceState(null, '', location.pathname); } catch (e) {}
+        }
+      });
+    } catch (e) {}
+  }
+
+  // Lightbox : photo suivante/précédente + préchargement des voisines.
+  moveLb(d) {
+    const list = this.state.lbList; if (!list.length) return;
+    const n = list.length;
+    let i = this.state.lb + d; if (i < 0) i = n - 1; if (i >= n) i = 0;
+    this.setState({ lb: i });
+    this.preloadLb(i);
+  }
+  preloadLb(i) {
+    try {
+      const list = this.state.lbList; const n = list.length;
+      [i + 1, i - 1].forEach(j => { const k = ((j % n) + n) % n; const im = new Image(); im.src = list[k]; });
+    } catch (e) {}
+  }
+  openLb(list, i) { this.setState({ lbList: list, lb: i }); setTimeout(() => this.preloadLb(i), 0); }
+
+  // Trace la dernière visite du client (visible dans l'admin).
+  recordVisit(cid) { try { window.NVStore.update((st) => { const cc = st.clients.find(x => x.id === cid); if (cc) cc.lastVisit = new Date().toISOString(); }); } catch (e) {} }
+  // Libellé d'expiration d'une galerie ("disponible jusqu'au …").
+  expiryLabel(g, lang) {
+    if (!g || !g.expiresAt) return '';
+    const d = new Date(g.expiresAt + 'T12:00:00'); if (isNaN(d)) return '';
+    const txt = d.toLocaleDateString(lang === 'en' ? 'en-CA' : 'fr-CA', { day: 'numeric', month: 'long', year: 'numeric' });
+    return lang === 'en' ? 'available until ' + txt : 'disponible jusqu\u2019au ' + txt;
+  }
+  // Une galerie est verrouillée après sa date d'expiration.
+  isExpired(g) {
+    if (!g || !g.expiresAt) return false;
+    const d = new Date(g.expiresAt + 'T23:59:59');
+    return !isNaN(d) && d < new Date();
+  }
+  curGallery() { return this.state.galleryId ? window.NVStore.gallery(this.state.galleryId) : null; }
+  loadImg(src) { return new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.src = src; }); }
+  async downscaled(src, max) {
+    const img = await this.loadImg(src);
+    const sc = Math.min(1, (max || 640) / Math.max(img.naturalWidth, img.naturalHeight));
+    if (sc >= 1) return img;
+    const w = Math.round(img.naturalWidth * sc), h = Math.round(img.naturalHeight * sc);
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    cv.getContext('2d').drawImage(img, 0, 0, w, h);
+    return cv;
+  }
+
+  likedCount(c) { return Object.keys(c.likes).filter(k => c.likes[k]).length; }
+  toggleLike(pid) {
+    const c = window.NVStore.client(this.state.clientId);
+    const limit = c.likeLimit || window.NVStore.get().settings.likeLimit;
+    window.NVStore.update((st) => {
+      const cc = st.clients.find(x => x.id === c.id);
+      if (cc.likes[pid]) delete cc.likes[pid];
+      else { if (Object.keys(cc.likes).filter(k => cc.likes[k]).length >= limit) return; cc.likes[pid] = true; }
+    });
+  }
+
+  runMatch(queryDesc) {
+    const g = this.curGallery();
+    const s = window.NVStore.get();
+    const th = s.settings.faceThreshold || window.NVFace.THRESHOLD;
+    const scored = [];
+    let strong = 0;
+    g.photoIds.forEach(pid => {
+      const p = s.photos[pid];
+      if (!p || !p.faces || !p.faces.length) return;
+      const m = window.NVFace.match(queryDesc, p.faces, th);
+      if (m.hit) { scored.push({ pid, dist: m.dist }); if (m.strong) strong++; }
+    });
+    scored.sort((a, b) => a.dist - b.dist);          // closest matches first
+    const matched = scored.map(x => x.pid);
+    this.setState({ faceStep: 'done', faceActive: null, faceCount: matched.length, faceStrong: strong, _matched: matched });
+  }
+  pickSample(file) {
+    const fd = window.NV_FACEDATA || {};
+    const desc = fd[file] && fd[file][0];
+    if (!desc) return;
+    this.setState({ faceStep: 'scanning', scanMsg: window.NVI18n.t('cl.scanSample'), scanPreview: 'images/' + file });
+    setTimeout(() => this.runMatch(desc), 900);
+  }
+  async onSelfie(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const url = URL.createObjectURL(file);
+    this.setState({ faceStep: 'scanning', scanMsg: window.NVI18n.t('cl.scanInit'), scanPreview: url });
+    try {
+      await window.NVFace.ready();
+      this.setState({ scanMsg: window.NVI18n.t('cl.scanFace') });
+      const img = await this.downscaled(url, 720);
+      const desc = await window.NVFace.detectPrimary(img);
+      if (!desc) { this.setState({ faceStep: 'noface' }); return; }
+      this.runMatch(desc);
+    } catch (err) { this.setState({ faceStep: 'noface' }); }
+  }
+
+  renderVals() {
+    const mobile = this.state.mobile;
+    const ui = window.NVI18n.ui();
+    const T = window.NVI18n.t, L = window.NVI18n.pick;
+    const chrome = { ...ui, siteLink: T('nav.site'),
+      setFr: () => { window.NVI18n.setLang('fr'); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
+      setEn: () => { window.NVI18n.setLang('en'); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
+      themeIcon: (window.NVTheme && NVTheme.theme === 'dark') ? '\u2600\uFE0E' : '\u263e',
+      themeLabel: (window.NVTheme && NVTheme.theme === 'dark') ? (ui.lang === 'en' ? 'Light mode' : 'Mode clair') : (ui.lang === 'en' ? 'Dark mode' : 'Mode sombre'),
+      themeBtn: 'border:none;background:none;cursor:pointer;font-family:inherit;font-size:15px;line-height:1;color:var(--muted);padding:0;transition:color .15s;',
+      toggleTheme: () => { if (window.NVTheme) NVTheme.toggle(); this.setState(s => ({ tick: (s.tick || 0) + 1 })); }
+    };
+    const loginLabels = {
+      privateLabel: T('cl.private'), loginTitle: T('cl.h1'), loginIntro: T('cl.loginIntro'),
+      lblEmail: T('ct.email'), lblAccessCode: T('cl.accessCode'), badCreds: T('cl.badCreds'),
+      signIn: T('cl.signIn'), demoPrefix: T('cl.demo')
+    };
+    if (!this.state.ready || !window.NVStore) {
+      return { ...chrome, ...loginLabels, showLogin: true, showApp: false, brandName: 'Nicolas Vivaudou', brandRole: ui.lang === 'en' ? 'Photographer' : 'Photographe', demoHint: '', loginEmail: '', loginPass: '', loginError: false, setEmail: () => {}, setPass: () => {}, onLogin: (e) => e.preventDefault(), faceModal: false, zoomOpen: false };
+    }
+    const s = window.NVStore.get();
+    const c = this.state.clientId ? window.NVStore.client(this.state.clientId) : null;
+    const demoClient = s.clients[0];
+
+    if (!c) {
+      return {
+        ...chrome, ...loginLabels,
+        showLogin: true, showApp: false, faceModal: false, zoomOpen: false,
+        brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn),
+        demoHint: (window.NV_CONFIG && window.NV_CONFIG.backend !== 'local') ? '' : (demoClient ? (demoClient.email + ' / ' + demoClient.password) : ''),
+        loginEmail: this.state.loginEmail, loginPass: this.state.loginPass, loginError: this.state.loginError,
+        setEmail: (e) => this.setState({ loginEmail: e.target.value, loginError: false }),
+        setPass: (e) => this.setState({ loginPass: e.target.value, loginError: false }),
+        onLogin: (e) => {
+          e.preventDefault();
+          window.NVAuth.loginClient(this.state.loginEmail, this.state.loginPass).then((id) => {
+            if (id) { this.setState({ clientId: id, view: 'galleries', loginPass: '' }); this.recordVisit(id); }
+            else this.setState({ loginError: true });
+          });
+        }
+      };
+    }
+
+    const view = this.state.view;
+    const limit = c.likeLimit || s.settings.likeLimit;
+    const likeCount = this.likedCount(c);
+    const galleries = window.NVStore.clientGalleries(c.id);
+
+    const navDef = [{ id: 'galleries', label: T('cl.tabGalleries'), icon: '▦' }, { id: 'invoices', label: T('cl.tabInvoices'), icon: '▤' }, { id: 'selection', label: T('cl.tabSelection'), icon: '♥' }];
+    const navTabs = navDef.map(n => {
+      const active = (view === n.id) || (n.id === 'galleries' && view === 'gallery');
+      const badgeN = n.id === 'selection' && likeCount ? likeCount : 0;
+      return {
+        label: n.label, icon: n.icon, badge: badgeN ? '  ' + badgeN : '',
+        go: () => this.setState({ view: n.id, galleryId: null, faceActive: null }),
+        deskStyle: 'border:none;background:none;cursor:pointer;font-family:inherit;font-size:14px;letter-spacing:-.01em;padding:13px 0;color:' + (active ? 'var(--ink)' : 'var(--muted)') + ';border-bottom:2px solid ' + (active ? 'var(--accent)' : 'transparent') + ';',
+        botStyle: 'flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;cursor:pointer;padding:9px 0;font-family:inherit;color:' + (active ? 'var(--ink)' : 'var(--muted)') + ';'
+      };
+    });
+
+    const galleryCards = galleries.map(g => ({
+      name: L(g.name, g.nameEn),
+      sub: L(g.sub || g.desc, g.subEn || g.descEn) + (this.expiryLabel(g, ui.lang) ? ' · ' + this.expiryLabel(g, ui.lang) : ''),
+      faceSearch: g.faceSearch,
+      expired: this.isExpired(g),
+      total: g.total || g.photoIds.length,
+      liked: g.photoIds.filter(pid => c.likes[pid]).length,
+      cover: window.NVStore.resolveSrc(s.photos[g.coverId || g.photoIds[0]]),
+      open: () => this.setState({ view: 'gallery', galleryId: g.id, faceActive: null, faceTried: false })
+    }));
+
+    // single gallery
+    const g = this.curGallery();
+    // Galerie supprimée ou expirée -> écran d'indisponibilité.
+    const galGone = view === 'gallery' && !g;
+    const galExpired = view === 'gallery' && !!g && this.isExpired(g);
+    const expDate = galExpired ? new Date(g.expiresAt + 'T12:00:00').toLocaleDateString(window.NVI18n.ui().lang === 'en' ? 'en-CA' : 'fr-CA', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    let photos = [], galName = '', galSub = '', galTotal = 0, galFace = false;
+    if (g) {
+      galName = L(g.name, g.nameEn); galSub = L(g.sub || g.desc, g.subEn || g.descEn); galTotal = g.total || g.photoIds.length; galFace = g.faceSearch;
+      const exp = this.expiryLabel(g, ui.lang); if (exp) galSub += ' · ' + exp;
+      const ids = this.state.faceActive ? this.state.faceActive : g.photoIds;
+      const srcList = ids.map(pid => s.photos[pid] ? window.NVStore.resolveSrc(s.photos[pid]) : null).filter(Boolean);
+      photos = ids.map(pid => {
+        const p = s.photos[pid]; if (!p) return null;
+        const liked = !!c.likes[pid];
+        const src = window.NVStore.resolveSrc(p);
+        return {
+          src, zoom: () => this.openLb(srcList, srcList.indexOf(src)),
+          heart: liked ? '♥' : '♡', toggle: () => this.toggleLike(pid),
+          heartStyle: 'position:absolute;right:8px;bottom:8px;width:44px;height:44px;border-radius:999px;border:none;cursor:pointer;font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;background:' + (liked ? 'var(--accent)' : 'rgba(17,17,17,.42)') + ';color:' + (liked ? 'var(--on-accent)' : '#fff') + ';transition:all .15s;'
+        };
+      }).filter(Boolean);
+    }
+
+    // selection across galleries
+    const selected = [];
+    Object.keys(c.likes).forEach(pid => {
+      if (!c.likes[pid]) return; const p = s.photos[pid]; if (!p) return;
+      const gg = window.NVStore.gallery(p.gallery) || s.galleries.find(x => x.photoIds.includes(pid));
+      selected.push({ src: window.NVStore.resolveSrc(p), gal: gg ? L(gg.name, gg.nameEn) : '', toggle: () => this.toggleLike(pid) });
+    });
+    // Regroupe la sélection par galerie (une section par galerie).
+    const selGroups = [];
+    selected.forEach(it => {
+      let grp = selGroups.find(x => x.name === it.gal);
+      if (!grp) { grp = { name: it.gal, items: [] }; selGroups.push(grp); }
+      grp.items.push(it);
+    });
+    // Cœur dans la visionneuse plein écran : retrouve la photo affichée.
+    let zoomPid = null;
+    if (this.state.lb >= 0) { const zs = this.state.lbList[this.state.lb]; zoomPid = Object.keys(s.photos).find(k => window.NVStore.resolveSrc(s.photos[k]) === zs) || null; }
+    const zoomLiked = zoomPid ? !!c.likes[zoomPid] : false;
+
+    const invoices = (c.invoices || []).map(i => ({ ...i, statusLabel: (i.status === 'Payée' ? (ui.lang === 'en' ? 'Paid' : 'Payée') : (ui.lang === 'en' ? 'Due' : 'À régler')), badge: 'flex:none;font-size:11px;letter-spacing:-.01em;padding:6px 11px;border-radius:2px;' + (i.status === 'Payée' ? 'background:var(--ok-bg);color:var(--ok-fg);' : 'background:var(--warn-bg);color:var(--warn-fg);') }));
+
+    const sampleFaces = (s.sampleFaces || []).map(sf => ({ label: sf.label, src: sf.src, pick: () => this.pickSample(sf.file) }));
+    const faceActiveOn = !!this.state.faceActive;
+
+    return {
+      ...chrome,
+      showLogin: false, showApp: true, mobile,
+      spaceLabel: T('cl.space'), quitLabel: T('cl.quit'), yourGalleries: T('cl.yourGalleries'),
+      faceBadge: T('cl.faceBadge'), photosWord: T('cl.photos'), likedSel: T('cl.likedSel'),
+      noGalleriesMsg: T('cl.noGalleries'), findMyPhotos: T('cl.findMyPhotos'), selectionWord: T('cl.selection'),
+      faceResultsLabel: (ui.lang === 'en' ? 'Face · ' + this.state.faceCount + ' results ✕' : 'Visage · ' + this.state.faceCount + ' résultats ✕'),
+      limitMsg: T('cl.limitReached1') + limit + T('cl.limitReached2'), faceEmptyMsg: T('cl.faceEmpty'),
+      invoicesTitle: T('cl.invoices'), invoicesSub: T('cl.invoicesSub'), noInvoicesMsg: T('cl.noInvoices'),
+      mySelectionTitle: T('cl.mySelection'), noSelTitle: T('cl.noSelTitle'), noSelHint: T('cl.noSelHint'),
+      faceTitle: T('cl.faceTitle'), faceHead: T('cl.faceHead'), faceIntro1: T('cl.faceIntro1'), faceIntro2: T('cl.faceIntro2'),
+      faceUpload: T('cl.faceUpload'), faceOrSample: T('cl.faceOrSample'), facePrivacy: T('cl.facePrivacy'),
+      noFaceTitle: T('cl.noFaceTitle'), noFaceHint: T('cl.noFaceHint'), retryLabel: T('cl.retry'), faceFoundWord: T('cl.faceFound'),
+      brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn),
+      clientName: c.name, appPad: mobile ? 'padding-bottom:72px;' : '',
+      logout: () => { window.NVAuth.logoutClient(); this.setState({ clientId: null, view: 'galleries', galleryId: null }); },
+      inGallery: view === 'gallery',
+      backToGalleries: () => this.setState({ view: 'galleries', galleryId: null, faceActive: null }),
+      deskTabs: 'display:' + (mobile ? 'none' : 'block') + ';border-top:1px solid var(--ph);',
+      bottomBar: 'display:' + (mobile ? 'flex' : 'none') + ';position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--header-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);',
+      navTabs,
+      viewGalleries: view === 'galleries', viewGallery: view === 'gallery' && !galGone && !galExpired, viewInvoices: view === 'invoices', viewSelection: view === 'selection',
+      viewUnavailable: galGone || galExpired,
+      unavailIcon: galExpired ? '◷' : '○',
+      unavailTitle: galExpired
+        ? (ui.lang === 'en' ? 'Gallery expired' : 'Galerie expirée')
+        : (ui.lang === 'en' ? 'Gallery not found' : 'Galerie introuvable'),
+      unavailMsg: galExpired
+        ? (ui.lang === 'en'
+            ? 'Access to this gallery closed on ' + expDate + '. Contact Nicolas to reopen it.'
+            : 'L\u2019accès à cette galerie s\u2019est terminé le ' + expDate + '. Contactez Nicolas pour la rouvrir.')
+        : (ui.lang === 'en' ? 'This gallery no longer exists or has been removed.' : 'Cette galerie n\u2019existe plus ou a été retirée.'),
+      unavailBack: ui.lang === 'en' ? '← Back to my galleries' : '← Retour à mes galeries',
+      expiredWord: ui.lang === 'en' ? 'expired' : 'expirée',
+      galleryCards, hasGalleries: galleryCards.length > 0, noGalleries: galleryCards.length === 0,
+      photos, galName, galSub, galTotal, galFace,
+      colWidth: mobile ? '110px' : '210px', stickyTop: mobile ? '60px' : '104px',
+      likeCount, limit, likePct: Math.min(100, Math.round(likeCount / limit * 100)) + '%', limitReached: likeCount >= limit,
+      faceActive: faceActiveOn, faceCount: this.state.faceCount,
+      faceEmpty: faceActiveOn && this.state.faceActive.length === 0,
+      clearFace: () => this.setState({ faceActive: null }),
+      selSummary: (ui.lang === 'en'
+        ? (likeCount + ' of ' + limit + ' photos selected')
+        : (likeCount + ' photo' + (likeCount > 1 ? 's' : '') + ' sur ' + limit + ' sélectionnée' + (likeCount > 1 ? 's' : ''))),
+      invoices, hasInvoices: invoices.length > 0, noInvoices: invoices.length === 0,
+      selected, selGroups, hasSelection: selected.length > 0, noSelection: selected.length === 0,
+      // Validation persistée dans le store + notification dans l'onglet Messages de l'admin.
+      sendSelection: () => {
+        window.NVStore.update((st) => {
+          const cc = st.clients.find(x => x.id === c.id);
+          cc.selectionSentAt = new Date().toISOString();
+          st.messages.unshift({
+            id: window.NVStore.uid('m'), name: cc.name, email: cc.email,
+            date: new Date().toLocaleDateString('fr-CA'), type: 'Sélection',
+            body: cc.name + ' a validé sa sélection : ' + likeCount + ' photo(s) sur ' + limit + ' au forfait.'
+          });
+        });
+      },
+      sendLabel: T('cl.send'),
+      selNotSent: !c.selectionSentAt, selSent: !!c.selectionSentAt && selected.length > 0,
+      sentRecapTitle: ui.lang === 'en' ? 'Selection sent' : 'Sélection envoyée',
+      sentRecapBody: ui.lang === 'en'
+        ? (likeCount + ' photo' + (likeCount > 1 ? 's' : '') + ' out of ' + limit + ' included in your package. Nicolas has received your selection and is preparing the high-resolution files.')
+        : (likeCount + ' photo' + (likeCount > 1 ? 's' : '') + ' sur ' + limit + ' incluses au forfait. Nicolas a bien reçu votre sélection et prépare les fichiers haute résolution.'),
+      editSelection: () => window.NVStore.update((st) => { const cc = st.clients.find(x => x.id === c.id); delete cc.selectionSentAt; }),
+      editSelLabel: ui.lang === 'en' ? 'Edit my selection' : 'Modifier ma sélection',
+      // Téléchargement de toute la sélection (déclenché photo par photo).
+      dlAllLabel: ui.lang === 'en' ? '↓ Download all' : '↓ Tout télécharger',
+      downloadAll: () => { selected.forEach((p, i) => setTimeout(() => { const a = document.createElement('a'); a.href = p.src; a.setAttribute('download', ''); document.body.appendChild(a); a.click(); a.remove(); }, i * 350)); },
+      // Partage de la galerie (lien + code d'accès copiés).
+      shareLabel: this.state.shareCopied ? (ui.lang === 'en' ? 'Link copied ✓' : 'Lien copié ✓') : (ui.lang === 'en' ? 'Share' : 'Partager'),
+      shareGallery: () => {
+        const txt = location.origin + location.pathname + '\n' + (ui.lang === 'en' ? 'Access: ' : 'Accès : ') + c.email + ' / ' + c.password;
+        try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt); } catch (e) {}
+        this.setState({ shareCopied: true });
+        clearTimeout(this._shareT); this._shareT = setTimeout(() => this.setState({ shareCopied: false }), 2200);
+      },
+      // Filigrane de visionnage (activable dans l'admin, réglages).
+      wmText: s.brand.name,
+      wmStyle: 'position:absolute;inset:0;display:' + (s.settings.watermark ? 'flex' : 'none') + ';align-items:center;justify-content:center;pointer-events:none;transform:rotate(-16deg);color:rgba(255,255,255,.55);text-shadow:0 1px 4px rgba(0,0,0,.3);font-size:clamp(9px,1.4vw,14px);letter-spacing:.16em;text-transform:uppercase;white-space:nowrap;overflow:hidden;',
+      wmZoomStyle: 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) rotate(-16deg);display:' + (s.settings.watermark ? 'block' : 'none') + ';pointer-events:none;color:rgba(255,255,255,.4);text-shadow:0 1px 6px rgba(0,0,0,.4);font-size:clamp(16px,3vw,30px);letter-spacing:.2em;text-transform:uppercase;white-space:nowrap;',
+      // Lightbox plein écran : flèches, clavier, balayage, compteur, préchargement.
+      zoomOpen: this.state.lb >= 0,
+      zoomSrc: this.state.lb >= 0 ? this.state.lbList[this.state.lb] : '',
+      zoomIdx: this.state.lb + 1, zoomTotal: this.state.lbList.length,
+      closeZoom: () => this.setState({ lb: -1 }),
+      zoomCanLike: !!zoomPid,
+      zoomHeart: zoomLiked ? '♥' : '♡',
+      zoomHeartLbl: zoomLiked ? (ui.lang === 'en' ? 'Selected' : 'Sélectionnée') : (ui.lang === 'en' ? 'Select' : 'Sélectionner'),
+      zoomToggle: (e) => { e.stopPropagation(); if (zoomPid) this.toggleLike(zoomPid); },
+      zoomHeartStyle: 'border:none;cursor:pointer;font-family:inherit;font-size:13px;line-height:1;display:flex;align-items:center;gap:7px;border-radius:2px;padding:8px 13px;transition:background .15s,color .15s;' + (zoomLiked ? 'background:var(--accent);color:var(--on-accent);' : 'background:rgba(255,255,255,.14);color:#fff;'),
+      zoomNext: (e) => { e.stopPropagation(); this.moveLb(1); },
+      zoomPrev: (e) => { e.stopPropagation(); this.moveLb(-1); },
+      zoomStop: (e) => e.stopPropagation(),
+      tStart: (e) => { const t = e.touches[0]; this._tx = t.clientX; this._ty = t.clientY; this._ts = Date.now(); },
+      tEnd: (e) => {
+        if (this._tx == null) return;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - this._tx, dy = t.clientY - this._ty;
+        this._tx = null;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - this._ts < 800) {
+          e.stopPropagation(); e.preventDefault();
+          this.moveLb(dx < 0 ? 1 : -1);
+        }
+      },
+      // Téléchargement HD (activé par Nicolas dans l'admin, ex. une fois la facture réglée).
+      canDownload: !!c.canDownload,
+      dlWord: ui.lang === 'en' ? 'download' : 'télécharger',
+      dlGalleryLabel: ui.lang === 'en' ? 'download the gallery' : 'télécharger la galerie',
+      downloadGallery: () => {
+        const list = (this.state.faceActive || (g ? g.photoIds : [])).map(pid => s.photos[pid] ? window.NVStore.resolveSrc(s.photos[pid]) : null).filter(Boolean);
+        list.forEach((src, i) => setTimeout(() => { const a = document.createElement('a'); a.href = src; a.setAttribute('download', ''); document.body.appendChild(a); a.click(); a.remove(); }, i * 350));
+      },
+      dlLocked: view === 'selection' && selected.length > 0 && !c.canDownload,
+      dlLockedMsg: ui.lang === 'en'
+        ? 'High-resolution download will be enabled by Nicolas once your invoice is settled.'
+        : 'Le téléchargement haute résolution sera activé par Nicolas une fois votre facture réglée.',
+      // face modal
+      faceModal: this.state.faceModal,
+      openFace: () => this.setState({ faceModal: true, faceStep: 'idle' }),
+      closeFace: () => this.setState({ faceModal: false }),
+      faceIdle: this.state.faceStep === 'idle', faceScanning: this.state.faceStep === 'scanning',
+      faceNoface: this.state.faceStep === 'noface', faceDone: this.state.faceStep === 'done',
+      retryFace: () => this.setState({ faceStep: 'idle' }),
+      sampleFaces, onSelfie: (e) => this.onSelfie(e),
+      scanPreview: this.state.scanPreview, scanPreviewShow: this.state.scanPreview ? 'block' : 'none', scanFaceShow: this.state.scanPreview ? 'none' : 'block',
+      scanMsg: this.state.scanMsg,
+      faceResultCount: this.state.faceCount,
+      faceResultMsg: this.state.faceCount
+        ? (ui.lang === 'en'
+            ? ((this.state.faceStrong ? this.state.faceStrong + ' strong match' + (this.state.faceStrong > 1 ? 'es' : '') + ' · ' : '') + 'ranked by resemblance.')
+            : ((this.state.faceStrong ? this.state.faceStrong + ' correspondance' + (this.state.faceStrong > 1 ? 's' : '') + ' forte' + (this.state.faceStrong > 1 ? 's' : '') + ' · ' : '') + 'classées par ressemblance.'))
+        : T('cl.faceNoMatch'),
+      faceApplyLabel: this.state.faceCount ? (ui.lang === 'en' ? ('See my ' + this.state.faceCount + ' photos →') : ('Voir mes ' + this.state.faceCount + ' photos →')) : T('cl.faceClose'),
+      applyFace: () => this.setState({ faceModal: false, faceActive: this.state._matched || [], faceTried: true }),
+      sheetDesktop: mobile ? '' : 'border-radius:14px;margin-bottom:6vh;'
+    };
+  }
+}
+</script>
+</body>
+</html>

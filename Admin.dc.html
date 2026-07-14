@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Administration — Nicolas Vivaudou</title>
+<meta name="robots" content="noindex, nofollow">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="nv-config.js"></script>
+<script src="nv-storage.js"></script>
+<script src="nv-backend.js"></script>
+<script src="nv-auth.js"></script>
+<script src="store.js"></script>
+<script src="face.js"></script>
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:#F4F4F2;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  a{color:inherit;}
+  input,textarea,select{font-family:inherit;}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:#111;}
+  ::placeholder{color:#B5B5B5;}
+  .nvfield{width:100%;padding:11px 12px;border:1px solid #E0E0E0;border-radius:2px;background:#fff;font-size:14px;color:#111;}
+  .nvlabel{display:block;font-size:12px;color:#9A9A9A;margin-bottom:6px;letter-spacing:-.01em;}
+  @keyframes nvspin{to{transform:rotate(360deg);}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#111;">
+
+  <!-- PIN GATE -->
+  <sc-if value="{{ locked }}" hint-placeholder-val="{{ true }}">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#F4F4F2;">
+    <form onSubmit="{{ onUnlock }}" style="width:100%;max-width:360px;background:#fff;border:1px solid #E6E6E6;border-radius:3px;padding:30px;">
+      <div style="font-size:13px;color:#9A9A9A;">administration</div>
+      <h1 style="margin:6px 0 0;font-size:36px;font-weight:400;letter-spacing:-.035em;">back-office.</h1>
+      <p style="margin:12px 0 22px;font-size:14px;color:#5A5A5A;line-height:1.5;">Entrez le code administrateur pour gérer le site.</p>
+      <input type="password" value="{{ pinInput }}" onInput="{{ setPin }}" placeholder="••••" class="nvfield" style="text-align:center;letter-spacing:.3em;font-size:18px;" />
+      <sc-if value="{{ pinError }}"><div style="margin-top:10px;font-size:13px;color:#C0392B;">Code incorrect.</div></sc-if>
+      <button type="submit" style="width:100%;margin-top:18px;padding:14px;border:none;border-radius:2px;background:#111;color:#fff;font-size:14px;cursor:pointer;">Déverrouiller →</button>
+    </form>
+  </div>
+  </sc-if>
+
+  <!-- APP -->
+  <sc-if value="{{ unlocked }}">
+  <div style="display:flex;min-height:100vh;{{ appLayout }}">
+
+    <!-- SIDEBAR / TABBAR -->
+    <aside style="{{ sidebar }}">
+      <div style="{{ brandBox }}">
+        <div style="font-size:13px;letter-spacing:-.01em;">{{ brandName }}</div>
+        <div style="font-size:11px;color:#9A9A9A;">back-office</div>
+      </div>
+      <nav style="{{ navWrap }}">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+          <button onClick="{{ t.go }}" style="{{ t.style }}"><span>{{ t.label }}</span><span style="{{ t.badgeStyle }}">{{ t.badge }}</span></button>
+        </sc-for>
+      </nav>
+      <div style="{{ sideFoot }}">
+        <div style="{{ syncStyle }}"><span style="{{ syncDotStyle }}"></span><span>{{ syncLabel }}</span></div>
+        <a href="Accueil.dc.html" target="_blank" style="font-size:12px;color:#9A9A9A;text-decoration:none;">↗ voir le site</a>
+        <button onClick="{{ lock }}" style="border:none;background:none;font-size:12px;color:#9A9A9A;cursor:pointer;padding:0;font-family:inherit;">verrouiller</button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main style="flex:1;min-width:0;padding:clamp(18px,3vw,34px);max-width:1100px;{{ mainPad }}">
+
+      <!-- engine status pill -->
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:22px;">
+        <div>
+          <h1 style="margin:0;font-size:clamp(28px,6vw,40px);font-weight:400;letter-spacing:-.035em;line-height:1;">{{ tabTitle }}</h1>
+          <p style="margin:6px 0 0;font-size:13px;color:#9A9A9A;">{{ tabHint }}</p>
+        </div>
+        <div style="{{ enginePill }}"><span style="{{ engineDot }}"></span>{{ engineLabel }}</div>
+      </div>
+
+      <!-- ===== APERÇU (statistiques) ===== -->
+      <sc-if value="{{ isStats }}">
+        <div style="display:grid;grid-template-columns:{{ statCols }};gap:12px;margin-bottom:16px;">
+          <sc-for list="{{ statCards }}" as="sc" hint-placeholder-count="4">
+            <section style="{{ card }};padding:16px;">
+              <div style="font-size:30px;font-weight:400;letter-spacing:-.03em;line-height:1;">{{ sc.value }}</div>
+              <div style="font-size:12px;color:#9A9A9A;margin-top:6px;">{{ sc.label }}</div>
+            </section>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:{{ twoCol }};gap:16px;align-items:start;">
+          <section style="{{ card }}">
+            <div style="{{ cardTitle }}">Photos les plus aimées</div>
+            <sc-if value="{{ hasTopPhotos }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;">
+              <sc-for list="{{ topPhotos }}" as="tp" hint-placeholder-count="4">
+                <div style="position:relative;aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;">
+                  <img src="{{ tp.src }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                  <span style="position:absolute;right:4px;top:4px;font-size:11px;background:#F2C13C;color:#111;border-radius:99px;padding:2px 7px;">♥ {{ tp.count }}</span>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+            <sc-if value="{{ noTopPhotos }}"><div style="font-size:13px;color:#9A9A9A;">Aucun like client pour l'instant.</div></sc-if>
+          </section>
+          <section style="{{ card }}">
+            <div style="{{ cardTitle }}">Activité clients</div>
+            <sc-for list="{{ statClients }}" as="stc" hint-placeholder-count="2">
+              <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:space-between;padding:9px 0;border-top:1px solid #EEE;">
+                <span style="font-size:14px;">{{ stc.name }}</span>
+                <span style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <span style="{{ stc.visitChip }}">{{ stc.visit }}</span>
+                  <span style="{{ stc.selChip }}">{{ stc.sel }}</span>
+                </span>
+              </div>
+            </sc-for>
+            <div style="{{ cardTitle }};margin-top:18px;">Factures</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+              <span style="font-size:13px;padding:7px 12px;border-radius:2px;background:#E8F0EA;color:#2F6B3F;">Encaissé : {{ paidTotal }}</span>
+              <span style="font-size:13px;padding:7px 12px;border-radius:2px;background:#FBF1D8;color:#7A610F;">À encaisser : {{ dueTotal }}</span>
+            </div>
+          </section>
+        </div>
+      </sc-if>
+
+      <!-- ===== CONTENU ===== -->
+      <sc-if value="{{ isContent }}">
+        <div style="display:grid;grid-template-columns:{{ twoCol }};gap:18px;align-items:start;">
+          <section style="{{ card }}">
+            <div style="{{ cardTitle }}">Identité</div>
+            <label class="nvlabel">Nom / marque</label>
+            <input class="nvfield" value="{{ f_brandName }}" onInput="{{ s_brandName }}" />
+            <label class="nvlabel" style="margin-top:14px;">Rôle</label>
+            <input class="nvfield" value="{{ f_brandRole }}" onInput="{{ s_brandRole }}" />
+            <label class="nvlabel" style="margin-top:14px;">Localisation</label>
+            <input class="nvfield" value="{{ f_brandLoc }}" onInput="{{ s_brandLoc }}" />
+          </section>
+
+          <section style="{{ card }}">
+            <div style="{{ cardTitle }}">Accueil — image d'ouverture</div>
+            <div style="position:relative;aspect-ratio:16/9;border-radius:2px;overflow:hidden;background:#EEE;margin-bottom:12px;">
+              <img src="{{ heroSrc }}" alt="hero" style="width:100%;height:100%;object-fit:cover;display:block;" />
+            </div>
+            <label style="{{ uploadBtn }}"><input type="file" accept="image/*" onChange="{{ onHero }}" style="display:none;" />Remplacer l'image</label>
+            <label class="nvlabel" style="margin-top:14px;">Légende</label>
+            <input class="nvfield" value="{{ f_heroCap }}" onInput="{{ s_heroCap }}" />
+            <label class="nvlabel" style="margin-top:14px;">Libellé section travaux</label>
+            <input class="nvfield" value="{{ f_homeMeta }}" onInput="{{ s_homeMeta }}" />
+            <div style="border-top:1px solid #EEE;margin-top:16px;padding-top:14px;">
+              <label class="nvlabel">Diaporama d'accueil</label>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button onClick="{{ slideAuto }}" style="{{ slideAutoBtn }}">automatique</button>
+                <button onClick="{{ slideManual }}" style="{{ slideManualBtn }}">sélection manuelle</button>
+              </div>
+              <sc-if value="{{ slideIsAuto }}"><p style="font-size:12px;color:#9A9A9A;line-height:1.5;margin:8px 0 0;">Toutes les photos publiques défilent (30 max), en commençant par l'image d'ouverture.</p></sc-if>
+              <sc-if value="{{ slideIsManual }}">
+                <p style="font-size:12px;color:#9A9A9A;line-height:1.5;margin:8px 0 10px;">Cliquez les photos dans l'ordre d'apparition souhaité ; recliquez pour retirer. {{ slideCount }}</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;">
+                  <sc-for list="{{ slidePhotos }}" as="sp" hint-placeholder-count="6">
+                    <div onClick="{{ sp.toggle }}" title="{{ sp.title }}" style="position:relative;aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;cursor:pointer;{{ sp.ring }}">
+                      <img src="{{ sp.src }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                      <span style="{{ sp.numStyle }}">{{ sp.num }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </section>
+
+          <section style="{{ card }}">
+            <div style="{{ cardTitle }}">À propos</div>
+            <div style="display:flex;gap:14px;align-items:flex-start;">
+              <div style="position:relative;width:96px;flex:none;aspect-ratio:3/4;border-radius:2px;overflow:hidden;background:#EEE;">
+                <img src="{{ aboutPhoto }}" alt="portrait" style="width:100%;height:100%;object-fit:cover;display:block;" />
+              </div>
+              <div style="flex:1;min-width:0;">
+                <label style="{{ uploadBtn }}"><input type="file" accept="image/*" onChange="{{ onAbout }}" style="display:none;" />Changer la photo</label>
+                <label class="nvlabel" style="margin-top:12px;">Nom affiché</label>
+                <input class="nvfield" value="{{ f_aboutName }}" onInput="{{ s_aboutName }}" />
+              </div>
+            </div>
+            <label class="nvlabel" style="margin-top:14px;">Texte de présentation</label>
+            <textarea class="nvfield" rows="7" onInput="{{ s_aboutText }}" style="resize:vertical;line-height:1.5;">{{ f_aboutText }}</textarea>
+            <label class="nvlabel" style="margin-top:14px;">Photos coulisses (sous « Ils m’ont fait confiance », page à propos)</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              <sc-for list="{{ backstageAdmin }}" as="b" hint-placeholder-count="0">
+                <div style="position:relative;width:72px;aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;">
+                  <img src="{{ b.src }}" alt="coulisses" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                  <button onClick="{{ b.remove }}" title="Retirer" style="position:absolute;top:2px;right:2px;width:20px;height:20px;border:none;border-radius:999px;background:rgba(17,17,17,.65);color:#fff;font-size:12px;line-height:1;cursor:pointer;">×</button>
+                </div>
+              </sc-for>
+              <label style="{{ uploadBtn }}"><input type="file" accept="image/*" onChange="{{ onBackstageAdd }}" style="display:none;" />Ajouter</label>
+            </div>
+          </section>
+
+          <section style="{{ card }}">
+            <div style="{{ cardTitle }}">Contact</div>
+            <label class="nvlabel">Titre de la page</label>
+            <input class="nvfield" value="{{ f_cHeading }}" onInput="{{ s_cHeading }}" />
+            <label class="nvlabel" style="margin-top:14px;">Intro</label>
+            <textarea class="nvfield" rows="3" onInput="{{ s_cIntro }}" style="resize:vertical;line-height:1.5;">{{ f_cIntro }}</textarea>
+            <label class="nvlabel" style="margin-top:14px;">Courriel</label>
+            <input class="nvfield" value="{{ f_cEmail }}" onInput="{{ s_cEmail }}" />
+            <label class="nvlabel" style="margin-top:14px;">Instagram</label>
+            <input class="nvfield" value="{{ f_cInsta }}" onInput="{{ s_cInsta }}" />
+          </section>
+
+          <section style="{{ card }}">
+            <div style="{{ cardTitle }};display:flex;justify-content:space-between;align-items:center;"><span>Prestations (page contact)</span><button onClick="{{ addService }}" style="{{ ghostBtnSm }}">+ prestation</button></div>
+            <sc-for list="{{ serviceList }}" as="sv" hint-placeholder-count="4">
+              <div style="border-top:1px solid #EEE;padding:10px 0;">
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <input class="nvfield" value="{{ sv.name }}" onInput="{{ sv.setName }}" style="flex:2;min-width:140px;" />
+                  <input class="nvfield" value="{{ sv.price }}" onInput="{{ sv.setPrice }}" placeholder="tarif" style="flex:1;min-width:100px;" />
+                  <button onClick="{{ sv.remove }}" style="{{ dangerBtnSm }}">✕</button>
+                </div>
+                <textarea class="nvfield" rows="2" onInput="{{ sv.setDesc }}" placeholder="Description courte…" style="margin-top:6px;resize:vertical;line-height:1.45;font-size:13px;">{{ sv.desc }}</textarea>
+              </div>
+            </sc-for>
+          </section>
+        </div>
+      </sc-if>
+
+      <!-- ===== GALERIES ===== -->
+      <sc-if value="{{ isGalleries }}">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;">
+          <button onClick="{{ addGallery }}" style="{{ primaryBtn }}">+ Nouvelle galerie publique</button>
+          <button onClick="{{ scanAll }}" style="{{ ghostBtn }}">⟳ Scanner les visages manquants</button>
+        </div>
+        <sc-for list="{{ galleryList }}" as="g" hint-placeholder-count="4">
+          <section style="{{ card }};margin-bottom:16px;">
+            <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start;justify-content:space-between;">
+              <div style="flex:1;min-width:200px;">
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                  <input class="nvfield" value="{{ g.name }}" onInput="{{ g.rename }}" style="max-width:240px;font-size:16px;" />
+                  <span style="{{ g.tagStyle }}">{{ g.tag }}</span>
+                  <sc-if value="{{ g.faceSearch }}"><span style="font-size:11px;color:#111;background:#F2C13C;padding:3px 8px;border-radius:2px;">recherche faciale</span></sc-if>
+                </div>
+                <input class="nvfield" value="{{ g.desc }}" onInput="{{ g.setDesc }}" style="margin-top:8px;font-size:13px;color:#5A5A5A;" />
+              </div>
+              <div style="display:flex;gap:6px;flex:none;align-items:center;">
+                <span style="font-size:12px;color:#9A9A9A;">{{ g.scanLabel }}</span>
+                <button onClick="{{ g.toggleFace }}" style="{{ g.faceBtn }}">{{ g.faceBtnLabel }}</button>
+                <button onClick="{{ g.remove }}" style="{{ dangerBtn }}">supprimer</button>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:14px;">
+              <sc-for list="{{ g.photos }}" as="p" hint-placeholder-count="6">
+                <div draggable="true" onDragStart="{{ p.dragStart }}" onDragOver="{{ p.dragOver }}" onDrop="{{ p.drop }}" title="Glisser pour réordonner" style="position:relative;aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;cursor:grab;{{ p.ring }}">
+                  <img src="{{ p.src }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                  <span style="{{ p.scanBadge }}" title="{{ p.scanTitle }}">{{ p.scanIcon }}</span>
+                  <div style="position:absolute;left:0;right:0;bottom:0;display:flex;background:rgba(17,17,17,.55);">
+                    <button onClick="{{ p.makeCover }}" title="Couverture" style="flex:1;border:none;background:none;color:#fff;font-size:11px;padding:5px 0;cursor:pointer;">{{ p.coverIcon }}</button>
+                    <button onClick="{{ p.remove }}" title="Retirer" style="flex:1;border:none;background:none;color:#fff;font-size:12px;padding:5px 0;cursor:pointer;border-left:1px solid rgba(255,255,255,.25);">✕</button>
+                  </div>
+                </div>
+              </sc-for>
+              <label style="aspect-ratio:1;border:1.5px dashed #D0D0D0;border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:#9A9A9A;font-size:12px;text-align:center;padding:6px;">
+                <input type="file" accept="image/*" multiple onChange="{{ g.addPhotos }}" style="display:none;" />
+                <span style="font-size:20px;">＋</span>ajouter<br>+ scan
+              </label>
+            </div>
+          </section>
+        </sc-for>
+      </sc-if>
+
+      <!-- ===== CLIENTS ===== -->
+      <sc-if value="{{ isClients }}">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px;">
+          <sc-for list="{{ clientTabs }}" as="ct" hint-placeholder-count="2">
+            <button onClick="{{ ct.go }}" style="{{ ct.style }}">{{ ct.name }}</button>
+          </sc-for>
+          <button onClick="{{ addClient }}" style="{{ ghostBtnSm }};border-radius:99px;padding:8px 14px;font-size:13px;">+ nouveau client</button>
+          <sc-if value="{{ hasArchived }}"><button onClick="{{ toggleArchived }}" style="{{ archToggle }}">{{ archToggleLabel }}</button></sc-if>
+        </div>
+        <sc-if value="{{ noClients }}"><div style="{{ card }};text-align:center;color:#9A9A9A;font-size:14px;padding:40px;">Aucun client pour l'instant. Créez le premier avec « + nouveau client ».</div></sc-if>
+        <sc-for list="{{ clientList }}" as="c" hint-placeholder-count="1">
+          <div>
+            <div style="display:grid;grid-template-columns:{{ twoCol }};gap:16px;align-items:start;">
+              <section style="{{ card }}">
+                <div style="{{ cardTitle }}">Informations & accès</div>
+                <label class="nvlabel">Nom</label>
+                <input class="nvfield" value="{{ c.name }}" onInput="{{ c.setName }}" />
+                <label class="nvlabel" style="margin-top:12px;">Courriel (identifiant)</label>
+                <input class="nvfield" value="{{ c.email }}" onInput="{{ c.setEmail }}" />
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
+                  <div>
+                    <label class="nvlabel">Code d'accès</label>
+                    <input class="nvfield" value="{{ c.password }}" onInput="{{ c.setPassword }}" />
+                  </div>
+                  <div>
+                    <label class="nvlabel">Limite de likes</label>
+                    <input class="nvfield" type="number" value="{{ c.likeLimit }}" onInput="{{ c.setLimit }}" />
+                  </div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;">
+                  <span style="{{ c.visitChip }}">{{ c.visitLabel }}</span>
+                  <span style="{{ c.sentChip }}">{{ c.sentLabel }}</span>
+                  <sc-if value="{{ c.isArchived }}"><span style="font-size:12px;padding:5px 10px;border-radius:2px;background:#F1F1EF;color:#9A9A9A;">archivé</span></sc-if>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;border-top:1px solid #EEE;padding-top:14px;">
+                  <button onClick="{{ c.copyLink }}" style="{{ ghostBtnSm }}">{{ c.linkLabel }}</button>
+                  <button onClick="{{ c.toggleDl }}" style="{{ c.dlBtn }}">{{ c.dlLabel }}</button>
+                </div>
+                <p style="font-size:12px;color:#9A9A9A;line-height:1.5;margin:8px 0 0;">Le lien connecte le client directement, sans saisir ses identifiants. Activez le téléchargement HD une fois la facture réglée.</p>
+              </section>
+
+              <section style="{{ card }}">
+                <div style="{{ cardTitle }};display:flex;justify-content:space-between;align-items:center;"><span>Factures</span><button onClick="{{ c.addInvoice }}" style="{{ ghostBtnSm }}">+ facture</button></div>
+                <sc-for list="{{ c.invoices }}" as="inv" hint-placeholder-count="2">
+                  <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 0;border-top:1px solid #EEE;">
+                    <input class="nvfield" value="{{ inv.label }}" onInput="{{ inv.setLabel }}" style="flex:2;min-width:140px;" />
+                    <input class="nvfield" value="{{ inv.amount }}" onInput="{{ inv.setAmount }}" style="flex:1;min-width:80px;" />
+                    <button onClick="{{ inv.toggle }}" style="{{ inv.badge }}">{{ inv.status }}</button>
+                    <button onClick="{{ inv.remove }}" style="{{ dangerBtnSm }}">✕</button>
+                  </div>
+                </sc-for>
+                <sc-if value="{{ c.noInvoices }}"><div style="font-size:13px;color:#9A9A9A;">Aucune facture pour ce client.</div></sc-if>
+              </section>
+            </div>
+
+            <section style="{{ card }};margin-top:16px;">
+            <div style="{{ cardTitle }};display:flex;justify-content:space-between;align-items:center;"><span>Galeries privées</span><button onClick="{{ c.addGallery }}" style="{{ ghostBtnSm }}">+ galerie privée</button></div>
+            <sc-for list="{{ c.galleries }}" as="g" hint-placeholder-count="1">
+              <div style="border:1px solid #EEE;border-radius:2px;padding:12px;margin-bottom:10px;">
+                <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;">
+                  <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex:1;min-width:180px;">
+                    <input class="nvfield" value="{{ g.name }}" onInput="{{ g.rename }}" style="max-width:220px;font-size:15px;" />
+                    <sc-if value="{{ g.faceSearch }}"><span style="font-size:11px;color:#111;background:#F2C13C;padding:3px 8px;border-radius:2px;">recherche faciale</span></sc-if>
+                  </div>
+                  <div style="display:flex;gap:6px;flex:none;align-items:center;">
+                    <span style="font-size:12px;color:#9A9A9A;">{{ g.scanLabel }}</span>
+                    <button onClick="{{ g.toggleFace }}" style="{{ g.faceBtn }}">{{ g.faceBtnLabel }}</button>
+                    <button onClick="{{ g.remove }}" style="{{ dangerBtnSm }}">✕</button>
+                  </div>
+                </div>
+                <input class="nvfield" value="{{ g.desc }}" onInput="{{ g.setDesc }}" style="margin-top:8px;font-size:13px;color:#5A5A5A;" />
+                <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px;">
+                  <label class="nvlabel" style="margin:0;flex:none;">Disponible jusqu'au</label>
+                  <input class="nvfield" type="date" value="{{ g.expiresAt }}" onInput="{{ g.setExpires }}" style="max-width:170px;" />
+                  <span style="font-size:12px;color:#9A9A9A;">♥ {{ g.likedCount }} aimée(s)</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-top:12px;">
+                  <sc-for list="{{ g.photos }}" as="p" hint-placeholder-count="4">
+                    <div draggable="true" onDragStart="{{ p.dragStart }}" onDragOver="{{ p.dragOver }}" onDrop="{{ p.drop }}" title="Glisser pour réordonner" style="position:relative;aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;cursor:grab;{{ p.ring }}">
+                      <img src="{{ p.src }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                      <span style="{{ p.scanBadge }}" title="{{ p.scanTitle }}">{{ p.scanIcon }}</span>
+                      <span style="{{ p.likeBadge }}" title="Aimée par le client">♥</span>
+                      <div style="position:absolute;left:0;right:0;bottom:0;display:flex;background:rgba(17,17,17,.55);">
+                        <button onClick="{{ p.makeCover }}" title="Couverture" style="flex:1;border:none;background:none;color:#fff;font-size:10px;padding:4px 0;cursor:pointer;">{{ p.coverIcon }}</button>
+                        <button onClick="{{ p.remove }}" title="Retirer" style="flex:1;border:none;background:none;color:#fff;font-size:11px;padding:4px 0;cursor:pointer;border-left:1px solid rgba(255,255,255,.25);">✕</button>
+                      </div>
+                    </div>
+                  </sc-for>
+                  <label style="aspect-ratio:1;border:1.5px dashed #D0D0D0;border-radius:2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;color:#9A9A9A;font-size:11px;text-align:center;padding:4px;">
+                    <input type="file" accept="image/*" multiple onChange="{{ g.addPhotos }}" style="display:none;" />
+                    <span style="font-size:18px;">＋</span>ajouter
+                  </label>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ c.noGalleries }}"><div style="font-size:13px;color:#9A9A9A;">Aucune galerie privée. Créez-en une avec « + galerie privée ».</div></sc-if>
+            </section>
+
+            <section style="{{ card }};margin-top:16px;">
+            <div style="{{ cardTitle }}">Sélection du client — {{ c.selCount }} / {{ c.likeLimit }} photo(s)</div>
+            <sc-if value="{{ c.hasSel }}">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px;">
+              <sc-for list="{{ c.selected }}" as="p" hint-placeholder-count="4">
+                <div style="aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;"><img src="{{ p.src }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" /></div>
+              </sc-for>
+            </div>
+            </sc-if>
+            <sc-if value="{{ c.noSel }}"><div style="font-size:13px;color:#9A9A9A;">Aucune photo sélectionnée pour l'instant.</div></sc-if>
+            </section>
+
+            <div style="margin-top:16px;display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;">
+              <button onClick="{{ c.toggleArchive }}" style="{{ ghostBtn }}">{{ c.archiveLabel }}</button>
+              <button onClick="{{ c.remove }}" style="{{ dangerBtn }}">supprimer ce client</button>
+            </div>
+          </div>
+        </sc-for>
+      </sc-if>
+
+      <!-- ===== MESSAGES ===== -->
+      <sc-if value="{{ isMessages }}">
+        <sc-if value="{{ hasMessages }}">
+        <sc-for list="{{ messageList }}" as="m" hint-placeholder-count="2">
+          <section style="{{ card }};margin-bottom:12px;">
+            <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between;">
+              <div><strong style="font-size:15px;">{{ m.name }}</strong> <span style="font-size:13px;color:#9A9A9A;">· {{ m.email }}</span></div>
+              <div style="display:flex;gap:8px;align-items:center;"><span style="font-size:12px;color:#9A9A9A;">{{ m.date }} · {{ m.type }}</span><button onClick="{{ m.remove }}" style="{{ dangerBtnSm }}">✕</button></div>
+            </div>
+            <p style="margin:10px 0 0;font-size:14px;line-height:1.55;color:#333;white-space:pre-line;">{{ m.body }}</p>
+          </section>
+        </sc-for>
+        </sc-if>
+        <sc-if value="{{ noMessages }}"><div style="{{ card }};text-align:center;color:#9A9A9A;font-size:14px;padding:40px;">Aucun message pour l'instant. Les demandes envoyées depuis la page Contact apparaîtront ici.</div></sc-if>
+      </sc-if>
+
+      <!-- ===== RÉGLAGES ===== -->
+      <sc-if value="{{ isSettings }}">
+        <section style="{{ card }};max-width:520px;">
+          <div style="{{ cardTitle }}">Sélection & reconnaissance faciale</div>
+          <label class="nvlabel">Limite de likes par défaut (20 conseillé — ajustable client par client dans l'onglet Clients)</label>
+          <input class="nvfield" type="number" value="{{ f_likeLimit }}" onInput="{{ s_likeLimit }}" />
+          <label class="nvlabel" style="margin-top:14px;">Seuil de correspondance faciale — {{ f_threshold }} <span style="color:#B5B5B5;">(plus bas = plus strict)</span></label>
+          <input type="range" min="0.40" max="0.65" step="0.01" value="{{ f_threshold }}" onInput="{{ s_threshold }}" style="width:100%;accent-color:#F2C13C;" />
+          <label class="nvlabel" style="margin-top:14px;">Code administrateur — stocké chiffré, jamais en clair</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <input class="nvfield" type="password" placeholder="nouveau code" value="{{ f_newPin }}" onInput="{{ s_newPin }}" style="max-width:180px;" />
+            <button onClick="{{ savePin }}" style="{{ ghostBtn }}">{{ pinSaveLabel }}</button>
+          </div>
+          <p style="font-size:12px;color:#9A9A9A;line-height:1.5;margin:6px 0 0;">En cas d'oubli, « Réinitialiser le site » (ci-dessous) restaure le code 1234 — avec le contenu de démonstration.</p>
+          <label class="nvlabel" style="margin-top:14px;">Filigrane sur les galeries clients</label>
+          <button onClick="{{ toggleWm }}" style="{{ wmBtn }}">{{ wmLabel }}</button>
+          <p style="font-size:12px;color:#9A9A9A;line-height:1.5;margin:8px 0 0;">Affiche votre nom en surimpression sur les photos pendant le visionnage. Les fichiers finaux livrés ne sont pas modifiés.</p>
+        </section>
+        <section style="{{ card }};max-width:520px;margin-top:16px;">
+          <div style="{{ cardTitle }}">Données</div>
+          <p style="font-size:13px;color:#5A5A5A;line-height:1.5;margin:0 0 12px;">Le site enregistre tout le contenu, les galeries, les clients et les empreintes faciales dans ce navigateur. Réinitialiser restaure le contenu de démonstration.</p>
+          <button onClick="{{ resetSite }}" style="{{ dangerBtn }}">Réinitialiser le site</button>
+        </section>
+      </sc-if>
+
+    </main>
+  </div>
+  </sc-if>
+
+  <!-- SCAN OVERLAY -->
+  <sc-if value="{{ scanning }}">
+  <div style="position:fixed;inset:0;z-index:90;background:rgba(17,17,17,.55);display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div style="background:#fff;border-radius:4px;padding:28px;width:100%;max-width:360px;text-align:center;">
+      <div style="display:inline-block;width:30px;height:30px;border:2px solid #E0E0E0;border-top-color:#111;border-radius:999px;animation:nvspin .8s linear infinite;"></div>
+      <p style="margin:16px 0 0;font-size:14px;color:#333;">{{ scanMsg }}</p>
+      <div style="margin-top:10px;height:5px;background:#EEE;border-radius:99px;overflow:hidden;"><div style="height:100%;width:{{ scanPct }};background:#F2C13C;transition:width .2s;"></div></div>
+    </div>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    ready: false, tick: 0, mobile: typeof window !== 'undefined' && window.innerWidth < 900,
+    locked: true, pinInput: '', pinError: false,
+    tab: 'stats', clientTab: null, showArchived: false, copiedLinkId: null, newPin: '', pinSaved: false,
+    scanning: false, scanMsg: '', scanPct: '0%',
+    engine: 'idle',
+    syncStatus: (typeof window !== 'undefined' && window.NVStore && window.NVStore.syncStatus) ? window.NVStore.syncStatus() : 'local'
+  };
+
+  componentDidMount() {
+    this._wait = setInterval(() => {
+      if (window.NVStore) {
+        clearInterval(this._wait);
+        const unlocked = window.NVAuth.isAdmin();
+        this.setState({ ready: true, locked: !unlocked });
+        this._unsub = window.NVStore.subscribe(() => this.setState(s => ({ tick: s.tick + 1 })));
+        if (window.NVStore.onSyncStatus) {
+          this.setState({ syncStatus: window.NVStore.syncStatus() });
+          this._unstatus = window.NVStore.onSyncStatus((st) => this.setState({ syncStatus: st }));
+        }
+      }
+    }, 30);
+    this._r = () => this.setState({ mobile: window.innerWidth < 900 });
+    window.addEventListener('resize', this._r);
+    if (window.NVFace) { this._ueng = window.NVFace.progress((p) => this.setState({ engine: p.ready ? 'ready' : p.stage })); }
+  }
+  componentWillUnmount() {
+    clearInterval(this._wait);
+    if (this._unsub) this._unsub();
+    if (this._unstatus) this._unstatus();
+    if (this._ueng) this._ueng();
+    window.removeEventListener('resize', this._r);
+  }
+
+  // ---- image helpers ----
+  downscale(file, max, q) {
+    return new Promise((resolve) => {
+      const fr = new FileReader();
+      fr.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.naturalWidth, h = img.naturalHeight;
+          const sc = Math.min(1, max / Math.max(w, h));
+          w = Math.round(w * sc); h = Math.round(h * sc);
+          const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+          cv.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve({ url: cv.toDataURL('image/jpeg', q || 0.82), img: img });
+        };
+        img.src = fr.result;
+      };
+      fr.readAsDataURL(file);
+    });
+  }
+  loadImg(src) { return new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.src = src; }); }
+  scanCanvas(img, max) {
+    const sc = Math.min(1, (max || 640) / Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height));
+    if (sc >= 1) return img;
+    const w = Math.round((img.naturalWidth || img.width) * sc), h = Math.round((img.naturalHeight || img.height) * sc);
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    cv.getContext('2d').drawImage(img, 0, 0, w, h);
+    return cv;
+  }
+
+  async setImageField(file, apply) {
+    // 2560 px (agréable sur écran 4K) quand le stockage externe est branché ; 1600 px en local (quota navigateur).
+    const max = (window.NVStorage && window.NVStorage.enabled && window.NVStorage.enabled()) ? 2560 : 1600;
+    const { url } = await this.downscale(file, max, 0.85);
+    let finalUrl = url;
+    try { finalUrl = await window.NVStorage.upload(url, file.name); }
+    catch (e) { console.warn('Upload distant échoué, conservation locale.', e); }
+    window.NVStore.update(apply.bind(null, finalUrl));
+  }
+
+  async addPhotosTo(galleryId, fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    this.setState({ scanning: true, scanMsg: 'Préparation…', scanPct: '0%' });
+    try {
+      for (let i = 0; i < files.length; i++) {
+        this.setState({ scanMsg: 'Image ' + (i + 1) + ' / ' + files.length + ' — analyse des visages…', scanPct: Math.round(i / files.length * 100) + '%' });
+        // 2560 px (écran 4K) avec stockage externe ; 1200 px en local pour ne pas saturer le navigateur.
+        const maxSide = (window.NVStorage && window.NVStorage.enabled && window.NVStorage.enabled()) ? 2560 : 1200;
+        const { url } = await this.downscale(files[i], maxSide, 0.85);
+        const img = await this.loadImg(url);
+        let faces = [];
+        try { faces = await window.NVFace.scanImage(this.scanCanvas(img, 640)); } catch (e) { faces = []; }
+        let src = url;
+        if (window.NVStorage && window.NVStorage.enabled()) {
+          this.setState({ scanMsg: 'Image ' + (i + 1) + ' / ' + files.length + ' — téléversement…' });
+          try { src = await window.NVStorage.upload(url, files[i].name); }
+          catch (e) { console.warn('Upload distant échoué, conservation locale.', e); src = url; }
+        }
+        window.NVStore.update((s) => {
+          const id = window.NVStore.uid('ph');
+          s.photos[id] = { id, gallery: galleryId, file: null, src, faces, scanned: true, uploadedAt: '2026' };
+          const g = s.galleries.find(x => x.id === galleryId);
+          g.photoIds.push(id); if (!g.coverId) g.coverId = id;
+        });
+      }
+      this.setState({ scanPct: '100%' });
+    } finally {
+      setTimeout(() => this.setState({ scanning: false }), 300);
+    }
+  }
+
+  async scanMissing() {
+    const s = window.NVStore.get();
+    const todo = Object.values(s.photos).filter(p => !p.scanned);
+    if (!todo.length) { this.setState({ scanning: true, scanMsg: 'Tous les visages sont déjà analysés ✓', scanPct: '100%' }); setTimeout(() => this.setState({ scanning: false }), 900); return; }
+    this.setState({ scanning: true, scanMsg: 'Initialisation du moteur facial…', scanPct: '0%' });
+    await window.NVFace.ready();
+    for (let i = 0; i < todo.length; i++) {
+      this.setState({ scanMsg: 'Analyse ' + (i + 1) + ' / ' + todo.length + '…', scanPct: Math.round(i / todo.length * 100) + '%' });
+      const p = todo[i];
+      try { const img = await this.loadImg(window.NVStore.resolveSrc(p)); const faces = await window.NVFace.scanImage(this.scanCanvas(img, 640));
+        window.NVStore.update((st) => { if (st.photos[p.id]) { st.photos[p.id].faces = faces; st.photos[p.id].scanned = true; } });
+      } catch (e) {}
+    }
+    this.setState({ scanPct: '100%' });
+    setTimeout(() => this.setState({ scanning: false }), 400);
+  }
+
+  upd(fn) { window.NVStore.update(fn); }
+
+  renderVals() {
+    const mobile = this.state.mobile;
+    if (!this.state.ready || !window.NVStore) {
+      return { locked: false, unlocked: false, scanning: false };
+    }
+    const s = window.NVStore.get();
+    const U = (fn) => () => this.upd(fn);
+    const onInput = (fn) => (e) => { const v = e.target.value; this.upd((st) => fn(st, v)); };
+
+    // ---- tabs ----
+    const tabDefs = [
+      { id: 'stats', label: 'Aperçu' },
+      { id: 'content', label: 'Contenu' },
+      { id: 'galleries', label: 'Galeries' },
+      { id: 'clients', label: 'Clients' },
+      { id: 'messages', label: 'Messages' },
+      { id: 'settings', label: 'Réglages' }
+    ];
+    const tab = this.state.tab;
+    const msgCount = s.messages.length;
+    const SYNC = {
+      local:    { color: '#C9C9C9', label: 'Mode démo (local)', dot: '' },
+      syncing:  { color: '#F2C13C', label: 'Enregistrement…', dot: '' },
+      saved:    { color: '#3FA86A', label: 'Synchronisé', dot: '' },
+      offline:  { color: '#C0392B', label: 'Hors ligne — reprise auto', dot: '' },
+      conflict: { color: '#E08A1E', label: 'Modif. distante détectée', dot: '' },
+      quota:    { color: '#C0392B', label: 'Stockage local plein', dot: '' }
+    };
+    const syncMeta = SYNC[this.state.syncStatus] || SYNC.local;
+    const tabs = tabDefs.map(t => ({
+      label: t.label,
+      go: () => this.setState({ tab: t.id }),
+      style: 'display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%;text-align:left;border:none;background:' + (tab === t.id ? '#111' : 'transparent') + ';color:' + (tab === t.id ? '#fff' : '#444') + ';cursor:pointer;font-family:inherit;font-size:14px;padding:10px 12px;border-radius:2px;white-space:nowrap;',
+      badge: t.id === 'messages' && msgCount ? msgCount : '',
+      badgeStyle: (t.id === 'messages' && msgCount) ? ('font-size:11px;background:#F2C13C;color:#111;border-radius:99px;padding:1px 7px;') : 'display:none;'
+    }));
+    const titles = {
+      stats: ['Aperçu', 'L\u2019essentiel en un coup d\u2019\u0153il — activité, likes et factures.'],
+      content: ['Contenu du site', 'Identité, accueil, à propos, contact et prestations — tout est éditable.'],
+      galleries: ['Galeries publiques', 'Vos galeries de portfolio — portrait, paysage, sport… (les galeries clients sont dans l’onglet Clients).'],
+      clients: ['Espaces clients', 'Accès, galeries privées, sélections et factures — tout par client.'],
+      messages: ['Messages reçus', 'Demandes envoyées depuis la page contact.'],
+      settings: ['Réglages', 'Limites, reconnaissance faciale et données.']
+    };
+
+    // ---- engine pill ----
+    const eng = this.state.engine;
+    const engineMap = { idle: ['Moteur facial prêt à charger', '#9A9A9A'], 'loading-engine': ['Chargement du moteur…', '#E0A100'], 'loading-models': ['Chargement des modèles…', '#E0A100'], ready: ['Moteur facial actif', '#1F8A5B'], error: ['Moteur indisponible', '#C0392B'] };
+    const em = engineMap[eng] || engineMap.idle;
+
+    // ---- styles ----
+    const card = 'background:#fff;border:1px solid #E6E6E6;border-radius:3px;padding:18px;';
+    const cardTitle = 'font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#9A9A9A;margin-bottom:12px;';
+    const primaryBtn = 'border:none;background:#111;color:#fff;border-radius:2px;padding:11px 16px;font-size:13px;cursor:pointer;font-family:inherit;';
+    const ghostBtn = 'border:1px solid #E0E0E0;background:#fff;color:#333;border-radius:2px;padding:11px 16px;font-size:13px;cursor:pointer;font-family:inherit;';
+    const ghostBtnSm = 'border:1px solid #E0E0E0;background:#fff;color:#333;border-radius:2px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;';
+    const dangerBtn = 'border:1px solid #E7C9C4;background:#fff;color:#C0392B;border-radius:2px;padding:9px 14px;font-size:12px;cursor:pointer;font-family:inherit;';
+    const dangerBtnSm = 'border:none;background:#F3E3E0;color:#C0392B;border-radius:2px;width:28px;height:28px;font-size:12px;cursor:pointer;flex:none;';
+    const uploadBtn = 'display:inline-block;border:1px solid #E0E0E0;background:#FAFAFA;color:#333;border-radius:2px;padding:9px 14px;font-size:13px;cursor:pointer;';
+
+    // ---- diaporama d'accueil (auto = toutes les photos publiques / manuel = sélection ordonnée) ----
+    const slideMode = s.hero.slideshow === 'manual' ? 'manual' : 'auto';
+    const slideIds = s.hero.slideshowIds || [];
+    const segBtn = (on) => 'border:1px solid ' + (on ? '#111' : '#E0E0E0') + ';background:' + (on ? '#111' : '#fff') + ';color:' + (on ? '#fff' : '#333') + ';border-radius:2px;padding:8px 13px;font-size:12px;cursor:pointer;font-family:inherit;';
+    const pubPhotos = [];
+    s.galleries.filter(g => !g.private).forEach(g => g.photoIds.forEach(pid => {
+      const p = s.photos[pid];
+      if (p && !pubPhotos.some(x => x.id === pid)) pubPhotos.push(p);
+    }));
+    const slidePhotos = pubPhotos.map(p => {
+      const idx = slideIds.indexOf(p.id);
+      return {
+        src: window.NVStore.resolveSrc(p),
+        num: idx >= 0 ? String(idx + 1) : '',
+        title: idx >= 0 ? 'Position ' + (idx + 1) + ' — cliquer pour retirer' : 'Cliquer pour ajouter au diaporama',
+        numStyle: idx >= 0 ? 'position:absolute;top:4px;left:4px;min-width:20px;height:20px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:11px;background:#F2C13C;color:#111;padding:0 4px;' : 'display:none;',
+        ring: idx >= 0 ? 'box-shadow:0 0 0 2px #F2C13C inset;' : 'opacity:.55;',
+        toggle: U((st) => {
+          if (!st.hero.slideshowIds) st.hero.slideshowIds = [];
+          const a = st.hero.slideshowIds; const i = a.indexOf(p.id);
+          if (i >= 0) a.splice(i, 1); else a.push(p.id);
+        })
+      };
+    });
+
+    // ---- content fields ----
+    const content = {
+      slideIsAuto: slideMode === 'auto', slideIsManual: slideMode === 'manual',
+      slideAuto: U((st) => { st.hero.slideshow = 'auto'; }),
+      slideManual: U((st) => { st.hero.slideshow = 'manual'; if (!st.hero.slideshowIds) st.hero.slideshowIds = []; }),
+      slideAutoBtn: segBtn(slideMode === 'auto'),
+      slideManualBtn: segBtn(slideMode === 'manual'),
+      slideCount: slideIds.length ? slideIds.length + ' photo(s) sélectionnée(s).' : 'Aucune photo sélectionnée — le diaporama restera sur l\u2019image d\u2019ouverture.',
+      slidePhotos,
+      f_brandName: s.brand.name, s_brandName: onInput((st, v) => st.brand.name = v),
+      f_brandRole: s.brand.role, s_brandRole: onInput((st, v) => st.brand.role = v),
+      f_brandLoc: s.brand.location, s_brandLoc: onInput((st, v) => st.brand.location = v),
+      heroSrc: window.NVStore.resolveSrc(s.hero.src),
+      onHero: (e) => { const f = e.target.files[0]; if (f) this.setImageField(f, (url, st) => st.hero.src = url); },
+      f_heroCap: s.hero.caption, s_heroCap: onInput((st, v) => st.hero.caption = v),
+      f_homeMeta: s.home.metaLabel, s_homeMeta: onInput((st, v) => st.home.metaLabel = v),
+      aboutPhoto: window.NVStore.resolveSrc(s.about.photo),
+      onAbout: (e) => { const f = e.target.files[0]; if (f) this.setImageField(f, (url, st) => st.about.photo = url); },
+      backstageAdmin: (s.about.backstage || []).map((p, i) => ({ src: window.NVStore.resolveSrc(p), remove: () => this.upd((st) => { (st.about.backstage = st.about.backstage || []).splice(i, 1); }) })),
+      onBackstageAdd: (e) => { const f = e.target.files[0]; if (f) this.setImageField(f, (url, st) => { st.about.backstage = st.about.backstage || []; st.about.backstage.push(url); }); e.target.value = ''; },
+      f_aboutName: s.about.name, s_aboutName: onInput((st, v) => st.about.name = v),
+      f_aboutText: s.about.text, s_aboutText: onInput((st, v) => st.about.text = v),
+      f_cHeading: s.contact.heading, s_cHeading: onInput((st, v) => st.contact.heading = v),
+      f_cIntro: s.contact.intro, s_cIntro: onInput((st, v) => st.contact.intro = v),
+      f_cEmail: s.contact.email, s_cEmail: onInput((st, v) => st.contact.email = v),
+      f_cInsta: s.contact.instagram, s_cInsta: onInput((st, v) => st.contact.instagram = v)
+    };
+
+    // ---- galleries (constructeur de carte réutilisable : onglet Galeries + section Clients) ----
+    const mkGalleryCard = (g) => {
+      // Client propriétaire (galeries privées) — pour afficher les photos aimées.
+      const owner = g.private ? s.clients.find(x => x.id === g.clientId) : null;
+      const photos = g.photoIds.map(pid => {
+        const p = s.photos[pid];
+        const scanned = p && p.scanned;
+        const hasFace = p && p.faces && p.faces.length > 0;
+        const liked = !!(owner && owner.likes && owner.likes[pid]);
+        return {
+          // Réorganisation par glisser-déposer.
+          dragStart: (e) => { this._drag = { gid: g.id, pid }; try { e.dataTransfer.effectAllowed = 'move'; } catch (x) {} },
+          dragOver: (e) => { e.preventDefault(); try { e.dataTransfer.dropEffect = 'move'; } catch (x) {} },
+          drop: (e) => {
+            e.preventDefault();
+            const d = this._drag; this._drag = null;
+            if (!d || d.gid !== g.id || d.pid === pid) return;
+            this.upd((st) => {
+              const gg = st.galleries.find(x => x.id === g.id);
+              const from = gg.photoIds.indexOf(d.pid), to = gg.photoIds.indexOf(pid);
+              if (from < 0 || to < 0) return;
+              gg.photoIds.splice(from, 1);
+              gg.photoIds.splice(to, 0, d.pid);
+            });
+          },
+          likeBadge: liked
+            ? 'position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:11px;background:#F2C13C;color:#111;'
+            : 'display:none;',
+          src: window.NVStore.resolveSrc(p),
+          ring: g.coverId === pid ? 'box-shadow:0 0 0 2px #F2C13C inset;' : '',
+          scanIcon: !scanned ? '○' : (hasFace ? '☺' : '–'),
+          scanTitle: !scanned ? 'Non analysé' : (hasFace ? (p.faces.length + ' visage(s)') : 'Aucun visage'),
+          scanBadge: 'position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:12px;background:' + (!scanned ? 'rgba(17,17,17,.5)' : (hasFace ? '#F2C13C' : 'rgba(17,17,17,.5)')) + ';color:' + (hasFace ? '#111' : '#fff') + ';',
+          coverIcon: g.coverId === pid ? '★ couv.' : '☆ couv.',
+          makeCover: U((st) => { st.galleries.find(x => x.id === g.id).coverId = pid; }),
+          remove: U((st) => { const gg = st.galleries.find(x => x.id === g.id); gg.photoIds = gg.photoIds.filter(x => x !== pid); if (gg.coverId === pid) gg.coverId = gg.photoIds[0] || null; delete st.photos[pid]; })
+        };
+      });
+      const total = g.photoIds.length;
+      const scannedN = g.photoIds.filter(pid => s.photos[pid] && s.photos[pid].scanned).length;
+      return {
+        name: g.name, rename: onInput((st, v) => st.galleries.find(x => x.id === g.id).name = v),
+        desc: g.desc, setDesc: onInput((st, v) => st.galleries.find(x => x.id === g.id).desc = v),
+        tag: g.private ? 'privée' : 'publique',
+        tagStyle: 'font-size:11px;padding:3px 8px;border-radius:2px;background:' + (g.private ? '#EFEAFB' : '#E8F0EA') + ';color:' + (g.private ? '#5B3FA8' : '#2F6B3F') + ';',
+        faceSearch: g.faceSearch,
+        faceBtn: 'border:1px solid #E0E0E0;background:' + (g.faceSearch ? '#111' : '#fff') + ';color:' + (g.faceSearch ? '#fff' : '#333') + ';border-radius:2px;padding:7px 11px;font-size:12px;cursor:pointer;font-family:inherit;',
+        faceBtnLabel: g.faceSearch ? 'recherche ✓' : 'activer recherche',
+        toggleFace: U((st) => { const gg = st.galleries.find(x => x.id === g.id); gg.faceSearch = !gg.faceSearch; }),
+        scanLabel: scannedN + '/' + total + ' analysées',
+        likedCount: owner ? g.photoIds.filter(pid => owner.likes && owner.likes[pid]).length : 0,
+        isPrivate: !!g.private,
+        expiresAt: g.expiresAt || '',
+        setExpires: onInput((st, v) => { const gg = st.galleries.find(x => x.id === g.id); if (v) gg.expiresAt = v; else delete gg.expiresAt; }),
+        photos,
+        addPhotos: (e) => this.addPhotosTo(g.id, e.target.files),
+        remove: () => { if (confirm('Supprimer la galerie « ' + g.name + ' » ?')) this.upd((st) => { g.photoIds.forEach(pid => delete st.photos[pid]); st.galleries = st.galleries.filter(x => x.id !== g.id); st.clients.forEach(c => { c.galleryIds = c.galleryIds.filter(id => id !== g.id); }); }); }
+      };
+    };
+    // Onglet Galeries : uniquement les galeries publiques (perso / portfolio).
+    const galleryList = s.galleries.filter(g => !g.private).map(mkGalleryCard);
+
+    // ---- clients : un onglet par client (archivage stocké dans settings, sans changement de schéma) ----
+    const archMap = s.settings.archivedClients || {};
+    const isArch = (c) => !!archMap[c.id];
+    const archivedList = s.clients.filter(isArch);
+    const visibleClients = this.state.showArchived ? s.clients.filter(c => !isArch(c)).concat(archivedList) : s.clients.filter(c => !isArch(c));
+    const activeClientId = visibleClients.some(c => c.id === this.state.clientTab) ? this.state.clientTab : (visibleClients[0] ? visibleClients[0].id : null);
+    const clientTabs = visibleClients.map(c => {
+      const active = c.id === activeClientId;
+      const arch = isArch(c);
+      return {
+        name: c.name + (arch ? ' ·' : ''),
+        go: () => this.setState({ clientTab: c.id }),
+        style: 'border:1px ' + (arch ? 'dashed' : 'solid') + ' ' + (active ? '#111' : (arch ? '#C9C9C9' : '#E0E0E0')) + ';background:' + (active ? '#111' : (arch ? 'transparent' : '#fff')) + ';color:' + (active ? '#fff' : (arch ? '#9A9A9A' : '#333')) + ';border-radius:99px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;'
+      };
+    });
+    const clientList = s.clients.filter(c => c.id === activeClientId).map(c => {
+      const selectedIds = Object.keys(c.likes).filter(k => c.likes[k]);
+      const selected = selectedIds.map(pid => ({ src: window.NVStore.resolveSrc(s.photos[pid]) })).filter(x => x.src);
+      // Galeries privées de ce client (édition complète, même carte que l'onglet Galeries).
+      const clientGalleries = s.galleries.filter(g => g.private && g.clientId === c.id).map(mkGalleryCard);
+      const invoices = c.invoices.map(inv => ({
+        label: inv.label, setLabel: onInput((st, v) => st.clients.find(x => x.id === c.id).invoices.find(y => y.id === inv.id).label = v),
+        amount: inv.amount, setAmount: onInput((st, v) => st.clients.find(x => x.id === c.id).invoices.find(y => y.id === inv.id).amount = v),
+        status: inv.status,
+        badge: 'border:none;border-radius:2px;padding:6px 11px;font-size:12px;cursor:pointer;font-family:inherit;flex:none;' + (inv.status === 'Payée' ? 'background:#E8F0EA;color:#2F6B3F;' : 'background:#FBF1D8;color:#7A610F;'),
+        toggle: U((st) => { const iv = st.clients.find(x => x.id === c.id).invoices.find(y => y.id === inv.id); iv.status = iv.status === 'Payée' ? 'À régler' : 'Payée'; }),
+        remove: U((st) => { const cc = st.clients.find(x => x.id === c.id); cc.invoices = cc.invoices.filter(y => y.id !== inv.id); })
+      }));
+      // Statistiques d'activité du client.
+      const fmt = (iso, withTime) => { const d = new Date(iso); if (isNaN(d)) return ''; return d.toLocaleDateString('fr-CA') + (withTime ? ' · ' + d.toLocaleTimeString('fr-CA', { hour: '2-digit', minute: '2-digit' }) : ''); };
+      const statChip = (on) => 'font-size:12px;padding:5px 10px;border-radius:2px;' + (on ? 'background:#E8F0EA;color:#2F6B3F;' : 'background:#F1F1EF;color:#9A9A9A;');
+      return {
+        visitLabel: c.lastVisit ? ('Dernière visite : ' + fmt(c.lastVisit, true)) : 'Jamais connecté',
+        visitChip: statChip(!!c.lastVisit),
+        sentLabel: c.selectionSentAt ? ('Sélection validée le ' + fmt(c.selectionSentAt)) : 'Sélection non validée',
+        sentChip: statChip(!!c.selectionSentAt),
+        name: c.name, setName: onInput((st, v) => st.clients.find(x => x.id === c.id).name = v),
+        email: c.email, setEmail: onInput((st, v) => st.clients.find(x => x.id === c.id).email = v),
+        password: c.password, setPassword: onInput((st, v) => st.clients.find(x => x.id === c.id).password = v),
+        likeLimit: c.likeLimit, setLimit: onInput((st, v) => st.clients.find(x => x.id === c.id).likeLimit = parseInt(v) || 0),
+        galleries: clientGalleries, noGalleries: clientGalleries.length === 0,
+        addGallery: U((st) => { const id = window.NVStore.uid('g'); st.galleries.push({ id, slug: 'prive-' + id.slice(-4), name: 'Nouvelle galerie privée', desc: '', photoIds: [], coverId: null, private: true, clientId: c.id, faceSearch: false }); const cc = st.clients.find(x => x.id === c.id); if (!cc.galleryIds.includes(id)) cc.galleryIds.push(id); }),
+        selected, selCount: selected.length, hasSel: selected.length > 0, noSel: selected.length === 0,
+        invoices, noInvoices: invoices.length === 0,
+        isArchived: isArch(c),
+        archiveLabel: isArch(c) ? 'désarchiver ce client' : 'archiver ce client',
+        toggleArchive: () => {
+          const wasArch = isArch(c);
+          this.upd((st) => {
+            if (!st.settings.archivedClients) st.settings.archivedClients = {};
+            if (wasArch) delete st.settings.archivedClients[c.id];
+            else st.settings.archivedClients[c.id] = true;
+          });
+          // Si on archive le client affiché sans voir les archivés, on bascule sur le suivant.
+          if (!wasArch && !this.state.showArchived) {
+            const next = s.clients.find(x => x.id !== c.id && !archMap[x.id]);
+            this.setState({ clientTab: next ? next.id : null });
+          }
+        },
+        // Lien d'accès direct : identifiants encodés dans l'URL, connexion automatique.
+        linkLabel: this.state.copiedLinkId === c.id ? 'lien copié ✓' : '⎘ copier le lien d\u2019accès',
+        copyLink: () => {
+          try {
+            const tok = btoa(unescape(encodeURIComponent(c.email + ':' + c.password))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+            const url = new URL('Client.dc.html', location.href).href + '?acces=' + tok;
+            if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url);
+            this.setState({ copiedLinkId: c.id });
+            clearTimeout(this._linkT); this._linkT = setTimeout(() => this.setState({ copiedLinkId: null }), 2200);
+          } catch (e) {}
+        },
+        // Téléchargement HD (à activer une fois la facture réglée).
+        dlLabel: c.canDownload ? 'téléchargement HD activé ✓' : 'téléchargement HD désactivé',
+        dlBtn: 'border:1px solid #E0E0E0;border-radius:2px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;' + (c.canDownload ? 'background:#111;color:#fff;' : 'background:#fff;color:#333;'),
+        toggleDl: U((st) => { const cc = st.clients.find(x => x.id === c.id); cc.canDownload = !cc.canDownload; }),
+        addInvoice: U((st) => { const cc = st.clients.find(x => x.id === c.id); cc.invoices.push({ id: window.NVStore.uid('inv'), num: 'F-2026', label: 'Nouvelle prestation', amount: '0 $', date: '2026', status: 'À régler' }); }),
+        remove: () => { if (confirm('Supprimer ce client ?')) this.upd((st) => { st.clients = st.clients.filter(x => x.id !== c.id); if (st.settings.archivedClients) delete st.settings.archivedClients[c.id]; }); }
+      };
+    });
+
+    // ---- statistiques (onglet Aperçu) ----
+    const likeCounts = {};
+    s.clients.forEach(c => Object.keys(c.likes || {}).forEach(pid => { if (c.likes[pid]) likeCounts[pid] = (likeCounts[pid] || 0) + 1; }));
+    const topPhotos = Object.keys(likeCounts)
+      .filter(pid => s.photos[pid])
+      .sort((a, b) => likeCounts[b] - likeCounts[a])
+      .slice(0, 8)
+      .map(pid => ({ src: window.NVStore.resolveSrc(s.photos[pid]), count: likeCounts[pid] }));
+    // Sommes des factures : extrait les nombres de champs libres comme "1 050 $".
+    const amt = (a) => { const m = String(a || '').replace(/\s/g, '').replace(',', '.').match(/[\d.]+/); return m ? parseFloat(m[0]) : 0; };
+    let paidSum = 0, dueSum = 0;
+    s.clients.forEach(c => (c.invoices || []).forEach(inv => { if (inv.status === 'Payée') paidSum += amt(inv.amount); else dueSum += amt(inv.amount); }));
+    const money = (n) => n.toLocaleString('fr-CA', { maximumFractionDigits: 0 }) + ' $';
+    const fmtD = (iso) => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleDateString('fr-CA'); };
+    const chipOn = 'font-size:12px;padding:4px 9px;border-radius:2px;background:#E8F0EA;color:#2F6B3F;';
+    const chipOff = 'font-size:12px;padding:4px 9px;border-radius:2px;background:#F1F1EF;color:#9A9A9A;';
+    const statClients = s.clients.slice()
+      .sort((a, b) => new Date(b.lastVisit || 0) - new Date(a.lastVisit || 0))
+      .map(c => ({
+        name: c.name,
+        visit: c.lastVisit ? ('visite ' + fmtD(c.lastVisit)) : 'jamais connecté',
+        visitChip: c.lastVisit ? chipOn : chipOff,
+        sel: c.selectionSentAt ? 'sélection ✓' : (Object.keys(c.likes || {}).filter(k => c.likes[k]).length + ' ♥'),
+        selChip: c.selectionSentAt ? chipOn : chipOff
+      }));
+    const totalLikes = Object.values(likeCounts).reduce((a, b) => a + b, 0);
+    const statCards = [
+      { value: s.galleries.filter(g => !g.private).length + ' / ' + s.galleries.filter(g => g.private).length, label: 'galeries publiques / privées' },
+      { value: String(Object.keys(s.photos).length), label: 'photos en ligne' },
+      { value: String(totalLikes), label: 'photos aimées par les clients' },
+      { value: String(s.messages.length), label: 'messages reçus' }
+    ];
+
+    // ---- prestations (page contact) ----
+    const serviceList = (s.services || []).map(sv => ({
+      name: sv.name, setName: onInput((st, v) => { st.services.find(x => x.id === sv.id).name = v; }),
+      price: sv.price, setPrice: onInput((st, v) => { st.services.find(x => x.id === sv.id).price = v; }),
+      desc: sv.desc, setDesc: onInput((st, v) => { st.services.find(x => x.id === sv.id).desc = v; }),
+      remove: () => { if (confirm('Supprimer la prestation « ' + sv.name + ' » ?')) this.upd((st) => { st.services = st.services.filter(x => x.id !== sv.id); }); }
+    }));
+
+    // ---- messages ----
+    const messageList = s.messages.map(m => ({
+      name: m.name || 'Sans nom', email: m.email || '—', date: m.date || '', type: m.type || 'Projet', body: m.body || '',
+      remove: U((st) => { st.messages = st.messages.filter(x => x.id !== m.id); })
+    }));
+
+    return {
+      // gate
+      locked: this.state.locked, unlocked: !this.state.locked,
+      pinInput: this.state.pinInput, pinError: this.state.pinError,
+      setPin: (e) => this.setState({ pinInput: e.target.value, pinError: false }),
+      onUnlock: (e) => { e.preventDefault(); window.NVAuth.loginAdmin(this.state.pinInput).then((ok) => { if (ok) this.setState({ locked: false }); else this.setState({ pinError: true }); }); },
+      lock: () => { window.NVAuth.lockAdmin(); this.setState({ locked: true, pinInput: '' }); },
+
+      // layout
+      appLayout: mobile ? 'flex-direction:column;' : '',
+      sidebar: mobile
+        ? 'background:#fff;border-bottom:1px solid #E6E6E6;padding:12px;display:flex;flex-direction:column;gap:10px;position:sticky;top:0;z-index:20;'
+        : 'width:230px;flex:none;background:#fff;border-right:1px solid #E6E6E6;padding:18px 14px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0;height:100vh;',
+      brandBox: mobile ? 'display:flex;justify-content:space-between;align-items:baseline;' : '',
+      navWrap: mobile ? 'display:flex;gap:6px;overflow-x:auto;' : 'display:flex;flex-direction:column;gap:4px;',
+      sideFoot: mobile ? 'display:none;' : 'margin-top:auto;display:flex;flex-direction:column;gap:8px;border-top:1px solid #EEE;padding-top:14px;',
+      mainPad: mobile ? '' : 'margin:0 auto;',
+      brandName: s.brand.name,
+      tabs,
+      syncDot: syncMeta.dot,
+      syncLabel: syncMeta.label,
+      syncStyle: 'display:flex;align-items:center;gap:7px;font-size:11px;color:#9A9A9A;',
+      syncDotStyle: 'width:7px;height:7px;border-radius:50%;flex:none;background:' + syncMeta.color + ';',
+      tabTitle: titles[tab][0], tabHint: titles[tab][1],
+      enginePill: 'display:flex;align-items:center;gap:7px;font-size:12px;color:#666;border:1px solid #E6E6E6;background:#fff;border-radius:99px;padding:6px 12px;flex:none;',
+      engineDot: 'width:8px;height:8px;border-radius:99px;background:' + em[1] + ';',
+      engineLabel: em[0],
+
+      isStats: tab === 'stats', isContent: tab === 'content', isGalleries: tab === 'galleries', isClients: tab === 'clients', isMessages: tab === 'messages', isSettings: tab === 'settings',
+      statCols: mobile ? '1fr 1fr' : 'repeat(4,1fr)',
+      statCards, topPhotos, hasTopPhotos: topPhotos.length > 0, noTopPhotos: topPhotos.length === 0,
+      statClients, paidTotal: money(paidSum), dueTotal: money(dueSum),
+      serviceList,
+      addService: U((st) => { if (!st.services) st.services = []; st.services.push({ id: window.NVStore.uid('sv'), name: 'Nouvelle prestation', nameEn: '', price: 'sur devis', priceEn: '', desc: '', descEn: '' }); }),
+      twoCol: mobile ? '1fr' : '1fr 1fr',
+      card, cardTitle, primaryBtn, ghostBtn, ghostBtnSm, dangerBtn, dangerBtnSm, uploadBtn,
+
+      ...content,
+
+      galleryList,
+      addGallery: U((st) => { const id = window.NVStore.uid('g'); st.galleries.push({ id, slug: 'galerie-' + id.slice(-4), name: 'nouvelle galerie', desc: 'Description…', photoIds: [], coverId: null, private: false, clientId: null, faceSearch: false }); }),
+      scanAll: () => this.scanMissing(),
+
+      clientList, clientTabs, noClients: visibleClients.length === 0,
+      hasArchived: archivedList.length > 0,
+      toggleArchived: () => this.setState({ showArchived: !this.state.showArchived }),
+      archToggle: 'border:1px dashed #C9C9C9;background:transparent;color:#9A9A9A;border-radius:99px;padding:8px 14px;font-size:13px;cursor:pointer;font-family:inherit;white-space:nowrap;',
+      archToggleLabel: this.state.showArchived ? 'masquer les archivés' : 'archivés (' + archivedList.length + ')',
+      addClient: () => {
+        const id = window.NVStore.uid('cl');
+        this.upd((st) => { st.clients.push({ id, name: 'Nouveau client', email: 'client@exemple.com', password: 'acces', galleryIds: [], likeLimit: st.settings.likeLimit, likes: {}, invoices: [] }); });
+        this.setState({ clientTab: id });
+      },
+
+      hasMessages: messageList.length > 0, noMessages: messageList.length === 0, messageList,
+
+      f_likeLimit: s.settings.likeLimit, s_likeLimit: onInput((st, v) => st.settings.likeLimit = parseInt(v) || 0),
+      f_threshold: s.settings.faceThreshold, s_threshold: onInput((st, v) => st.settings.faceThreshold = parseFloat(v)),
+      // Nouveau code admin : stocké haché (SHA-256 salé), jamais en clair.
+      f_newPin: this.state.newPin,
+      s_newPin: (e) => this.setState({ newPin: e.target.value, pinSaved: false }),
+      pinSaveLabel: this.state.pinSaved ? 'enregistré ✓' : 'enregistrer le code',
+      savePin: () => {
+        const p = (this.state.newPin || '').trim();
+        if (p.length < 4) { alert('Le code doit faire au moins 4 caractères.'); return; }
+        this.upd((st) => { st.settings.adminPinHash = window.NVAuth.hashPin(p); delete st.settings.adminPin; });
+        this.setState({ newPin: '', pinSaved: true });
+      },
+      // Filigrane de visionnage côté client.
+      toggleWm: U((st) => { st.settings.watermark = !st.settings.watermark; }),
+      wmLabel: s.settings.watermark ? 'Activé ✓' : 'Désactivé',
+      wmBtn: 'border:1px solid #E0E0E0;border-radius:2px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:inherit;' + (s.settings.watermark ? 'background:#111;color:#fff;' : 'background:#fff;color:#333;'),
+      resetSite: () => { if (confirm('Réinitialiser tout le site au contenu de démonstration ?')) window.NVStore.reset(); },
+
+      scanning: this.state.scanning, scanMsg: this.state.scanMsg, scanPct: this.state.scanPct
+    };
+  }
+}
+</script>
+</body>
+</html>

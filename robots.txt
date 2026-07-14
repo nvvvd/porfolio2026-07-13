@@ -1,0 +1,9 @@
+# robots.txt — Nicolas Vivaudou (www.nicolasvivaudou.com)
+# Les pages privées (espace client, admin) ne doivent pas être indexées.
+User-agent: *
+Allow: /
+Disallow: /Client.dc.html
+Disallow: /Admin.dc.html
+Disallow: /Shot.dc.html
+
+Sitemap: https://www.nicolasvivaudou.com/sitemap.xml

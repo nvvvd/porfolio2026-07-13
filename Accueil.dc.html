@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Nicolas Vivaudou — Photographe à Montréal</title>
+<meta name="description" content="Portfolio de Nicolas Vivaudou, photographe à Montréal — portrait, paysage par drone, évènements et sport. Galeries privées et espace client.">
+<link rel="canonical" href="https://www.nicolasvivaudou.com/">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#100F0D" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Nicolas Vivaudou">
+<meta property="og:title" content="Nicolas Vivaudou — Photographe à Montréal">
+<meta property="og:description" content="Portfolio de Nicolas Vivaudou, photographe à Montréal — portrait, paysage par drone, évènements et sport. Galeries privées et espace client.">
+<meta property="og:url" content="https://www.nicolasvivaudou.com/">
+<meta property="og:image" content="https://www.nicolasvivaudou.com/images/L1190335.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Nicolas Vivaudou — Photographe à Montréal">
+<meta name="twitter:description" content="Portfolio de Nicolas Vivaudou, photographe à Montréal — portrait, paysage par drone, évènements et sport. Galeries privées et espace client.">
+<meta name="twitter:image" content="https://www.nicolasvivaudou.com/images/L1190335.jpg">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Nicolas Vivaudou",
+  "jobTitle": "Photographe",
+  "url": "https://www.nicolasvivaudou.com/",
+  "image": "https://www.nicolasvivaudou.com/images/nicolas.jpg",
+  "address": { "@type": "PostalAddress", "addressLocality": "Montréal", "addressRegion": "QC", "addressCountry": "CA" },
+  "knowsAbout": ["Portrait", "Photographie par drone", "Mariage", "Évènementiel", "Sport"],
+  "sameAs": ["https://www.instagram.com/nicolas.vivaudou"]
+}
+</script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="nv-theme.js"></script>
+<script src="nv-config.js"></script>
+<script src="nv-i18n.js"></script>
+<script src="nv-storage.js"></script>
+<script src="nv-backend.js"></script>
+<script src="nv-auth.js"></script>
+<script src="store.js"></script>
+<script src="nv-ux.js"></script>
+<style>
+  :root{--bg:#FFFFFF;--bg-2:#FAFAFA;--ink:#111111;--ink-2:#4A4A4A;--muted:#767171;--faint:#B0AAA2;--line:#E6E6E6;--ph:#EEEEEE;--accent:#F2C13C;--on-accent:#161310;--error:#C0392B;}
+  [data-theme="dark"]{--bg:#100F0D;--bg-2:#1A1815;--ink:#F1EDE6;--ink-2:#B4AEA3;--muted:#86817A;--faint:#4C4840;--line:#2A2723;--ph:#1E1B17;--accent:#F2C13C;--on-accent:#161310;--error:#E8746A;color-scheme:dark;}
+  html{background:var(--bg);transition:background .35s ease;}
+  body{transition:background .35s ease,color .35s ease;}
+  html[data-nv-leaving] body{opacity:0;transition:opacity .2s ease;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px;}
+  a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none;}
+  .nv-page{transition:background .35s ease,color .35s ease;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  a{color:inherit;}
+</style>
+</helmet>
+
+<div class="nv-page" style="background:var(--bg);min-height:100vh;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--ink);">
+
+  <header style="display:flex;justify-content:space-between;align-items:baseline;padding:18px 20px 0;gap:10px;">
+    <a href="Accueil.dc.html" style="text-decoration:none;font-size:14px;color:var(--ink);letter-spacing:-.01em;">{{ brandName }}<span style="color:var(--muted);"> — {{ brandRole }}</span></a>
+    <div style="display:flex;align-items:baseline;gap:16px;">
+      <nav style="{{ deskNav }}"><a href="Accueil.dc.html" style="{{ navHomeStyle }}">{{ navHome }}</a><span style="color:var(--muted);">, </span><a href="Portfolio.dc.html" style="{{ navGalleriesStyle }}">{{ navGalleries }}</a><span style="color:var(--muted);">, </span><a href="Client.dc.html" style="{{ navClientStyle }}">{{ navClient }}</a><span style="color:var(--muted);">, </span><a href="Contact.dc.html" style="{{ navContactStyle }}">{{ navContact }}</a></nav>
+      <div style="{{ langWrap }}"><button onClick="{{ setFr }}" style="{{ frBtn }}">FR</button><span style="color:var(--faint);font-size:13px;">/</span><button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button></div>
+      <button onClick="{{ toggleTheme }}" aria-label="{{ themeLabel }}" title="{{ themeLabel }}" style="{{ themeBtn }}">{{ themeIcon }}</button>
+      <button onClick="{{ toggleMenu }}" style="{{ menuBtn }}">{{ menuLabel }}</button>
+    </div>
+  </header>
+
+  <sc-if value="{{ mentionsOpen }}" hint-placeholder-val="">
+  <div onClick="{{ closeMentions }}" style="position:fixed;inset:0;z-index:70;background:rgba(17,15,12,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div role="dialog" aria-modal="true" aria-label="Mentions légales" onClick="{{ stopClick }}" style="width:min(680px,100%);height:min(78vh,760px);background:var(--bg);border:1px solid var(--line);border-radius:6px;box-shadow:0 30px 80px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line);flex:none;">
+        <span style="font-size:13px;color:var(--muted);">Mentions légales</span>
+        <button onClick="{{ closeMentions }}" aria-label="Fermer" style="border:none;background:none;font-size:24px;color:var(--ink);cursor:pointer;padding:8px;line-height:1;">×</button>
+      </div>
+      <iframe src="Mentions.dc.html?embed=1" title="Mentions légales" style="flex:1;width:100%;border:none;background:var(--bg);"></iframe>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ menuOpen }}">
+  <div role="dialog" aria-modal="true" style="position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;padding:18px 20px 40px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:14px;color:var(--muted);">{{ menuLabel }}</span><button onClick="{{ toggleMenu }}" aria-label="Fermer" style="border:none;background:none;font-size:30px;line-height:1;color:var(--ink);cursor:pointer;padding:0 4px;">×</button></div>
+    <nav style="display:flex;flex-direction:column;margin-top:24px;">
+      <a href="Accueil.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navHome }}</a>
+      <a href="Portfolio.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navGalleries }}</a>
+      <a href="Client.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navClient }}</a>
+      <a href="Contact.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navContact }}</a>
+    </nav>
+    <div style="margin-top:22px;display:flex;align-items:center;gap:8px;"><button onClick="{{ setFr }}" style="{{ frBtn }}">FR</button><span style="color:var(--faint);">/</span><button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button></div>
+    <span style="margin-top:auto;font-size:13px;color:var(--muted);">{{ brandLoc }} — 2026</span>
+  </div>
+  </sc-if>
+
+  <a href="Portfolio.dc.html" ref="{{ heroRef }}" aria-label="{{ heroAlt }}" onMouseEnter="{{ heroEnter }}" onMouseMove="{{ heroMove }}" onMouseLeave="{{ heroLeave }}" onTouchStart="{{ heroTouchStart }}" onTouchMove="{{ heroTouchMove }}" onTouchEnd="{{ heroTouchEnd }}" onTouchCancel="{{ heroTouchEnd }}" style="display:block;position:relative;margin:18px 20px 0;aspect-ratio:{{ heroAR }};overflow:hidden;border-radius:2px;background:var(--ph);touch-action:pan-y;{{ heroFull }}">
+    <sc-for list="{{ heroFrames }}" as="f" hint-placeholder-count="1">
+      <img src="{{ f.src }}" data-full="{{ f.full }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:opacity .14s linear;{{ f.vis }}" />
+    </sc-for>
+    <span style="position:absolute;left:12px;bottom:12px;font-size:12px;color:#fff;background:rgba(17,17,17,.5);padding:5px 9px;letter-spacing:.01em;border-radius:2px;">{{ heroCaption }}</span>
+    <span style="position:absolute;right:12px;bottom:12px;font-size:12px;color:var(--on-accent);background:var(--accent);padding:5px 9px;border-radius:2px;">{{ heroCta }}</span>
+  </a>
+
+<div onMouseLeave="{{ onLeave }}" style="border-top:1px solid var(--line);margin:22px 20px 0;">
+    <sc-for list="{{ rows }}" as="row" hint-placeholder-count="4">
+      <a href="{{ row.href }}" onMouseEnter="{{ row.enter }}" onMouseMove="{{ row.move }}" style="{{ row.rowStyle }}">
+        <span style="{{ row.numStyle }}">{{ row.num }}</span>
+        <span style="flex:1;font-size:clamp(30px,9vw,56px);font-weight:400;line-height:1.05;letter-spacing:-.03em;position:relative;z-index:1;">{{ row.title }}</span>
+        <div data-row-preview="1" aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:{{ row.prevVis }};transition:opacity .25s ease;">
+          <sc-for list="{{ row.previews }}" as="p" hint-placeholder-count="0">
+            <img src="{{ p.src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .08s linear;{{ p.vis }}" />
+          </sc-for>
+        </div>
+      </a>
+    </sc-for>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end;margin:20px 20px 0;padding:18px 0 28px;border-top:1px solid var(--line);">
+    <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:7px;">{{ availLabel }}<button type="button" onClick="{{ openMentions }}" style="border:none;background:none;padding:0;font-family:inherit;color:var(--faint);font-size:12px;transition:color .15s;cursor:pointer;" style-hover="color:var(--muted);">mentions</button><a href="Admin.dc.html" title="Espace photographe" aria-label="Administration" style="text-decoration:none;color:var(--faint);font-size:13px;transition:color .15s;padding:8px;margin:-8px;" style-hover="color:var(--muted);">·</a><a href="{{ emailHref }}" style="text-decoration:none;color:var(--muted);">{{ email }}</a><a href="{{ instagramHref }}" target="_blank" rel="noopener" aria-label="Instagram" style="display:flex;align-items:center;color:var(--muted);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"></rect><circle cx="12" cy="12" r="4.5"></circle><circle cx="17.6" cy="6.4" r="1.3" fill="currentColor" stroke="none"></circle></svg></a></span>
+    <a href="Contact.dc.html" style="font-size:clamp(32px,8vw,56px);color:var(--ink);text-decoration:none;letter-spacing:-.03em;line-height:1.05;transition:opacity .15s;margin-left:auto;text-align:right;" style-hover="opacity:.7;">{{ workLabel }}</a>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { ready: false, tick: 0, view: 'list', hover: null, mobile: typeof window !== 'undefined' && window.innerWidth < 820, menuOpen: false, mentionsOpen: false };
+  heroRef = React.createRef();
+  _heroFrame = 0;
+  _heroHover = false;
+  // Diaporama rapide : avance automatique, en pause pendant le survol (défilement à la souris).
+  heroSetFrame(i) {
+    const el = this.heroRef.current; if (!el) return;
+    const imgs = el.querySelectorAll('img'); if (imgs.length < 2) return;
+    this._heroFrame = ((i % imgs.length) + imgs.length) % imgs.length;
+    // Préchargement intelligent : la photo courante + les 5 suivantes seulement.
+    for (let k = 0; k < 6; k++) {
+      const im = imgs[(this._heroFrame + k) % imgs.length];
+      if (im && im.dataset.full && im.getAttribute('src') !== im.dataset.full) im.setAttribute('src', im.dataset.full);
+    }
+    imgs.forEach((im, k) => { im.style.opacity = (k === this._heroFrame ? '1' : '0'); });
+  }
+  heroEnter = () => { this._heroHover = true; this.hoverLeave(); };
+  heroMove = (e) => {
+    const el = this.heroRef.current; if (!el) return;
+    const n = el.querySelectorAll('img').length; if (n < 2) return;
+    const r = el.getBoundingClientRect();
+    const idx = Math.max(0, Math.min(n - 1, Math.floor(((e.clientX - r.left) / r.width) * n)));
+    this.heroSetFrame(idx);
+  };
+  heroLeave = () => { this._heroHover = false; };
+  // Tactile : toucher = pause, glisser = défilement manuel, relâcher = reprise.
+  heroTouchStart = (e) => { this._heroHover = true; this._heroTouchX = e.touches[0].clientX; this._heroTouchFrame = this._heroFrame; };
+  heroTouchMove = (e) => {
+    const el = this.heroRef.current; if (!el || this._heroTouchX == null) return;
+    const n = el.querySelectorAll('img').length; if (n < 2) return;
+    const dx = e.touches[0].clientX - this._heroTouchX;
+    const step = Math.max(24, el.getBoundingClientRect().width / n); // px par photo
+    this.heroSetFrame(this._heroTouchFrame - Math.round(dx / step)); // droite→gauche = avance
+  };
+  heroTouchEnd = () => { this._heroTouchX = null; this._heroHover = false; };
+  componentDidMount() {
+    this._heroTimer = setInterval(() => { if (!this._heroHover) this.heroSetFrame(this._heroFrame + 1); }, 180);
+    this._wait = setInterval(() => {
+      if (window.NVStore) {
+        clearInterval(this._wait);
+        this.setState({ ready: true, view: window.NVStore.get().home.defaultView || 'list' });
+        this._unsub = window.NVStore.subscribe(() => this.setState(s => ({ tick: s.tick + 1 })));
+        // Préchargement des aperçus flottants : défilement instantané au survol (plus de flash).
+        try { const st = window.NVStore.get(); window.NVStore.publicGalleries().forEach(g => g.photoIds.slice(0, 10).forEach(pid => { const im = new Image(); im.src = window.NVStore.resolveSrc(st.photos[pid]); })); } catch (e) {}
+      }
+    }, 30);
+    this._r = () => this.setState({ mobile: window.innerWidth < 820, menuOpen: window.innerWidth < 820 ? this.state.menuOpen : false });
+    window.addEventListener('resize', this._r);
+    this._ulang = window.NVI18n.onChange(() => this.setState(s => ({ tick: s.tick + 1 })));
+  }
+  componentWillUnmount() { clearInterval(this._wait); clearInterval(this._cyc); clearInterval(this._heroTimer); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); }
+  hoverEnter = (id) => () => {
+    if (this.state.mobile) return;
+    this.setState({ hover: id });           // construit les vignettes empilées dans la ligne
+  };
+  // Défilement à la souris : la position horizontale du curseur dans la ligne
+  // choisit la photo affichée (gauche = première, droite = dernière).
+  rowMove = (e) => {
+    const imgs = e.currentTarget.querySelectorAll('[data-row-preview] img');
+    if (imgs.length < 2) return;
+    const r = e.currentTarget.getBoundingClientRect();
+    const idx = Math.max(0, Math.min(imgs.length - 1, Math.floor((e.clientX - r.left) / r.width * imgs.length)));
+    imgs.forEach((im, i) => { im.style.opacity = (i === idx ? '1' : '0'); });
+  };
+  hoverLeave = () => { this.setState({ hover: null }); };
+  renderVals() {
+    const mobile = this.state.mobile;
+    const ui = window.NVI18n.ui('home');
+    const base = {
+      ...ui,
+      setFr: () => { window.NVI18n.setLang('fr'); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
+      setEn: () => { window.NVI18n.setLang('en'); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
+      mobile, menuOpen: this.state.menuOpen,
+      // Mentions légales en surcouche (pas de changement de page).
+      mentionsOpen: this.state.mentionsOpen,
+      openMentions: () => this.setState({ mentionsOpen: true }),
+      closeMentions: () => this.setState({ mentionsOpen: false }),
+      stopClick: (e) => e.stopPropagation(),
+      themeIcon: (window.NVTheme && NVTheme.theme === 'dark') ? '\u2600\uFE0E' : '\u263e',
+      themeLabel: (window.NVTheme && NVTheme.theme === 'dark') ? (ui.lang === 'en' ? 'Light mode' : 'Mode clair') : (ui.lang === 'en' ? 'Dark mode' : 'Mode sombre'),
+      themeBtn: 'border:none;background:none;cursor:pointer;font-family:inherit;font-size:15px;line-height:1;color:var(--muted);padding:0;transition:color .15s;',
+      toggleTheme: () => { if (window.NVTheme) NVTheme.toggle(); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
+      toggleMenu: () => this.setState({ menuOpen: !this.state.menuOpen }),
+      deskNav: 'display:' + (mobile ? 'none' : 'block') + ';font-size:14px;letter-spacing:-.01em;',
+      menuBtn: 'display:' + (mobile ? 'block' : 'none') + ';border:none;background:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--ink);padding:0;',
+      heroAR: mobile ? '4/3' : '24/9',
+      // Mobile : image d'accueil pleine largeur (bord à bord), inchangé sur ordinateur.
+      heroFull: mobile ? 'margin:18px 0 0;border-radius:0;' : '',
+      onLeave: this.hoverLeave,
+      heroRef: this.heroRef, heroEnter: this.heroEnter, heroMove: this.heroMove, heroLeave: this.heroLeave,
+      heroTouchStart: this.heroTouchStart, heroTouchMove: this.heroTouchMove, heroTouchEnd: this.heroTouchEnd
+    };
+    if (!this.state.ready || !window.NVStore) {
+      return { ...base, brandName: 'Nicolas Vivaudou', brandRole: ui.lang === 'en' ? 'Photographer' : 'Photographe', brandLoc: 'Montréal, QC',
+        heroFrames: [{ src: 'images/L1190335.jpg', vis: 'opacity:1;' }], heroCaption: '', heroCta: ui.t ? '' : '', metaLabel: '',
+        availLabel: window.NVI18n.t('home.available'), workLabel: window.NVI18n.t('home.workTogether'),
+        heroAlt: 'Nicolas Vivaudou — Photographe',
+        rows: [], email: '', emailHref: '#', instagramHref: '#' };
+    }
+    const s = window.NVStore.get();
+    const view = this.state.view, hover = this.state.hover;
+    const toggleBase = 'border:none;background:transparent;cursor:pointer;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:13px;padding:0;letter-spacing:-.01em;';
+    const setHover = this.hoverEnter;
+    const pub = window.NVStore.publicGalleries();
+    const L = window.NVI18n.pick;
+    // Aperçu intégré : les photos de la galerie survolée s'empilent DANS la ligne
+    // (clippées par la ligne) ; le défilement est piloté en DOM par hoverEnter.
+    const rows = pub.map((g, i) => {
+      const isActive = hover === g.id;
+      const previews = (isActive && !mobile)
+        ? g.photoIds.slice(0, 12).map((pid, j) => ({ src: window.NVStore.resolveSrc(s.photos[pid]), vis: 'opacity:' + (j === 0 ? '1' : '0') + ';' }))
+        : [];
+      return {
+        title: L(g.name, g.nameEn), href: 'Galerie.dc.html#' + g.slug, num: ('0' + (i + 1)).slice(-2), count: String(g.photoIds.length),
+        enter: setHover(g.id), move: this.rowMove,
+        previews, prevVis: previews.length ? '0.3' : '0',
+        rowStyle: 'position:relative;overflow:hidden;display:flex;gap:18px;align-items:baseline;text-decoration:none;padding:16px 0;border-bottom:1px solid var(--line);transition:color .18s,padding-left .22s;padding-left:' + (isActive ? '14px' : '0') + ';color:' + (isActive ? 'var(--ink)' : 'var(--faint)') + ';',
+        numStyle: 'font-size:12px;width:30px;flex:none;align-self:center;letter-spacing:.02em;transition:color .18s;color:' + (isActive ? 'var(--accent)' : 'var(--faint)') + ';z-index:1;position:relative;'
+      };
+    });
+    const tiles = [];
+    pub.forEach(g => g.photoIds.forEach(pid => tiles.push({ src: window.NVStore.resolveSrc(s.photos[pid]), href: 'Galerie.dc.html#' + g.slug, alt: L(g.name, g.nameEn) })));
+    const total = tiles.length;
+    // Diaporama d'accueil : photo vedette + toutes les photos publiques (max 30, sans doublon).
+    // Retire la flèche décorative (s'affiche en emoji bleu sur iPhone).
+    const stripArrow = (t) => String(t || '').replace(/[↗→]/g, '').trim();
+    const heroSeen = {}; const heroSrcs = [];
+    const heroPush = (src) => { if (src && !heroSeen[src] && heroSrcs.length < 30) { heroSeen[src] = 1; heroSrcs.push(src); } };
+    // Sélection manuelle depuis l'admin (hero.slideshowIds), sinon toutes les photos publiques.
+    const heroSel = (s.hero.slideshowIds || []).map(id => s.photos[id]).filter(Boolean);
+    if (s.hero.slideshow === 'manual' && heroSel.length) heroSel.forEach(p => heroPush(window.NVStore.resolveSrc(p)));
+    else { heroPush(window.NVStore.resolveSrc(s.hero.src)); tiles.forEach(t => heroPush(t.src)); }
+    const heroCur = heroSrcs.length ? this._heroFrame % heroSrcs.length : 0;
+    // Préchargement intelligent : seules les 6 premières sont chargées ; la suite via data-full.
+    const HERO_PH = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    const heroFrames = heroSrcs.map((src, i) => ({ src: (i < 6 ? src : HERO_PH), full: src, vis: 'opacity:' + (i === heroCur ? '1' : '0') + ';' }));
+    return {
+      ...base,
+      brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn), brandLoc: s.brand.location,
+      heroFrames,
+      heroAlt: (L(s.hero.caption, s.hero.captionEn) || (s.brand.name + ' — ' + L(s.brand.role, s.brand.roleEn))), heroCaption: L(s.hero.caption, s.hero.captionEn), heroCta: stripArrow(L(s.hero.cta, s.hero.ctaEn) || window.NVI18n.t('home.defaultCta')),
+      metaLabel: L(s.home.metaLabel, s.home.metaLabelEn) + ' / ' + ('00' + total).slice(-3) + ' ' + window.NVI18n.t('home.photos'),
+      availLabel: window.NVI18n.t('home.available'), workLabel: window.NVI18n.t('home.workTogether'),
+      email: s.contact.email, emailHref: 'mailto:' + s.contact.email,
+      instagramHref: 'https://instagram.com/' + String(s.contact.instagram || '').replace(/^@/, ''),
+      rows
+    };
+  }
+}
+</script>
+</body>
+</html>

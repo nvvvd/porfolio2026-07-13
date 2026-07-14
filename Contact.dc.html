@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Contact — Nicolas Vivaudou</title>
+<meta name="description" content="Discutons de votre projet photo — portrait, drone, évènement ou sur-mesure. Disponibilités 2026.">
+<link rel="canonical" href="https://www.nicolasvivaudou.com/Contact.dc.html">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#100F0D" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Nicolas Vivaudou">
+<meta property="og:title" content="Contact — Nicolas Vivaudou">
+<meta property="og:description" content="Discutons de votre projet photo — portrait, drone, évènement ou sur-mesure. Disponibilités 2026.">
+<meta property="og:url" content="https://www.nicolasvivaudou.com/Contact.dc.html">
+<meta property="og:image" content="https://www.nicolasvivaudou.com/images/L1190335.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Contact — Nicolas Vivaudou">
+<meta name="twitter:description" content="Discutons de votre projet photo — portrait, drone, évènement ou sur-mesure. Disponibilités 2026.">
+<meta name="twitter:image" content="https://www.nicolasvivaudou.com/images/L1190335.jpg">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="nv-theme.js"></script>
+<script src="nv-config.js"></script>
+<script src="nv-i18n.js"></script>
+<script src="nv-storage.js"></script>
+<script src="nv-backend.js"></script>
+<script src="nv-auth.js"></script>
+<script src="store.js"></script>
+<script src="nv-ux.js"></script>
+<style>
+  :root{--bg:#FFFFFF;--bg-2:#FAFAFA;--ink:#111111;--ink-2:#4A4A4A;--muted:#767171;--faint:#B0AAA2;--line:#E6E6E6;--ph:#EEEEEE;--accent:#F2C13C;--on-accent:#161310;--error:#C0392B;}
+  [data-theme="dark"]{--bg:#100F0D;--bg-2:#1A1815;--ink:#F1EDE6;--ink-2:#B4AEA3;--muted:#86817A;--faint:#4C4840;--line:#2A2723;--ph:#1E1B17;--accent:#F2C13C;--on-accent:#161310;--error:#E8746A;color-scheme:dark;}
+  html{background:var(--bg);transition:background .35s ease;}
+  body{transition:background .35s ease,color .35s ease;}
+  html[data-nv-leaving] body{opacity:0;transition:opacity .2s ease;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px;}
+  a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none;}
+  .nv-page{transition:background .35s ease,color .35s ease;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  a{color:inherit;}
+  input,textarea{font-family:inherit;}
+  input::placeholder,textarea::placeholder{color:var(--faint);}
+  input:focus,textarea:focus{outline:none;border-color:var(--ink);}
+</style>
+</helmet>
+
+<div class="nv-page" style="background:var(--bg);min-height:100vh;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--ink);{{ pageFit }}">
+
+  <header style="display:flex;justify-content:space-between;align-items:baseline;padding:18px 20px 0;gap:10px;">
+    <a href="Accueil.dc.html" style="text-decoration:none;font-size:14px;color:var(--ink);letter-spacing:-.01em;">{{ brandName }}<span style="color:var(--muted);"> — {{ brandRole }}</span></a>
+    <div style="display:flex;align-items:baseline;gap:16px;">
+      <nav style="{{ deskNav }}"><a href="Accueil.dc.html" style="{{ navHomeStyle }}">{{ navHome }}</a><span style="color:var(--muted);">, </span><a href="Portfolio.dc.html" style="{{ navGalleriesStyle }}">{{ navGalleries }}</a><span style="color:var(--muted);">, </span><a href="Client.dc.html" style="{{ navClientStyle }}">{{ navClient }}</a><span style="color:var(--muted);">, </span><a href="Contact.dc.html" style="{{ navContactStyle }}">{{ navContact }}</a></nav>
+      <div style="{{ langWrap }}"><button onClick="{{ setFr }}" style="{{ frBtn }}">FR</button><span style="color:var(--faint);font-size:13px;">/</span><button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button></div>
+      <button onClick="{{ toggleTheme }}" aria-label="{{ themeLabel }}" title="{{ themeLabel }}" style="{{ themeBtn }}">{{ themeIcon }}</button>
+      <button onClick="{{ toggleMenu }}" style="{{ menuBtn }}">{{ menuLabel }}</button>
+    </div>
+  </header>
+
+  <sc-if value="{{ mentionsOpen }}" hint-placeholder-val="">
+  <div onClick="{{ closeMentions }}" style="position:fixed;inset:0;z-index:70;background:rgba(17,15,12,.45);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:24px;">
+    <div role="dialog" aria-modal="true" aria-label="Mentions légales" onClick="{{ stopClick }}" style="width:min(680px,100%);height:min(78vh,760px);background:var(--bg);border:1px solid var(--line);border-radius:6px;box-shadow:0 30px 80px rgba(0,0,0,.35);display:flex;flex-direction:column;overflow:hidden;">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 18px;border-bottom:1px solid var(--line);flex:none;">
+        <span style="font-size:13px;color:var(--muted);">Mentions légales</span>
+        <button onClick="{{ closeMentions }}" aria-label="Fermer" style="border:none;background:none;font-size:24px;color:var(--ink);cursor:pointer;padding:8px;line-height:1;">×</button>
+      </div>
+      <iframe src="Mentions.dc.html?embed=1" title="Mentions légales" style="flex:1;width:100%;border:none;background:var(--bg);"></iframe>
+    </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ menuOpen }}">
+  <div role="dialog" aria-modal="true" style="position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;padding:18px 20px 40px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:14px;color:var(--muted);">{{ menuLabel }}</span><button onClick="{{ toggleMenu }}" aria-label="Fermer" style="border:none;background:none;font-size:30px;line-height:1;color:var(--ink);cursor:pointer;padding:0 4px;">×</button></div>
+    <nav style="display:flex;flex-direction:column;margin-top:24px;">
+      <a href="Accueil.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navHome }}</a>
+      <a href="Portfolio.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navGalleries }}</a>
+      <a href="Client.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navClient }}</a>
+      <a href="Contact.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navContact }}</a>
+    </nav>
+    <div style="margin-top:22px;display:flex;align-items:center;gap:8px;"><button onClick="{{ setFr }}" style="{{ frBtn }}">FR</button><span style="color:var(--faint);">/</span><button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button></div>
+    <span style="margin-top:auto;font-size:13px;color:var(--muted);">{{ brandLoc }} — 2026</span>
+  </div>
+  </sc-if>
+
+  <div ref="{{ scrollRef }}" style="padding:26px 20px 0;{{ contentFit }}">
+
+    <h1 style="margin:14px 0 0;font-size:clamp(40px,8vw,72px);font-weight:400;line-height:.92;letter-spacing:-.035em;display:flex;flex-wrap:wrap;align-items:baseline;">
+      <button onClick="{{ pickContact }}" style="{{ tabContactStyle }}" style-hover="{{ tabHover }}">{{ tabContact }}</button>
+      <span aria-hidden="true" style="color:var(--faint);">,&nbsp;</span>
+      <button onClick="{{ pickAbout }}" style="{{ tabAboutStyle }}" style-hover="{{ tabHover }}">{{ tabAbout }}</button>
+    </h1>
+    <sc-if value="{{ isContact }}" hint-placeholder-val="{{ true }}">
+
+    <sc-if value="{{ hasServices }}" hint-placeholder-val="{{ true }}">
+    <div style="margin-top:clamp(22px,3vh,34px);position:relative;">
+      <button onClick="{{ toggleServices }}" aria-expanded="{{ servicesOpen }}" style="display:flex;width:100%;justify-content:flex-start;align-items:center;gap:12px;border:none;border-bottom:1px solid var(--line);background:none;padding:16px 0;cursor:pointer;font-family:inherit;font-size:16px;color:var(--ink);letter-spacing:-.01em;transition:color .15s;" style-hover="color:var(--muted);">
+        <span aria-hidden="true" style="display:flex;flex-direction:column;gap:4.5px;width:22px;">
+          <span style="display:block;height:2px;background:currentColor;"></span>
+          <span style="display:block;height:2px;background:currentColor;"></span>
+          <span style="display:block;height:2px;background:currentColor;"></span>
+        </span>
+        <span>{{ servicesTitle }}</span>
+      </button>
+      <sc-if value="{{ isServicesOpen }}">
+      <div style="position:absolute;left:0;right:0;top:100%;z-index:30;background:var(--bg);border:1px solid var(--line);border-radius:2px;max-height:min(420px,55vh);overflow-y:auto;padding:4px 18px;box-shadow:0 12px 34px rgba(0,0,0,.12);">
+        <sc-for list="{{ services }}" as="sv" hint-placeholder-count="4">
+          <div style="border-bottom:1px solid var(--line);">
+            <button onClick="{{ sv.toggle }}" aria-expanded="{{ sv.open }}" style="display:flex;justify-content:space-between;align-items:baseline;gap:14px;width:100%;border:none;background:none;padding:13px 0;cursor:pointer;font-family:inherit;text-align:left;color:var(--ink);">
+              <span style="font-size:clamp(17px,4vw,20px);letter-spacing:-.02em;line-height:1.1;">{{ sv.name }}</span>
+              <span style="display:flex;align-items:baseline;gap:12px;flex:none;">
+                <span style="font-size:13px;color:var(--muted);white-space:nowrap;">{{ sv.price }}</span>
+                <span aria-hidden="true" style="{{ sv.chev }}">↓</span>
+              </span>
+            </button>
+            <sc-if value="{{ sv.isOpen }}" hint-placeholder-val="">
+              <p style="margin:0;padding:0 0 14px;font-size:14px;line-height:1.55;color:var(--ink-2);">{{ sv.desc }}</p>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <div style="margin-top:clamp(20px,3vh,32px);{{ formWrapFit }}">
+
+      <form onSubmit="{{ onSubmit }}" style="{{ formFit }}">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:16px;letter-spacing:-.01em;">{{ formTitle }}</div>
+        <label style="display:block;margin-bottom:16px;">
+          <span style="display:block;font-size:13px;color:var(--muted);margin-bottom:4px;">{{ lblName }}</span>
+          <input type="text" value="{{ fName }}" onInput="{{ setName }}" placeholder="{{ phName }}" style="width:100%;padding:10px 0;border:none;border-bottom:1px solid var(--line);background:transparent;font-size:16px;color:var(--ink);" />
+        </label>
+        <label style="display:block;margin-bottom:16px;">
+          <span style="display:block;font-size:13px;color:var(--muted);margin-bottom:4px;">{{ lblEmail }}</span>
+          <input type="email" value="{{ fEmail }}" onInput="{{ setEmail }}" placeholder="vous@exemple.com" style="width:100%;padding:10px 0;border:none;border-bottom:1px solid var(--line);background:transparent;font-size:16px;color:var(--ink);" />
+        </label>
+        <label style="margin-bottom:18px;{{ msgLabelFit }}">
+          <span style="display:block;font-size:13px;color:var(--muted);margin-bottom:4px;">{{ lblMessage }}</span>
+          <textarea rows="3" value="{{ fMsg }}" onInput="{{ setMsg }}" placeholder="{{ phMessage }}" style="width:100%;padding:10px 0;border:none;background:transparent;font-size:16px;color:var(--ink);{{ msgFit }}"></textarea>
+        </label>
+        <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
+          <label>Ne pas remplir<input type="text" tabindex="-1" autocomplete="off" value="{{ fHp }}" onInput="{{ setHp }}" /></label>
+        </div>
+        <sc-if value="{{ formError }}" hint-placeholder-val="">
+          <div style="font-size:13px;color:var(--error);margin-bottom:12px;">{{ formError }}</div>
+        </sc-if>
+        <sc-if value="{{ notSent }}" hint-placeholder-val="{{ true }}">
+          <button type="submit" style="width:100%;padding:14px;border:none;border-radius:2px;background:var(--accent);color:var(--on-accent);font-size:15px;font-weight:500;cursor:pointer;">{{ btnLabel }}</button>
+        </sc-if>
+        <sc-if value="{{ sentOpen }}" hint-placeholder-val="">
+          <div role="status" style="padding:18px 16px;background:var(--bg-2);border:1px solid var(--accent);border-radius:6px;display:flex;flex-direction:column;gap:8px;">
+            <div style="display:flex;align-items:center;gap:10px;font-size:16px;font-weight:500;letter-spacing:-.02em;"><span style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--accent);color:var(--on-accent);font-size:13px;flex:none;">✓</span>{{ sentTitle }}</div>
+            <p style="margin:0;font-size:14px;line-height:1.45;color:var(--ink-2);">{{ sentBody }}</p>
+            <button type="button" onClick="{{ resetSent }}" style="align-self:flex-start;margin-top:4px;border:none;background:none;padding:0;font-family:inherit;font-size:13px;color:var(--muted);text-decoration:underline;cursor:pointer;">{{ sentAgain }}</button>
+          </div>
+        </sc-if>
+
+      </form>
+
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ isAbout }}" hint-placeholder-val="">
+    <div style="{{ gridStyle }}">
+      <div style="{{ aboutPhotoCol }}">
+        <div style="{{ photoBox }}">
+          <img src="{{ aboutPhoto }}" alt="{{ aboutName }}" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center 30%;display:block;" />
+          <span style="position:absolute;left:12px;bottom:12px;font-size:12px;color:#fff;background:rgba(17,17,17,.5);padding:5px 9px;border-radius:2px;">{{ aboutName }} — {{ atWork }}</span>
+        </div>
+      </div>
+      <div style="{{ aboutTextCol }}">
+        <h2 style="margin:0;font-size:clamp(24px,6vw,32px);font-weight:400;line-height:1;letter-spacing:-.03em;{{ ordTitle }}">{{ aboutName }}</h2>
+        <p style="margin:12px 0 0;font-size:clamp(14px,3.6vw,15px);line-height:1.5;color:var(--ink-2);white-space:pre-line;{{ ordText }}">{{ aboutText }}</p>
+        <div style="margin-top:22px;padding:14px 16px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px;{{ ordTrust }}">
+          <div style="display:flex;align-items:center;gap:9px;font-size:14px;font-weight:500;color:var(--ink);letter-spacing:-.02em;margin-bottom:13px;">
+            <span style="width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;"></span>{{ trustTitle }}
+          </div>
+          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+            <sc-for list="{{ logos }}" as="logo" hint-placeholder-count="4">
+              <div title="{{ logo.name }}" onMouseEnter="{{ logo.enter }}" onMouseLeave="{{ logo.leave }}" style="{{ logo.boxStyle }}">
+                <img src="{{ logo.src }}" alt="{{ logo.name }}" loading="lazy" data-nv-nofade style="max-width:100%;max-height:100%;object-fit:contain;display:block;" />
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <sc-if value="{{ hasBackstage }}" hint-placeholder-val="">
+        <div style="margin-top:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;{{ ordBackstage }}">
+          <sc-for list="{{ backstage }}" as="b" hint-placeholder-count="0">
+            <div style="aspect-ratio:4/3;overflow:hidden;border-radius:4px;background:var(--ph);">
+              <img src="{{ b.src }}" alt="coulisses" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+            </div>
+          </sc-for>
+        </div>
+        </sc-if>
+        <div style="display:flex;justify-content:flex-end;margin-top:24px;{{ ordCta }}">
+          <button type="button" onClick="{{ pickContact }}" style="display:inline-flex;align-items:center;gap:10px;padding:13px 22px;border:none;border-radius:2px;background:var(--accent);color:var(--on-accent);font-family:inherit;font-size:15px;font-weight:500;letter-spacing:-.01em;cursor:pointer;" style-hover="filter:brightness(.95);">{{ ctaWork }}<span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <div style="{{ footFit }}margin-top:24px;">
+      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:14px 0 22px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);">
+        <span style="display:flex;align-items:center;gap:12px;">© {{ brandName }} — 2026<button type="button" onClick="{{ openMentions }}" style="border:none;background:none;padding:0;font-family:inherit;color:var(--faint);font-size:12px;cursor:pointer;">mentions</button></span>
+        <span style="display:flex;align-items:center;gap:16px;">
+          <a href="{{ emailHref }}" style="text-decoration:none;color:var(--muted);">{{ email }}</a>
+          <a href="{{ instagramHref }}" target="_blank" rel="noopener" aria-label="Instagram" title="{{ instagram }}" style="display:flex;align-items:center;color:var(--muted);">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"></rect><circle cx="12" cy="12" r="4.5"></circle><circle cx="17.6" cy="6.4" r="1.3" fill="currentColor" stroke="none"></circle></svg>
+          </a>
+          <a href="Accueil.dc.html" style="text-decoration:none;color:var(--muted);">↑ {{ navHome }}</a>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { ready: false, tick: 0, mobile: typeof window !== 'undefined' && window.innerWidth < 820, menuOpen: false, mentionsOpen: false, sent: false, sending: false, type: 'Portrait', name: '', email: '', msg: '', hp: '', formError: '', trustOpen: false, activeLogo: -1, hoverLogo: -1, openService: -1, servicesPanel: false,
+    view: (typeof location !== 'undefined' && (location.hash === '#apropos' || location.hash === '#about')) ? 'about' : 'contact' };
+  componentDidMount() {
+    this._wait = setInterval(() => { if (window.NVStore) { clearInterval(this._wait); this.setState({ ready: true }); this._unsub = window.NVStore.subscribe(() => this.setState(s => ({ tick: s.tick + 1 }))); } }, 30);
+    this._r = () => this.setState({ mobile: window.innerWidth < 820, menuOpen: window.innerWidth < 820 ? this.state.menuOpen : false });
+    window.addEventListener('resize', this._r);
+    // Vue contact / à propos synchronisée avec l'ancre (#apropos), pour pouvoir partager le lien.
+    this._h = () => this.setState({ view: (location.hash === '#apropos' || location.hash === '#about') ? 'about' : 'contact' });
+    window.addEventListener('hashchange', this._h);
+    this._ulang = window.NVI18n.onChange(() => this.setState(s => ({ tick: s.tick + 1 })));
+  }
+  componentWillUnmount() { clearInterval(this._wait); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); window.removeEventListener('hashchange', this._h); }
+  setView = (v) => () => {
+    this.setState({ view: v });
+    // Remonte en haut de page (utile quand on clique le CTA en bas de « à propos »).
+    try { if (this._scrollEl) this._scrollEl.scrollTop = 0; window.scrollTo(0, 0); } catch (e) {}
+    try { history.replaceState(null, '', location.pathname + location.search + (v === 'about' ? '#apropos' : '')); } catch (e) {}
+  };
+
+  // Envoi optionnel par email via Web3Forms (clé dans nv-config.js).
+  async sendEmail(payload) {
+    const key = ((window.NV_CONFIG || {}).contact || {}).web3formsKey;
+    if (!key) return;                       // pas de clé -> message déjà enregistré dans l'admin
+    const res = await fetch('https://api.web3forms.com/submit', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({
+        access_key: key,
+        subject: 'Nouveau message — ' + (payload.type || 'Contact') + ' — site Nicolas Vivaudou',
+        from_name: payload.name || 'Site web',
+        name: payload.name, email: payload.email, replyto: payload.email,
+        'Type de projet': payload.type, message: payload.body
+      })
+    });
+    const j = await res.json().catch(() => ({}));
+    if (!j || !j.success) throw new Error('Web3Forms: ' + (j && j.message || res.status));
+  }
+  renderVals() {
+    const mobile = this.state.mobile;
+    const ui = window.NVI18n.ui('contact');
+    const T = window.NVI18n.t, L = window.NVI18n.pick;
+    // Deux « pages » en une : contact / à propos, choisies par le grand titre-bascule.
+    const isAbout = this.state.view === 'about';
+    const aboutWord = ui.lang === 'en' ? 'about' : 'à propos';
+    const tabBase = 'border:none;background:none;padding:0 0 4px;cursor:pointer;font-family:inherit;font-size:inherit;font-weight:inherit;letter-spacing:inherit;line-height:inherit;transition:color .18s,border-color .18s;border-bottom:4px solid transparent;';
+    const base = {
+      isContact: !isAbout, isAbout,
+      // CTA « Travaillons ensemble » (bas de la vue à propos) + ordre mobile : texte avant portrait.
+      ctaWork: ui.lang === 'en' ? 'Let’s work together' : 'Travaillons ensemble',
+      scrollRef: (el) => { this._scrollEl = el; },
+      // Mobile : la colonne texte passe en display:contents pour que ses enfants
+      // s'ordonnent librement — portrait(1) → titre(2) → texte(3) → coulisses(4) → confiance(5) → CTA(6).
+      aboutPhotoCol: mobile ? 'display:flex;flex-direction:column;gap:8px;min-width:0;order:1;' : 'display:flex;flex-direction:column;gap:8px;min-width:0;',
+      aboutTextCol: mobile ? 'display:contents;' : 'min-width:0;',
+      ordTitle: mobile ? 'order:2;margin-top:24px;' : '',
+      ordText: mobile ? 'order:3;' : '',
+      ordBackstage: mobile ? 'order:4;margin-top:20px;' : '',
+      ordTrust: mobile ? 'order:5;' : '',
+      ordCta: mobile ? 'order:6;' : '',
+      pickContact: this.setView('contact'), pickAbout: this.setView('about'),
+      tabContact: 'contact', tabAbout: aboutWord,
+      tabContactStyle: tabBase + (!isAbout ? 'color:var(--ink);border-bottom-color:var(--accent);' : 'color:var(--faint);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:8px;text-decoration-color:var(--faint);'),
+      tabAboutStyle: tabBase + (isAbout ? 'color:var(--ink);border-bottom-color:var(--accent);' : 'color:var(--faint);text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:8px;text-decoration-color:var(--faint);'),
+      tabHover: 'color:var(--ink-2);',
+      topLabel: isAbout ? aboutWord : 'contact', topRight: isAbout ? '' : T('ct.reply'),
+      ...ui,
+      setFr: () => { window.NVI18n.setLang('fr'); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
+      setEn: () => { window.NVI18n.setLang('en'); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
+      mobile, notMobile: !mobile, menuOpen: this.state.menuOpen,
+      themeIcon: (window.NVTheme && NVTheme.theme === 'dark') ? '\u2600\uFE0E' : '\u263e',
+      themeLabel: (window.NVTheme && NVTheme.theme === 'dark') ? (ui.lang === 'en' ? 'Light mode' : 'Mode clair') : (ui.lang === 'en' ? 'Dark mode' : 'Mode sombre'),
+      themeBtn: 'border:none;background:none;cursor:pointer;font-family:inherit;font-size:15px;line-height:1;color:var(--muted);padding:0;transition:color .15s;',
+      toggleTheme: () => { if (window.NVTheme) NVTheme.toggle(); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
+      toggleMenu: () => this.setState({ menuOpen: !this.state.menuOpen }),
+      deskNav: 'display:' + (mobile ? 'none' : 'block') + ';font-size:14px;letter-spacing:-.01em;',
+      menuBtn: 'display:' + (mobile ? 'block' : 'none') + ';border:none;background:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--ink);padding:0;',
+      // Sur ordinateur, la page tient dans la hauteur de l'écran (pied de page en bas,
+      // défilement interne seulement si le contenu déborde vraiment).
+      pageFit: mobile ? '' : 'height:100vh;overflow:hidden;display:flex;flex-direction:column;',
+      contentFit: mobile ? '' : 'flex:1;display:flex;flex-direction:column;min-height:0;overflow-y:auto;',
+      footFit: mobile ? '' : 'margin-top:auto;',
+      // Le formulaire occupe toute la hauteur restante du navigateur (la zone message s'étire).
+      formWrapFit: mobile ? '' : 'flex:1;display:flex;flex-direction:column;',
+      formFit: mobile ? '' : 'flex:1;display:flex;flex-direction:column;',
+      msgLabelFit: mobile ? 'display:block;' : 'display:flex;flex-direction:column;flex:1;min-height:96px;',
+      msgFit: mobile ? 'resize:vertical;' : 'flex:1;min-height:56px;resize:none;',
+      gridStyle: mobile
+        ? 'display:flex;flex-direction:column;margin-top:clamp(20px,3vh,32px);'
+        : 'display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,48px);margin-top:clamp(20px,3vh,32px);align-items:stretch;',
+      photoBox: 'position:relative;overflow:hidden;border-radius:2px;background:var(--ph);' + (mobile ? 'aspect-ratio:4/3;' : 'flex:1;min-height:360px;'),
+      ctLabel: T('ct.label'), ctReply: T('ct.reply'), formTitle: T('ct.formTitle'),
+      lblName: T('ct.name'), phName: T('ct.namePh'), lblEmail: T('ct.email'),
+      lblMessage: T('ct.message'), phMessage: T('ct.messagePh'), lblInstagram: T('ct.instagram'),
+      atWork: T('ct.atWork'), aboutLabel: ui.lang === 'en' ? 'about' : 'à propos',
+      // Section « Ils m'ont fait confiance » — logos toujours visibles, agrandis au survol.
+      trustTitle: ui.lang === 'en' ? 'They trusted me' : 'Ils m’ont fait confiance',
+      logos: [
+        { src: 'images/logo-montreal-rugby.png', name: 'Montréal Rugby' },
+        { src: 'images/logo-la-cremerie.jpg', name: 'La Crèmerie — BMX Store' },
+        { src: 'images/logo-art-bmx.png', name: 'A.R.T. BMX Magazine' },
+        { src: 'images/logo-montreal-2026.jpg', name: 'Montréal 2026' }
+      ].map((lg, i) => {
+        // Logos non cliquables : agrandi au survol, les autres passent à l'arrière-plan (estompés).
+        const size = mobile ? 'width:88px;height:66px;' : 'width:52px;height:40px;';
+        const hov = this.state.hoverLogo;
+        const isHov = hov === i, otherHov = hov !== -1 && !isHov;
+        return {
+          ...lg,
+          enter: () => this.setState({ hoverLogo: i }),
+          leave: () => this.setState({ hoverLogo: -1 }),
+          boxStyle: 'display:flex;align-items:center;justify-content:center;' + size + 'background:#FFFFFF;border:1px solid var(--line);border-radius:4px;padding:6px;transition:transform .28s cubic-bezier(.22,1,.36,1),box-shadow .28s,border-color .28s,opacity .2s;transform-origin:center;position:relative;'
+            + (isHov ? 'transform:scale(3.2);box-shadow:0 16px 40px rgba(0,0,0,.25);border-color:var(--accent);z-index:50;'
+                     : (otherHov ? 'opacity:.3;z-index:1;' : 'z-index:1;'))
+        };
+      })
+    };
+    // Mentions légales en surcouche (pas de changement de page).
+    base.mentionsOpen = this.state.mentionsOpen;
+    base.openMentions = () => this.setState({ mentionsOpen: true });
+    base.closeMentions = () => this.setState({ mentionsOpen: false });
+    base.stopClick = (e) => e.stopPropagation();
+    const formVals = {
+      fName: this.state.name, setName: (e) => this.setState({ name: e.target.value }),
+      fEmail: this.state.email, setEmail: (e) => this.setState({ email: e.target.value }),
+      fMsg: this.state.msg, setMsg: (e) => this.setState({ msg: e.target.value }),
+      fHp: this.state.hp, setHp: (e) => this.setState({ hp: e.target.value }),
+      formError: this.state.formError,
+      btnLabel: this.state.sending ? T('ct.sending') : T('ct.send'),
+      // Confirmation visible après envoi — remplace le bouton par un panneau de succès.
+      notSent: !this.state.sent, sentOpen: this.state.sent,
+      sentTitle: ui.lang === 'en' ? 'Message sent' : 'Message envoyé',
+      sentBody: ui.lang === 'en' ? 'Thank you! I usually reply within 24 hours. Feel free to add details by email in the meantime.' : 'Merci ! Je réponds généralement sous 24 h. En attendant, vous pouvez compléter par courriel si besoin.',
+      sentAgain: ui.lang === 'en' ? 'Send another message' : 'Envoyer un autre message',
+      resetSent: () => this.setState({ sent: false, formError: '' }),
+      onSubmit: (e) => {
+        e.preventDefault();
+        if (this.state.sent || this.state.sending) return;
+        // Honeypot : un robot remplit le champ caché → on feint le succès sans rien écrire.
+        if (this.state.hp) { this.setState({ sent: true, name: '', email: '', msg: '', hp: '', formError: '' }); return; }
+        const name = (this.state.name || '').trim();
+        const email = (this.state.email || '').trim();
+        const msg = (this.state.msg || '').trim();
+        const type = 'Contact';
+        // Validation
+        if (msg.length < 5) { this.setState({ formError: T('ct.errShort') }); return; }
+        if (msg.length > 4000) { this.setState({ formError: T('ct.errLong') }); return; }
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { this.setState({ formError: T('ct.errEmail') }); return; }
+        // Anti-flood : 30 s minimum entre deux envois.
+        try {
+          const lastT = +localStorage.getItem('nv_contact_last') || 0;
+          if (Date.now() - lastT < 30000) { this.setState({ formError: T('ct.errRate') }); return; }
+        } catch (err) {}
+        const payload = { name: name || 'Sans nom', email, type, body: msg.slice(0, 4000) };
+        // 1) Toujours enregistrer (visible dans l'admin).
+        if (window.NVStore) window.NVStore.update((st) => {
+          st.messages.unshift({ id: window.NVStore.uid('msg'), name: payload.name, email, type, body: payload.body, date: new Date().toLocaleDateString('fr-CA') });
+        });
+        // 2) Envoyer par email (Web3Forms) si configuré.
+        this.setState({ sending: true, formError: '' });
+        this.sendEmail(payload).then(() => {
+          try { localStorage.setItem('nv_contact_last', String(Date.now())); } catch (err) {}
+          this.setState({ sending: false, sent: true, name: '', email: '', msg: '', hp: '' });
+        }).catch((err) => {
+          // Le message est déjà enregistré ; on confirme quand même mais on logue l'échec email.
+          console.warn('Contact: envoi email échoué (message tout de même enregistré).', err);
+          try { localStorage.setItem('nv_contact_last', String(Date.now())); } catch (e2) {}
+          this.setState({ sending: false, sent: true, name: '', email: '', msg: '', hp: '' });
+        });
+      }
+    };
+    if (!this.state.ready || !window.NVStore) return { ...base, ...formVals, brandName: 'Nicolas Vivaudou', brandRole: ui.lang === 'en' ? 'Photographer' : 'Photographe', brandLoc: 'Montréal, QC', heading: '', intro: '', email: '', instagram: '', emailHref: '#', instagramHref: '#', aboutName: '', aboutPhoto: 'images/nicolas.jpg', aboutText: '', hasServices: false, services: [], servicesTitle: '', hasBackstage: false, backstage: [] };
+    const s = window.NVStore.get();
+    // Prestations dépliables (éditables dans l'admin, onglet Contenu).
+    const services = (s.services || []).map((sv, i) => {
+      const open = this.state.openService === i;
+      return {
+        name: L(sv.name, sv.nameEn), price: L(sv.price, sv.priceEn), desc: L(sv.desc, sv.descEn),
+        isOpen: open, open: String(open),
+        toggle: () => this.setState(st => ({ openService: st.openService === i ? -1 : i })),
+        chev: 'font-size:14px;color:var(--muted);display:inline-block;transition:transform .25s ease;transform:rotate(' + (open ? '180deg' : '0deg') + ');'
+      };
+    });
+    return {
+      ...base, ...formVals,
+      hasServices: services.length > 0, services,
+      toggleServices: () => this.setState(st => ({ servicesPanel: !st.servicesPanel })),
+      isServicesOpen: this.state.servicesPanel, servicesOpen: String(this.state.servicesPanel),
+      servicesTitle: ui.lang === 'en' ? 'services & rates' : 'prestations & tarifs',
+      brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn), brandLoc: s.brand.location,
+      heading: L(s.contact.heading, s.contact.headingEn), intro: L(s.contact.intro, s.contact.introEn), email: s.contact.email, instagram: s.contact.instagram,
+      emailHref: 'mailto:' + s.contact.email,
+      instagramHref: 'https://instagram.com/' + String(s.contact.instagram || '').replace(/^@/, ''),
+      aboutName: s.about.name, aboutPhoto: window.NVStore.resolveSrc(s.about.photo), aboutText: L(s.about.text, s.about.textEn),
+      hasBackstage: (s.about.backstage || []).length > 0,
+      backstage: (s.about.backstage || []).map(p => ({ src: window.NVStore.resolveSrc(p) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

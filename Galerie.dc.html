@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Galerie — Nicolas Vivaudou</title>
+<meta name="description" content="Parcourez les séries photographiques de Nicolas Vivaudou — portrait, paysage, évènements et sport.">
+<link rel="canonical" href="https://www.nicolasvivaudou.com/Galerie.dc.html">
+<meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#100F0D" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Nicolas Vivaudou">
+<meta property="og:title" content="Galerie — Nicolas Vivaudou">
+<meta property="og:description" content="Parcourez les séries photographiques de Nicolas Vivaudou — portrait, paysage, évènements et sport.">
+<meta property="og:url" content="https://www.nicolasvivaudou.com/Galerie.dc.html">
+<meta property="og:image" content="https://www.nicolasvivaudou.com/images/L1190335.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Galerie — Nicolas Vivaudou">
+<meta name="twitter:description" content="Parcourez les séries photographiques de Nicolas Vivaudou — portrait, paysage, évènements et sport.">
+<meta name="twitter:image" content="https://www.nicolasvivaudou.com/images/L1190335.jpg">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="nv-theme.js"></script>
+<script src="nv-config.js"></script>
+<script src="nv-i18n.js"></script>
+<script src="nv-storage.js"></script>
+<script src="nv-backend.js"></script>
+<script src="nv-auth.js"></script>
+<script src="store.js"></script>
+<script src="nv-ux.js"></script>
+<style>
+  :root{--bg:#FFFFFF;--bg-2:#FAFAFA;--ink:#111111;--ink-2:#4A4A4A;--muted:#767171;--faint:#B0AAA2;--line:#E6E6E6;--ph:#EEEEEE;--accent:#F2C13C;--on-accent:#161310;--error:#C0392B;}
+  [data-theme="dark"]{--bg:#100F0D;--bg-2:#1A1815;--ink:#F1EDE6;--ink-2:#B4AEA3;--muted:#86817A;--faint:#4C4840;--line:#2A2723;--ph:#1E1B17;--accent:#F2C13C;--on-accent:#161310;--error:#E8746A;color-scheme:dark;}
+  html{background:var(--bg);transition:background .35s ease;}
+  body{transition:background .35s ease,color .35s ease;}
+  html[data-nv-leaving] body{opacity:0;transition:opacity .2s ease;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px;}
+  a:focus:not(:focus-visible),button:focus:not(:focus-visible){outline:none;}
+  .nv-page{transition:background .35s ease,color .35s ease;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+  a{color:inherit;}
+</style>
+</helmet>
+
+<div class="nv-page" style="background:var(--bg);min-height:100vh;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--ink);">
+
+  <header style="display:flex;justify-content:space-between;align-items:baseline;padding:18px 20px 0;gap:10px;">
+    <a href="Accueil.dc.html" style="text-decoration:none;font-size:14px;color:var(--ink);letter-spacing:-.01em;">{{ brandName }}<span style="color:var(--muted);"> — {{ brandRole }}</span></a>
+    <div style="display:flex;align-items:baseline;gap:16px;">
+      <nav style="{{ deskNav }}"><a href="Accueil.dc.html" style="{{ navHomeStyle }}">{{ navHome }}</a><span style="color:var(--muted);">, </span><a href="Portfolio.dc.html" style="{{ navGalleriesStyle }}">{{ navGalleries }}</a><span style="color:var(--muted);">, </span><a href="Client.dc.html" style="{{ navClientStyle }}">{{ navClient }}</a><span style="color:var(--muted);">, </span><a href="Contact.dc.html" style="{{ navContactStyle }}">{{ navContact }}</a></nav>
+      <div style="{{ langWrap }}"><button onClick="{{ setFr }}" style="{{ frBtn }}">FR</button><span style="color:var(--faint);font-size:13px;">/</span><button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button></div>
+      <button onClick="{{ toggleTheme }}" aria-label="{{ themeLabel }}" title="{{ themeLabel }}" style="{{ themeBtn }}">{{ themeIcon }}</button>
+      <button onClick="{{ toggleMenu }}" style="{{ menuBtn }}">{{ menuLabel }}</button>
+    </div>
+  </header>
+
+  <sc-if value="{{ menuOpen }}">
+  <div role="dialog" aria-modal="true" style="position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;padding:18px 20px 40px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:14px;color:var(--muted);">{{ menuLabel }}</span><button onClick="{{ toggleMenu }}" aria-label="Fermer" style="border:none;background:none;font-size:30px;line-height:1;color:var(--ink);cursor:pointer;padding:0 4px;">×</button></div>
+    <nav style="display:flex;flex-direction:column;margin-top:24px;">
+      <a href="Accueil.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navHome }}</a>
+      <a href="Portfolio.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navGalleries }}</a>
+      <a href="Client.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navClient }}</a>
+      <a href="Contact.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navContact }}</a>
+    </nav>
+    <div style="margin-top:22px;display:flex;align-items:center;gap:8px;"><button onClick="{{ setFr }}" style="{{ frBtn }}">FR</button><span style="color:var(--faint);">/</span><button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button></div>
+    <span style="margin-top:auto;font-size:13px;color:var(--muted);">{{ brandLoc }} — 2026</span>
+  </div>
+  </sc-if>
+
+  <div style="padding:26px 20px 0;">
+    <h1 style="margin:0;font-size:clamp(48px,14vw,128px);font-weight:400;line-height:.9;letter-spacing:-.035em;">{{ activeName }}</h1>
+    <p style="margin:12px 0 0;max-width:480px;font-size:clamp(15px,4.4vw,18px);line-height:1.5;color:var(--ink-2);">{{ activeDesc }}</p>
+
+    <div style="position:relative;margin-top:24px;display:inline-block;">
+      <button onClick="{{ toggleGalPick }}" aria-expanded="{{ galPickOpen }}" style="display:flex;align-items:center;gap:12px;border:none;background:none;padding:8px 0;cursor:pointer;font-family:inherit;font-size:clamp(15px,4.4vw,17px);color:var(--ink);letter-spacing:-.02em;">
+        <span aria-hidden="true" style="display:flex;flex-direction:column;gap:4px;width:20px;">
+          <span style="display:block;height:1.5px;background:currentColor;"></span>
+          <span style="display:block;height:1.5px;background:currentColor;"></span>
+          <span style="display:block;height:1.5px;background:currentColor;"></span>
+        </span>
+        <span style="color:var(--muted);">{{ galleryLabel }}</span>
+      </button>
+      <sc-if value="{{ galPickOpen }}">
+      <div style="position:absolute;left:0;top:100%;z-index:30;background:var(--bg);border:1px solid var(--line);border-radius:2px;min-width:240px;padding:6px 0;box-shadow:0 12px 34px rgba(0,0,0,.1);">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+          <button onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button>
+        </sc-for>
+      </div>
+      </sc-if>
+    </div>
+
+    <div style="columns:{{ colWidth }};column-gap:clamp(8px,2vw,14px);margin-top:18px;opacity:{{ gridOpacity }};transition:opacity .22s ease;">
+      <sc-for list="{{ photos }}" as="p" hint-placeholder-count="8">
+        <button onClick="{{ p.open }}" style="display:block;width:100%;border:none;padding:0;margin:0 0 clamp(8px,2vw,14px);background:var(--ph);border-radius:2px;overflow:hidden;cursor:zoom-in;break-inside:avoid;">
+          <img src="{{ p.src }}" alt="{{ activeName }}" loading="lazy" style="width:100%;display:block;" />
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-top:48px;padding:18px 0 40px;border-top:1px solid var(--line);">
+      <span style="display:flex;align-items:center;gap:12px;font-size:13px;">
+        <a href="Portfolio.dc.html" style="color:var(--muted);text-decoration:none;">{{ allGalleries }}</a>
+        <a href="{{ emailHref }}" style="text-decoration:none;color:var(--muted);">{{ email }}</a>
+        <a href="{{ instagramHref }}" target="_blank" rel="noopener" aria-label="Instagram" style="display:flex;align-items:center;color:var(--muted);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"></rect><circle cx="12" cy="12" r="4.5"></circle><circle cx="17.6" cy="6.4" r="1.3" fill="currentColor" stroke="none"></circle></svg></a>
+      </span>
+      <a href="Contact.dc.html" style="font-size:clamp(20px,5vw,28px);text-decoration:none;color:var(--ink);letter-spacing:-.02em;">{{ bookLabel }}</a>
+    </div>
+  </div>
+
+  <sc-if value="{{ lightboxOpen }}">
+  <div onClick="{{ closeLightbox }}" onTouchStart="{{ tStart }}" onTouchEnd="{{ tEnd }}" style="position:fixed;inset:0;z-index:80;background:rgba(17,17,17,.96);touch-action:pan-y;display:flex;align-items:center;justify-content:center;padding:clamp(12px,4vw,48px);">
+    <button onClick="{{ closeLightbox }}" aria-label="Fermer" style="position:absolute;top:16px;right:18px;border:none;background:none;color:#fff;font-size:34px;line-height:1;cursor:pointer;z-index:2;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">×</button>
+    <button onClick="{{ prev }}" aria-label="Précédent" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px;border-radius:999px;font-size:20px;cursor:pointer;z-index:2;">‹</button>
+    <button onClick="{{ next }}" aria-label="Suivant" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px;border-radius:999px;font-size:20px;cursor:pointer;z-index:2;">›</button>
+    <img src="{{ lightboxSrc }}" alt="{{ activeName }}" onClick="{{ stop }}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:2px;" />
+    <span style="position:absolute;bottom:18px;left:50%;transform:translateX(-50%);font-size:13px;color:var(--faint);letter-spacing:-.01em;">{{ activeName }}</span>
+  </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { ready: false, tick: 0, mobile: typeof window !== 'undefined' && window.innerWidth < 820, menuOpen: false, slug: null, lb: -1, galPick: false, fade: false };
+  componentDidMount() {
+    this._wait = setInterval(() => {
+      if (window.NVStore) {
+        clearInterval(this._wait);
+        const h = (location.hash || '').replace('#', '');
+        const pub = window.NVStore.publicGalleries();
+        const slug = pub.find(g => g.slug === h) ? h : (pub[0] && pub[0].slug);
+        this.setState({ ready: true, slug });
+        this._unsub = window.NVStore.subscribe(() => this.setState(s => ({ tick: s.tick + 1 })));
+      }
+    }, 30);
+    this._r = () => this.setState({ mobile: window.innerWidth < 820, menuOpen: window.innerWidth < 820 ? this.state.menuOpen : false });
+    window.addEventListener('resize', this._r);
+    this._ulang = window.NVI18n.onChange(() => this.setState(s => ({ tick: s.tick + 1 })));
+    this._k = (e) => { if (this.state.lb < 0) return; if (e.key === 'Escape') this.setState({ lb: -1 }); if (e.key === 'ArrowRight') this.move(1); if (e.key === 'ArrowLeft') this.move(-1); };
+    window.addEventListener('keydown', this._k);
+  }
+  componentWillUnmount() { clearInterval(this._wait); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); window.removeEventListener('keydown', this._k); }
+  curGallery() { const pub = window.NVStore.publicGalleries(); return pub.find(g => g.slug === this.state.slug) || pub[0]; }
+  move(d) { const g = this.curGallery(); if (!g) return; const n = g.photoIds.length; let i = this.state.lb + d; if (i < 0) i = n - 1; if (i >= n) i = 0; this.setState({ lb: i }); this.preload(i); }
+  // Précharge les photos voisines pour un défilement instantané dans la lightbox.
+  preload(i) { try { const g = this.curGallery(); if (!g) return; const s = window.NVStore.get(); const n = g.photoIds.length; [i + 1, i - 1].forEach(j => { const k = ((j % n) + n) % n; const p = s.photos[g.photoIds[k]]; if (p) { const im = new Image(); im.src = window.NVStore.resolveSrc(p); } }); } catch (e) {} }
+  renderVals() {
+    const mobile = this.state.mobile;
+    const ui = window.NVI18n.ui('galleries');
+    const T = window.NVI18n.t, L = window.NVI18n.pick;
+    const base = {
+      ...ui,
+      setFr: () => { window.NVI18n.setLang('fr'); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
+      setEn: () => { window.NVI18n.setLang('en'); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
+      mobile, menuOpen: this.state.menuOpen,
+      themeIcon: (window.NVTheme && NVTheme.theme === 'dark') ? '\u2600\uFE0E' : '\u263e',
+      themeLabel: (window.NVTheme && NVTheme.theme === 'dark') ? (ui.lang === 'en' ? 'Light mode' : 'Mode clair') : (ui.lang === 'en' ? 'Dark mode' : 'Mode sombre'),
+      themeBtn: 'border:none;background:none;cursor:pointer;font-family:inherit;font-size:15px;line-height:1;color:var(--muted);padding:0;transition:color .15s;',
+      toggleTheme: () => { if (window.NVTheme) NVTheme.toggle(); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
+      galleryLabel: T('gal.label'), imagesWord: T('gal.images'), allGalleries: T('gal.allGalleries'), bookLabel: T('gal.book'),
+      toggleMenu: () => this.setState({ menuOpen: !this.state.menuOpen }),
+      toggleGalPick: () => this.setState({ galPick: !this.state.galPick }), galPickOpen: this.state.galPick,
+      deskNav: 'display:' + (mobile ? 'none' : 'block') + ';font-size:14px;letter-spacing:-.01em;',
+      menuBtn: 'display:' + (mobile ? 'block' : 'none') + ';border:none;background:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--ink);padding:0;',
+      colWidth: mobile ? '160px' : '300px',
+      gridOpacity: this.state.fade ? '0' : '1',
+      email: '', emailHref: '#', instagramHref: '#'
+    };
+    if (!this.state.ready || !window.NVStore) return { ...base, brandName: 'Nicolas Vivaudou', brandRole: ui.lang === 'en' ? 'Photographer' : 'Photographe', brandLoc: 'Montréal, QC', activeName: '', activeDesc: '', activeCount: 0, tabs: [], photos: [], lightboxOpen: false };
+    const s = window.NVStore.get();
+    const pub = window.NVStore.publicGalleries();
+    const g = this.curGallery();
+    const tabBase = 'display:block;width:100%;text-align:left;border:none;background:none;padding:11px 18px;cursor:pointer;font-family:inherit;font-size:16px;white-space:nowrap;letter-spacing:-.02em;transition:color .15s,background .15s;';
+    const tabs = pub.map(x => ({ label: L(x.name, x.nameEn), pick: () => { this.setState({ galPick: false, fade: true }); clearTimeout(this._fadeT); this._fadeT = setTimeout(() => this.setState({ slug: x.slug, lb: -1, fade: false }), 220); }, style: tabBase + (g && x.slug === g.slug ? 'color:var(--ink);border-left:2px solid var(--accent);padding-left:16px;' : 'color:var(--muted);border-left:2px solid transparent;padding-left:16px;') }));
+    const photoSrcs = g ? g.photoIds.map(pid => window.NVStore.resolveSrc(s.photos[pid])) : [];
+    const photos = photoSrcs.map((src, i) => ({ src, open: () => { this.setState({ lb: i }); this.preload(i); } }));
+    const lbOpen = this.state.lb >= 0;
+    return {
+      ...base,
+      brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn), brandLoc: s.brand.location,
+      email: s.contact.email, emailHref: 'mailto:' + s.contact.email,
+      instagramHref: 'https://instagram.com/' + String(s.contact.instagram || '').replace(/^@/, ''),
+      activeName: g ? L(g.name, g.nameEn) : '', activeDesc: g ? L(g.desc, g.descEn) : '', activeCount: photoSrcs.length,
+      tabs, photos,
+      lightboxOpen: lbOpen, lightboxSrc: lbOpen ? photoSrcs[this.state.lb] : '', lightboxIdx: lbOpen ? this.state.lb + 1 : 0,
+      closeLightbox: () => this.setState({ lb: -1 }),
+      next: (e) => { e.stopPropagation(); this.move(1); }, prev: (e) => { e.stopPropagation(); this.move(-1); }, stop: (e) => e.stopPropagation(),
+      // Swipe mobile : glisser horizontalement pour changer de photo.
+      tStart: (e) => { const t = e.touches[0]; this._tx = t.clientX; this._ty = t.clientY; this._ts = Date.now(); },
+      tEnd: (e) => {
+        if (this._tx == null) return;
+        const t = e.changedTouches[0];
+        const dx = t.clientX - this._tx, dy = t.clientY - this._ty;
+        this._tx = null;
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - this._ts < 800) {
+          e.stopPropagation(); e.preventDefault();
+          this.move(dx < 0 ? 1 : -1);
+        }
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
