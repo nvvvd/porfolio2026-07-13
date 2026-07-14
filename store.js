@@ -238,7 +238,7 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
   var NVStore = {
     get: function () { return state; },
     subscribe: function (cb) { listeners.push(cb); return function () { listeners = listeners.filter(function (x) { return x !== cb; }); }; },
-    update: function (fn) { fn(state); emit(); scheduleSave(); },
+    update: function (fn) { fn(state); emit(); if (backend && !applyingRemote) { try { backend.push(state); } catch (e) {} } scheduleSave(); },
     save: function () { save(); emit(); },
     // Re-render tous les abonnés sans rien sauvegarder (utilisé par le changement de langue).
     ping: function () { emit(); },
