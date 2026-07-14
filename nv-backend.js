@@ -177,6 +177,7 @@
         };
         last = clone(state);
         hydrating = false;
+        if (pushing || dirty) { console.warn('NVBackend: hydratation ignoree (edition locale en cours).'); onStatus('conflict'); return; }
         ingest(state);
         onStatus('saved');
       }).catch(function (e) {
