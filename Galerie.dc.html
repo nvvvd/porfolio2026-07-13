@@ -102,7 +102,7 @@
     <div style="columns:{{ colWidth }};column-gap:clamp(8px,2vw,14px);margin-top:18px;opacity:{{ gridOpacity }};transition:opacity .22s ease;">
       <sc-for list="{{ photos }}" as="p" hint-placeholder-count="8">
         <button onClick="{{ p.open }}" style="display:block;width:100%;border:none;padding:0;margin:0 0 clamp(8px,2vw,14px);background:var(--ph);border-radius:2px;overflow:hidden;cursor:zoom-in;break-inside:avoid;">
-          <img src="{{ p.src }}" alt="{{ activeName }}" loading="lazy" style="width:100%;display:block;" />
+          <img src="{{ p.src }}" alt="{{ activeName }}" loading="lazy" decoding="async" fetchpriority="low" style="width:100%;display:block;" />
         </button>
       </sc-for>
     </div>
