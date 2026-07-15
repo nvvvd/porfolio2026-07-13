@@ -190,7 +190,7 @@
               </div>
             </div>
             <label class="nvlabel" style="margin-top:14px;">Texte de présentation</label>
-            <textarea class="nvfield" rows="7" onInput="{{ s_aboutText }}" style="resize:vertical;line-height:1.5;">{{ f_aboutText }}</textarea>
+            <textarea class="nvfield" rows="7" value="{{ f_aboutText }}" onInput="{{ s_aboutText }}" style="resize:vertical;line-height:1.5;"></textarea>
             <label class="nvlabel" style="margin-top:14px;">Photos coulisses (sous « Ils m’ont fait confiance », page à propos)</label>
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
               <sc-for list="{{ backstageAdmin }}" as="b" hint-placeholder-count="0">
@@ -208,7 +208,7 @@
             <label class="nvlabel">Titre de la page</label>
             <input class="nvfield" value="{{ f_cHeading }}" onInput="{{ s_cHeading }}" />
             <label class="nvlabel" style="margin-top:14px;">Intro</label>
-            <textarea class="nvfield" rows="3" onInput="{{ s_cIntro }}" style="resize:vertical;line-height:1.5;">{{ f_cIntro }}</textarea>
+            <textarea class="nvfield" rows="3" value="{{ f_cIntro }}" onInput="{{ s_cIntro }}" style="resize:vertical;line-height:1.5;"></textarea>
             <label class="nvlabel" style="margin-top:14px;">Courriel</label>
             <input class="nvfield" value="{{ f_cEmail }}" onInput="{{ s_cEmail }}" />
             <label class="nvlabel" style="margin-top:14px;">Instagram</label>
@@ -224,7 +224,7 @@
                   <input class="nvfield" value="{{ sv.price }}" onInput="{{ sv.setPrice }}" placeholder="tarif" style="flex:1;min-width:100px;" />
                   <button onClick="{{ sv.remove }}" style="{{ dangerBtnSm }}">✕</button>
                 </div>
-                <textarea class="nvfield" rows="2" onInput="{{ sv.setDesc }}" placeholder="Description courte…" style="margin-top:6px;resize:vertical;line-height:1.45;font-size:13px;">{{ sv.desc }}</textarea>
+                <textarea class="nvfield" rows="2" value="{{ sv.desc }}" onInput="{{ sv.setDesc }}" placeholder="Description courte…" style="margin-top:6px;resize:vertical;line-height:1.45;font-size:13px;"></textarea>
               </div>
             </sc-for>
           </section>
