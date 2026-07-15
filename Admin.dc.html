@@ -42,8 +42,9 @@
     <form onSubmit="{{ onUnlock }}" style="width:100%;max-width:360px;background:#fff;border:1px solid #E6E6E6;border-radius:3px;padding:30px;">
       <div style="font-size:13px;color:#9A9A9A;">administration</div>
       <h1 style="margin:6px 0 0;font-size:36px;font-weight:400;letter-spacing:-.035em;">back-office.</h1>
-      <p style="margin:12px 0 22px;font-size:14px;color:#5A5A5A;line-height:1.5;">Entrez le code administrateur pour gérer le site.</p>
-      <input type="password" value="{{ pinInput }}" onInput="{{ setPin }}" placeholder="••••" class="nvfield" style="text-align:center;letter-spacing:.3em;font-size:18px;" />
+      <p style="margin:12px 0 22px;font-size:14px;color:#5A5A5A;line-height:1.5;">Connectez-vous avec votre courriel et votre mot de passe.</p>
+                <input type="email" value="{{ emailInput }}" onInput="{{ setEmail }}" placeholder="courriel" class="nvfield" style="margin-bottom:10px;" />
+               <input type="password" value="{{ pinInput }}" onInput="{{ setPin }}" placeholder="mot de passe" class="nvfield" />
       <sc-if value="{{ pinError }}"><div style="margin-top:10px;font-size:13px;color:#C0392B;">Code incorrect.</div></sc-if>
       <button type="submit" style="width:100%;margin-top:18px;padding:14px;border:none;border-radius:2px;background:#111;color:#fff;font-size:14px;cursor:pointer;">Déverrouiller →</button>
     </form>
@@ -466,7 +467,7 @@
 class Component extends DCLogic {
   state = {
     ready: false, tick: 0, mobile: typeof window !== 'undefined' && window.innerWidth < 900,
-    locked: true, pinInput: '', pinError: false,
+    locked: true, pinInput: '', emailInput: '', pinError: false,
     tab: 'stats', clientTab: null, showArchived: false, copiedLinkId: null, newPin: '', pinSaved: false,
     scanning: false, scanMsg: '', scanPct: '0%', bgScanning: false, bgScanMsg: '', bgScanPct: '0%',
     engine: 'idle',
@@ -933,9 +934,9 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
     return {
       // gate
       locked: this.state.locked, unlocked: !this.state.locked,
-      pinInput: this.state.pinInput, pinError: this.state.pinError,
-      setPin: (e) => this.setState({ pinInput: e.target.value, pinError: false }),
-      onUnlock: (e) => { e.preventDefault(); window.NVAuth.loginAdmin(this.state.pinInput).then((ok) => { if (ok) this.setState({ locked: false }); else this.setState({ pinError: true }); }); },
+      pinInput: this.state.pinInput, emailInput: this.state.emailInput, pinError: this.state.pinError,
+      setPin: (e) => this.setState({ pinInput: e.target.value, pinError: false }), setEmail: (e) => this.setState({ emailInput: e.target.value, pinError: false }),
+      onUnlock: (e) => { e.preventDefault(); window.NVAuth.loginAdmin(this.state.emailInput, this.state.pinInput).then((ok) => { if (ok) this.setState({ locked: false }); else this.setState({ pinError: true }); }); },
       lock: () => { window.NVAuth.lockAdmin(); this.setState({ locked: true, pinInput: '' }); },
 
       // layout
