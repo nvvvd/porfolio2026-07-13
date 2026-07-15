@@ -42,7 +42,7 @@
     var cfg = (window.NV_CONFIG || {}).supabase || {};
     if (!cfg.url || !cfg.anonKey) return Promise.reject(new Error('NV_CONFIG.supabase.url / anonKey manquants'));
     _clientPromise = loadScript(LIB).then(function () {
-      _client = window.supabase.createClient(cfg.url, cfg.anonKey, { auth: { persistSession: false } });
+      _client = window.supabase.createClient(cfg.url, cfg.anonKey, { auth: { persistSession: true } });
       return _client;
     });
     return _clientPromise;
