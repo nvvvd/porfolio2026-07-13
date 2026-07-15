@@ -518,7 +518,7 @@ class Component extends DCLogic {
       fr.readAsDataURL(file);
     });
   }
-  loadImg(src) { return new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.src = src; }); }
+  loadImg(src) { return new Promise((res) => { const i = new Image(); i.onload = () => res(i); i.crossOrigin='anonymous'; i.src = src; }); }
   scanCanvas(img, max) {
     const sc = Math.min(1, (max || 640) / Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height));
     if (sc >= 1) return img;
