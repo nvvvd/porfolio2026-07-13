@@ -118,7 +118,7 @@
           <sc-for list="{{ galleryCards }}" as="g" hint-placeholder-count="2">
             <button onClick="{{ g.open }}" style="text-align:left;border:1px solid var(--line);background:var(--card);border-radius:2px;overflow:hidden;cursor:pointer;padding:0;transition:opacity .2s;" style-hover="opacity:.92;">
               <div style="position:relative;aspect-ratio:16/10;background:var(--ph);">
-                <img src="{{ g.cover }}" alt="{{ g.name }}" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                <img src="{{ g.cover }}" alt="{{ g.name }}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block;" />
                 <sc-if value="{{ g.faceSearch }}"><span style="position:absolute;left:10px;top:10px;font-size:11px;color:var(--on-accent);background:var(--accent);padding:4px 8px;border-radius:2px;">{{ faceBadge }}</span></sc-if>
                 <sc-if value="{{ g.expired }}" hint-placeholder-val=""><span style="position:absolute;inset:0;background:rgba(17,17,17,.55);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;letter-spacing:.08em;text-transform:uppercase;">{{ expiredWord }}</span></sc-if>
               </div>
@@ -177,7 +177,7 @@
         <div style="columns:{{ colWidth }};column-gap:clamp(8px,2vw,14px);">
           <sc-for list="{{ photos }}" as="p" hint-placeholder-count="9">
             <div style="position:relative;margin:0 0 clamp(8px,2vw,14px);break-inside:avoid;border-radius:2px;overflow:hidden;background:var(--ph);">
-              <img src="{{ p.src }}" alt="photo" loading="lazy" style="width:100%;display:block;cursor:zoom-in;" onClick="{{ p.zoom }}" />
+              <img src="{{ p.src }}" alt="photo" loading="lazy" decoding="async" style="width:100%;display:block;cursor:zoom-in;" onClick="{{ p.zoom }}" />
               <span aria-hidden="true" style="{{ wmStyle }}">{{ wmText }}</span>
               <sc-if value="{{ canDownload }}" hint-placeholder-val=""><a href="{{ p.src }}" download aria-label="Télécharger" style="position:absolute;left:8px;bottom:8px;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:999px;background:rgba(17,17,17,.42);color:#fff;font-size:16px;text-decoration:none;line-height:1;">↓</a></sc-if>
               <button onClick="{{ p.toggle }}" aria-label="Aimer" style="{{ p.heartStyle }}">{{ p.heart }}</button>
@@ -253,7 +253,7 @@
               <div style="columns:{{ colWidth }};column-gap:clamp(8px,2vw,14px);margin-top:14px;">
                 <sc-for list="{{ grp.items }}" as="p" hint-placeholder-count="3">
                   <div style="position:relative;margin:0 0 clamp(8px,2vw,14px);break-inside:avoid;border-radius:2px;overflow:hidden;background:var(--ph);">
-                    <img src="{{ p.src }}" alt="photo sélectionnée" loading="lazy" style="width:100%;display:block;" />
+                    <img src="{{ p.src }}" alt="photo sélectionnée" loading="lazy" decoding="async" style="width:100%;display:block;" />
                     <button onClick="{{ p.toggle }}" aria-label="Retirer" style="position:absolute;right:8px;top:8px;border:none;width:44px;height:44px;border-radius:999px;background:rgba(17,17,17,.55);color:#fff;font-size:16px;cursor:pointer;line-height:1;">×</button>
                     <sc-if value="{{ canDownload }}" hint-placeholder-val=""><a href="{{ p.src }}" download aria-label="Télécharger la photo" style="position:absolute;right:8px;bottom:8px;display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:999px;background:rgba(17,17,17,.55);color:#fff;font-size:15px;text-decoration:none;line-height:1;">↓</a></sc-if>
                   </div>
