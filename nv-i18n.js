@@ -38,8 +38,8 @@
     // --- Portfolio ---
     'pf.galleries':   { fr: 'galeries', en: 'galleries' },
     'pf.h1':          { fr: 'galeries', en: 'galleries' },
-    'pf.intro':       { fr: "Plusieurs territoires, une même obsession pour la lumière — du visage à l'horizon survolé au drone.",
-                        en: 'Several territories, one obsession with light — from the face to the drone-flown horizon.' },
+    'pf.intro':       { fr: "",
+                        en: '' },
     'pf.aSession':    { fr: 'Une séance en tête ?', en: 'Have a session in mind?' },
     'pf.getInTouch':  { fr: 'Prendre contact →', en: 'Get in touch →' },
 
