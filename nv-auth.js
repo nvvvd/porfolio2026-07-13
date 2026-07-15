@@ -115,11 +115,12 @@
         return null;
       }).catch(function (e) { console.warn('NVAuth: échec login client', e); return null; });
     },
-    loginAdmin: function (pin) {
-      if (!window.NVBackend || !window.NVBackend.rpc) return Promise.resolve(false);
-      return window.NVBackend.rpc('nv_check_admin', { p_pin: String(pin) })
-        .then(function (ok) { if (ok === true) setAdminSession(); return ok === true; })
-        .catch(function (e) { console.warn('NVAuth: échec login admin', e); return false; });
+      loginAdmin: function (email, password) {
+                 if (!window.NVBackend || !window.NVBackend.client) return Promise.resolve(false);
+                 return window.NVBackend.client().then(function (db) {
+                              return db.auth.signInWithPassword({ email: String(email).trim().toLowerCase(), password: password });
+                 }).then(function (res) { var ok = !!(res && res.data && res.data.session && !res.error); if (ok) setAdminSession(); return ok; })
+                   .catch(function (e) { console.warn('NVAuth: échec login admin', e); return false; });
     }
   };
 
@@ -127,11 +128,11 @@
 
   window.NVAuth = {
     loginClient: function (email, password) { return impl.loginClient(email, password); },
-    loginAdmin: function (pin) { return impl.loginAdmin(pin); },
+        loginAdmin: function (email, password) { return impl.loginAdmin(email, password); },
     logoutClient: function () { try { sessionStorage.removeItem(CLIENT_KEY); } catch (e) {} },
     currentClientId: function () { try { return sessionStorage.getItem(CLIENT_KEY); } catch (e) { return null; } },
     isAdmin: function () { try { return sessionStorage.getItem(ADMIN_KEY) === '1'; } catch (e) { return false; } },
-    lockAdmin: function () { try { sessionStorage.removeItem(ADMIN_KEY); } catch (e) {} },
+        lockAdmin: function () { try { sessionStorage.removeItem(ADMIN_KEY); } catch (e) {} if (REMOTE && window.NVBackend && window.NVBackend.client) { window.NVBackend.client().then(function (db) { db.auth.signOut(); }).catch(function () {}); } },
     // Hachage du code admin (utilisé par l'admin pour enregistrer un nouveau code).
     hashPin: hashPin
   };
