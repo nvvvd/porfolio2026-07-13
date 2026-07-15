@@ -142,6 +142,8 @@
             <input class="nvfield" value="{{ f_brandName }}" onInput="{{ s_brandName }}" />
             <label class="nvlabel" style="margin-top:14px;">Rôle</label>
             <input class="nvfield" value="{{ f_brandRole }}" onInput="{{ s_brandRole }}" />
+            <label class="nvlabel" style="margin-top:14px;">Rôle — English</label>
+            <input class="nvfield" value="{{ f_brandRoleEn }}" onInput="{{ s_brandRoleEn }}" placeholder="English role" />
             <label class="nvlabel" style="margin-top:14px;">Localisation</label>
             <input class="nvfield" value="{{ f_brandLoc }}" onInput="{{ s_brandLoc }}" />
           </section>
@@ -158,6 +160,10 @@
             <input class="nvfield" value="{{ f_heroCapEn }}" onInput="{{ s_heroCapEn }}" placeholder="English caption" />
             <label class="nvlabel" style="margin-top:14px;">Libellé section travaux</label>
             <input class="nvfield" value="{{ f_homeMeta }}" onInput="{{ s_homeMeta }}" />
+            <label class="nvlabel" style="margin-top:14px;">Bouton d'appel (CTA)</label>
+            <input class="nvfield" value="{{ f_heroCta }}" onInput="{{ s_heroCta }}" placeholder="Ex : Voir mon travail" />
+            <label class="nvlabel" style="margin-top:14px;">Bouton d'appel (CTA) — English</label>
+            <input class="nvfield" value="{{ f_heroCtaEn }}" onInput="{{ s_heroCtaEn }}" placeholder="Ex: View my work" />
             <div style="border-top:1px solid #EEE;margin-top:16px;padding-top:14px;">
               <label class="nvlabel">Diaporama d'accueil</label>
               <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -251,10 +257,12 @@
               <div style="flex:1;min-width:200px;">
                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                   <input class="nvfield" value="{{ g.name }}" onInput="{{ g.rename }}" style="max-width:240px;font-size:16px;" />
+                  <input class="nvfield" value="{{ g.nameEn }}" onInput="{{ g.renameEn }}" placeholder="Name — English" style="max-width:240px;font-size:14px;margin-top:6px;color:#5A5A5A;" />
                   <span style="{{ g.tagStyle }}">{{ g.tag }}</span>
                   <sc-if value="{{ g.faceSearch }}"><span style="font-size:11px;color:#111;background:#F2C13C;padding:3px 8px;border-radius:2px;">recherche faciale</span></sc-if>
                 </div>
                 <input class="nvfield" value="{{ g.desc }}" onInput="{{ g.setDesc }}" style="margin-top:8px;font-size:13px;color:#5A5A5A;" />
+                <input class="nvfield" value="{{ g.descEn }}" onInput="{{ g.setDescEn }}" placeholder="Description — English" style="margin-top:6px;font-size:13px;color:#9A9A9A;" />
               </div>
               <div style="display:flex;gap:6px;flex:none;align-items:center;">
                 <span style="font-size:12px;color:#9A9A9A;">{{ g.scanLabel }}</span>
@@ -349,6 +357,7 @@
                 <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;">
                   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex:1;min-width:180px;">
                     <input class="nvfield" value="{{ g.name }}" onInput="{{ g.rename }}" style="max-width:220px;font-size:15px;" />
+                    <input class="nvfield" value="{{ g.nameEn }}" onInput="{{ g.renameEn }}" placeholder="Name — English" style="max-width:220px;font-size:13px;margin-top:6px;color:#5A5A5A;" />
                     <sc-if value="{{ g.faceSearch }}"><span style="font-size:11px;color:#111;background:#F2C13C;padding:3px 8px;border-radius:2px;">recherche faciale</span></sc-if>
                   </div>
                   <div style="display:flex;gap:6px;flex:none;align-items:center;">
@@ -358,6 +367,7 @@
                   </div>
                 </div>
                 <input class="nvfield" value="{{ g.desc }}" onInput="{{ g.setDesc }}" style="margin-top:8px;font-size:13px;color:#5A5A5A;" />
+                <input class="nvfield" value="{{ g.descEn }}" onInput="{{ g.setDescEn }}" placeholder="Description — English" style="margin-top:6px;font-size:13px;color:#9A9A9A;" />
                 <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px;">
                   <label class="nvlabel" style="margin:0;flex:none;">Disponible jusqu'au</label>
                   <input class="nvfield" type="date" value="{{ g.expiresAt }}" onInput="{{ g.setExpires }}" style="max-width:170px;" />
@@ -732,10 +742,13 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
       slidePhotos,
       f_brandName: s.brand.name, s_brandName: onInput((st, v) => st.brand.name = v),
       f_brandRole: s.brand.role, s_brandRole: onInput((st, v) => st.brand.role = v),
+        f_brandRoleEn: s.brand.roleEn || '', s_brandRoleEn: onInput((st, v) => st.brand.roleEn = v),
       f_brandLoc: s.brand.location, s_brandLoc: onInput((st, v) => st.brand.location = v),
       heroSrc: window.NVStore.resolveSrc(s.hero.src),
       onHero: (e) => { const f = e.target.files[0]; if (f) this.setImageField(f, (url, st) => st.hero.src = url); },
       f_heroCap: s.hero.caption, s_heroCap: onInput((st, v) => st.hero.caption = v),
+        f_heroCta: s.hero.cta || '', s_heroCta: onInput((st, v) => st.hero.cta = v),
+        f_heroCtaEn: s.hero.ctaEn || '', s_heroCtaEn: onInput((st, v) => st.hero.ctaEn = v),
         f_heroCapEn: s.hero.captionEn || '', s_heroCapEn: onInput((st, v) => st.hero.captionEn = v),
       f_homeMeta: s.home.metaLabel, s_homeMeta: onInput((st, v) => st.home.metaLabel = v),
       aboutPhoto: window.NVStore.resolveSrc(s.about.photo),
@@ -795,7 +808,9 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
       const scannedN = g.photoIds.filter(pid => s.photos[pid] && s.photos[pid].scanned).length;
       return {
         name: g.name, rename: onInput((st, v) => st.galleries.find(x => x.id === g.id).name = v),
+        nameEn: g.nameEn || '', renameEn: onInput((st, v) => st.galleries.find(x => x.id === g.id).nameEn = v),
         desc: g.desc, setDesc: onInput((st, v) => st.galleries.find(x => x.id === g.id).desc = v),
+        descEn: g.descEn || '', setDescEn: onInput((st, v) => st.galleries.find(x => x.id === g.id).descEn = v),
         tag: g.private ? 'privée' : 'publique',
         tagStyle: 'font-size:11px;padding:3px 8px;border-radius:2px;background:' + (g.private ? '#EFEAFB' : '#E8F0EA') + ';color:' + (g.private ? '#5B3FA8' : '#2F6B3F') + ';',
         faceSearch: g.faceSearch,
