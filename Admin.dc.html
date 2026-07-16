@@ -351,7 +351,7 @@
             </div>
 
             <section style="{{ card }};margin-top:16px;">
-            <div style="{{ cardTitle }};display:flex;justify-content:space-between;align-items:center;"><span>Galeries privées</span><button onClick="{{ c.addGallery }}" style="{{ ghostBtnSm }}">+ galerie privée</button></div>
+            <div style="{{ cardTitle }};display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;"><span>Galeries privées</span><div style="display:flex;gap:8px;align-items:center;"><label style="{{ ghostBtnSm }};cursor:pointer;display:inline-flex;align-items:center;gap:4px;"><input type="file" webkitdirectory directory multiple onChange="{{ c.bulkImport }}" style="display:none;" />📁 import multi-dossiers</label><button onClick="{{ c.addGallery }}" style="{{ ghostBtnSm }}">+ galerie privée</button></div></div>
             <sc-for list="{{ c.galleries }}" as="g" hint-placeholder-count="1">
               <div style="border:1px solid #EEE;border-radius:2px;padding:12px;margin-bottom:10px;">
                 <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;">
@@ -889,6 +889,36 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
         likeLimit: c.likeLimit, setLimit: onInput((st, v) => st.clients.find(x => x.id === c.id).likeLimit = parseInt(v) || 0),
         galleries: clientGalleries, noGalleries: clientGalleries.length === 0,
         addGallery: U((st) => { const id = window.NVStore.uid('g'); st.galleries.push({ id, slug: 'prive-' + id.slice(-4), name: 'Nouvelle galerie privée', desc: '', photoIds: [], coverId: null, private: true, clientId: c.id, faceSearch: false }); const cc = st.clients.find(x => x.id === c.id); if (!cc.galleryIds.includes(id)) cc.galleryIds.push(id); }),
+        bulkImport: (e) => {
+          const all = Array.from(e.target.files || []).filter((f) => f && f.type && f.type.indexOf('image/') === 0);
+          e.target.value = '';
+          if (!all.length) { alert('Aucune image trouvée dans les dossiers sélectionnés.'); return; }
+          const groups = {};
+          all.forEach((f) => {
+            const rel = f.webkitRelativePath || '';
+            const parts = rel.split('/');
+            const folder = parts.length > 1 ? parts[0] : 'Import';
+            (groups[folder] = groups[folder] || []).push(f);
+          });
+          const names = Object.keys(groups);
+          const created = [];
+          this.upd((st) => {
+            names.forEach((folder) => {
+              const id = window.NVStore.uid('g');
+              st.galleries.push({ id, slug: 'prive-' + id.slice(-4), name: folder, desc: '', photoIds: [], coverId: null, private: true, clientId: c.id, faceSearch: false });
+              const cc = st.clients.find((x) => x.id === c.id);
+              if (cc && !cc.galleryIds.includes(id)) cc.galleryIds.push(id);
+              created.push({ id: id, files: groups[folder] });
+            });
+          });
+          const self = this;
+          (async function () {
+            for (let k = 0; k < created.length; k++) {
+              try { await self.addPhotosTo(created[k].id, created[k].files); }
+              catch (err) { console.warn('Import dossier echoue', err); }
+            }
+          })();
+        },
         selected, selCount: selected.length, hasSel: selected.length > 0, noSel: selected.length === 0,
         invoices, noInvoices: invoices.length === 0,
         isArchived: isArch(c),
