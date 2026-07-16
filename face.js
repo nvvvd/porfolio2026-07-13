@@ -36,8 +36,21 @@
     try {
       emit('loading-engine');
       await loadScript(SCRIPT);
-      await faceapi.tf.setBackend('cpu');
-      await faceapi.tf.ready();
+      // WebGL (GPU) est ~50-70x plus rapide que le CPU. On l'essaie d'abord ;
+      // repli automatique sur CPU si l'initialisation WebGL échoue (ex. iframe sandbox).
+      var backendOk = false;
+      try {
+        await faceapi.tf.setBackend('webgl');
+        await faceapi.tf.ready();
+        backendOk = faceapi.tf.getBackend() === 'webgl';
+      } catch (be) { backendOk = false; }
+      if (!backendOk) {
+        try { await faceapi.tf.setBackend('wasm'); await faceapi.tf.ready(); backendOk = faceapi.tf.getBackend() === 'wasm'; } catch (be2) { backendOk = false; }
+      }
+      if (!backendOk) {
+        await faceapi.tf.setBackend('cpu');
+        await faceapi.tf.ready();
+      }
       emit('loading-models');
       await faceapi.nets.ssdMobilenetv1.loadFromUri(MODELS);
       await faceapi.nets.faceLandmark68Net.loadFromUri(MODELS);
