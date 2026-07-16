@@ -559,24 +559,37 @@ class Component extends DCLogic {
   async addPhotosTo(galleryId, fileList) {
     const files = Array.from(fileList || []).filter((f) => f && f.type && f.type.indexOf('image/') === 0);
     if (!files.length) return;
-const autoScan = window.NVStore.get().settings.autoFaceScan !== false;
+    const autoScan = window.NVStore.get().settings.autoFaceScan !== false;
+    // Pour les gros imports : on téléverse d'abord (rapide), l'analyse des visages
+    // se fait ensuite en arrière-plan (scanMissing). Évite les blocages sur ~500 photos.
+    const BULK_THRESHOLD = 60;
+    const inlineScan = autoScan && files.length <= BULK_THRESHOLD;
+    const withTimeout = (p, ms, label) => Promise.race([
+      Promise.resolve(p),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout ' + label)), ms))
+    ]);
+    let failed = 0;
     this.setState({ scanning: true, scanMsg: 'Préparation…', scanPct: '0%' });
     try {
       for (let i = 0; i < files.length; i++) {
-        this.setState({ scanMsg: 'Image ' + (i + 1) + ' / ' + files.length + (autoScan ? ' — analyse des visages…' : ' — import…'), scanPct: Math.round(i / files.length * 100) + '%' });
+        const label = 'Image ' + (i + 1) + ' / ' + files.length;
+        this.setState({ scanMsg: label + (inlineScan ? ' — analyse des visages…' : ' — import…'), scanPct: Math.round(i / files.length * 100) + '%' });
         // 2560 px (écran 4K) avec stockage externe ; 1200 px en local pour ne pas saturer le navigateur.
         const maxSide = (window.NVStorage && window.NVStorage.enabled && window.NVStorage.enabled()) ? 2560 : 1200;
-        const { url } = await this.downscale(files[i], maxSide, 0.85);
+        let url;
+        try { url = (await withTimeout(this.downscale(files[i], maxSide, 0.85), 30000, 'downscale')).url; }
+        catch (e) { console.warn('Redimensionnement échoué, photo ignorée.', files[i] && files[i].name, e); failed++; continue; }
         let faces = [], scanned = false;
-if (autoScan) {
-const img = await this.loadImg(url);
-        
-        try { faces = await window.NVFace.scanImage(this.scanCanvas(img, 640)); scanned = true; } catch (e) { faces = []; scanned = false; }
-}
+        if (inlineScan) {
+          try {
+            const img = await withTimeout(this.loadImg(url), 15000, 'loadImg');
+            faces = await withTimeout(window.NVFace.scanImage(this.scanCanvas(img, 640)), 20000, 'scan'); scanned = true;
+          } catch (e) { faces = []; scanned = false; }
+        }
         let src = url;
         if (window.NVStorage && window.NVStorage.enabled()) {
-          this.setState({ scanMsg: 'Image ' + (i + 1) + ' / ' + files.length + ' — téléversement…' });
-          try { src = await window.NVStorage.upload(url, files[i].name); }
+          this.setState({ scanMsg: label + ' — téléversement…' });
+          try { src = await withTimeout(window.NVStorage.upload(url, files[i].name), 60000, 'upload'); }
           catch (e) { console.warn('Upload distant échoué, conservation locale.', e); src = url; }
         }
         window.NVStore.update((s) => {
@@ -587,9 +600,11 @@ const img = await this.loadImg(url);
         });
       }
       this.setState({ scanPct: '100%' });
+      if (failed) this.setState({ scanMsg: failed + ' photo(s) ignorée(s) sur ' + files.length + '.' });
     } finally {
-      setTimeout(() => this.setState({ scanning: false }), 300);
-if (!autoScan) this.scanMissing();
+      setTimeout(() => this.setState({ scanning: false }), failed ? 2500 : 300);
+      // Analyse des visages en arrière-plan pour tout ce qui n'a pas été scanné en ligne.
+      if (!inlineScan) this.scanMissing();
     }
   }
 
