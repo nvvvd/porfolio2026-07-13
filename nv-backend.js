@@ -134,7 +134,9 @@
     var dirty = false;        // l'état local diffère de `last`, à pousser
     var retryDelay = 0;       // backoff courant
     var lastPushAt = 0;       // horodatage du dernier push réussi (anti-écho)
-    var ECHO_MS = 1500;       // fenêtre pendant laquelle on ignore nos propres échos
+    var ECHO_MS = 6000;       // fenêtre pendant laquelle on ignore nos propres échos (élargie : latence realtime)
+    var LOCAL_EDIT_MS = 4000;   // on ne ré-hydrate pas si l'utilisateur a saisi dans cette fenêtre
+    var lastLocalEditAt = 0;    // horodatage de la dernière écriture locale (saisie)
 
     /* ---- HYDRATER : lire toutes les tables -> assembler un state -> ingest ---- */
     function hydrate() {
@@ -275,6 +277,7 @@
 
     function push(state) {
       dirty = true;
+      lastLocalEditAt = Date.now();
       if (!pushing) schedule(DEBOUNCE_MS);
       return Promise.resolve();
     }
@@ -291,6 +294,7 @@
             // Ignore nos propres échos : un push qu'on vient de faire revient en
             // notification ; inutile (et risqué pendant une saisie) de ré-hydrater.
             if (Date.now() - lastPushAt < ECHO_MS) return;   // notre propre écho
+            if (Date.now() - lastLocalEditAt < LOCAL_EDIT_MS) return;   // saisie locale en cours : ne pas écraser le champ
             if (pushing || dirty) {
               // Changement distant CONCURRENT alors qu'on a des écritures locales
               // en attente : le prochain push écrasera ce changement. On prévient.
@@ -301,6 +305,7 @@
             clearTimeout(rtTimer);
             rtTimer = setTimeout(function () {
               if (pushing || dirty) return;   // une écriture locale a démarré entre-temps
+              if (Date.now() - lastLocalEditAt < LOCAL_EDIT_MS) return;   // saisie locale récente
               hydrate();
             }, 250);
           });
