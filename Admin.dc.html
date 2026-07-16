@@ -351,7 +351,7 @@
             </div>
 
             <section style="{{ card }};margin-top:16px;">
-            <div style="{{ cardTitle }};display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;"><span>Galeries privées</span><div style="display:flex;gap:8px;align-items:center;"><label style="{{ ghostBtnSm }};cursor:pointer;display:inline-flex;align-items:center;gap:4px;"><input type="file" webkitdirectory directory multiple onChange="{{ c.bulkImport }}" style="display:none;" />📁 import multi-dossiers</label><button onClick="{{ c.addGallery }}" style="{{ ghostBtnSm }}">+ galerie privée</button></div></div>
+            <div style="{{ cardTitle }};display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;"><span>Galeries privées</span><div style="display:flex;gap:8px;align-items:center;"><label style="{{ ghostBtnSm }};cursor:pointer;display:inline-flex;align-items:center;gap:4px;"><input type="file" webkitdirectory directory multiple onChange="{{ c.bulkImport }}" style="display:none;" />📁 import multi-dossiers</label><span onDrop="{{ c.bulkDrop }}" onDragOver="{{ c.bulkDragOver }}" style="border:1px dashed #BBB;border-radius:4px;padding:6px 10px;font-size:12px;color:#777;cursor:copy;">ou glissez plusieurs dossiers ici</span><button onClick="{{ c.addGallery }}" style="{{ ghostBtnSm }}">+ galerie privée</button></div></div>
             <sc-for list="{{ c.galleries }}" as="g" hint-placeholder-count="1">
               <div style="border:1px solid #EEE;border-radius:2px;padding:12px;margin-bottom:10px;">
                 <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between;">
@@ -913,6 +913,51 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
           });
           const self = this;
           (async function () {
+            for (let k = 0; k < created.length; k++) {
+              try { await self.addPhotosTo(created[k].id, created[k].files); }
+              catch (err) { console.warn('Import dossier echoue', err); }
+            }
+          })();
+        },
+        bulkDragOver: (e) => { e.preventDefault(); try { e.dataTransfer.dropEffect = 'copy'; } catch (x) {} },
+        bulkDrop: (e) => {
+          e.preventDefault();
+          const dt = e.dataTransfer;
+          const items = dt && dt.items ? Array.from(dt.items) : [];
+          const supportsEntries = items.length > 0 && typeof items[0].webkitGetAsEntry === 'function';
+          const self = this;
+          const isImg = (f) => f && f.type && f.type.indexOf('image/') === 0;
+          const readAll = (reader) => new Promise((resolve) => { const all = []; const step = () => reader.readEntries((b) => { if (!b.length) { resolve(all); return; } all.push.apply(all, b); step(); }, () => resolve(all)); step(); });
+          const filesOf = (entry) => {
+            const acc = [];
+            const walk = (en) => {
+              if (en.isFile) return new Promise((res) => en.file((f) => { if (isImg(f)) acc.push(f); res(); }, () => res()));
+              if (en.isDirectory) { const rd = en.createReader(); return readAll(rd).then((ch) => ch.reduce((p, c) => p.then(() => walk(c)), Promise.resolve())); }
+              return Promise.resolve();
+            };
+            return walk(entry).then(() => acc);
+          };
+          (async function () {
+            if (!supportsEntries) { alert("Votre navigateur ne permet pas le glisser-d\u00e9poser de dossiers. Utilisez plut\u00f4t le bouton d'import."); return; }
+            const entries = items.map((it) => it.webkitGetAsEntry()).filter(Boolean);
+            const groups = []; const loose = [];
+            for (let i = 0; i < entries.length; i++) {
+              const en = entries[i];
+              if (en.isDirectory) { const fs = await filesOf(en); if (fs.length) groups.push({ name: en.name, files: fs }); }
+              else if (en.isFile) { await new Promise((res) => en.file((f) => { if (isImg(f)) loose.push(f); res(); }, () => res())); }
+            }
+            if (loose.length) groups.push({ name: 'Import', files: loose });
+            if (!groups.length) { alert('Aucune image trouv\u00e9e dans les dossiers d\u00e9pos\u00e9s.'); return; }
+            const created = [];
+            self.upd((st) => {
+              groups.forEach((grp) => {
+                const id = window.NVStore.uid('g');
+                st.galleries.push({ id, slug: 'prive-' + id.slice(-4), name: grp.name, desc: '', photoIds: [], coverId: null, private: true, clientId: c.id, faceSearch: false });
+                const cc = st.clients.find((x) => x.id === c.id);
+                if (cc && !cc.galleryIds.includes(id)) cc.galleryIds.push(id);
+                created.push({ id: id, files: grp.files });
+              });
+            });
             for (let k = 0; k < created.length; k++) {
               try { await self.addPhotosTo(created[k].id, created[k].files); }
               catch (err) { console.warn('Import dossier echoue', err); }
