@@ -143,10 +143,24 @@
       if (hydrating) return Promise.resolve();
       hydrating = true;
       return getClient().then(function (db) {
+        /* charge TOUTES les lignes photos par pages de 1000 (Supabase plafonne select('*') a 1000) */
+        function fetchAllPhotos() {
+          var acc = [];
+          function page(from) {
+            return db.from('photos').select('*').range(from, from + 999).then(function (r) {
+              if (r.error) throw r.error;
+              var rows = r.data || [];
+              acc = acc.concat(rows);
+              if (rows.length === 1000) return page(from + 1000);
+              return { data: acc, error: null };
+            });
+          }
+          return page(0);
+        }
         return Promise.all([
           db.from('site').select('*').limit(1),
           db.from('galleries').select('*'),
-          db.from('photos').select('*'),
+          fetchAllPhotos(),
           db.from('clients').select('id,name,email,gallery_ids,like_limit,likes,invoices'),
           db.from('messages').select('*').order('date', { ascending: false })
         ]);
