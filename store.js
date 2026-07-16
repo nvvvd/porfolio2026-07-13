@@ -203,13 +203,37 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
     return fresh;
   }
 
-  function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(state)); }
-    catch (e) {
-      // Quota dépassé : typiquement trop de photos en base64 (mode démo).
-      console.warn('NVStore: sauvegarde locale impossible (quota dépassé ?). Activez le stockage externe des photos — voir docs/MIGRATION.md.', e);
-      setStatus('quota');
+  // Version allégée pour le cache localStorage (limite ~5 Mo) : on retire les
+  // descripteurs de visages (128 flottants/visage, ~8 Mo au total) et les images
+  // base64. Ces données restent en mémoire et dans Supabase (source de vérité) ;
+  // elles sont ré-hydratées depuis la base au chargement. Le cache local ne sert
+  // que de repli hors-ligne léger.
+  function slimForLocal(s) {
+    var out = {}, k;
+    for (k in s) { if (k !== 'photos') out[k] = s[k]; }
+    out.photos = {};
+    var ids = Object.keys(s.photos || {});
+    for (var i = 0; i < ids.length; i++) {
+      var p = s.photos[ids[i]], np = {}, pk;
+      for (pk in p) { if (pk !== 'faces' && pk !== 'src') np[pk] = p[pk]; }
+      np.faceCount = (p.faces && p.faces.length) || 0;
+      if (p.src && p.src.indexOf('data:') !== 0) np.src = p.src;
+      out.photos[ids[i]] = np;
     }
+    return out;
+  }
+
+  function save() {
+    var ok = false;
+    try { localStorage.setItem(KEY, JSON.stringify(state)); ok = true; }
+    catch (e) {
+      try { localStorage.setItem(KEY, JSON.stringify(slimForLocal(state))); ok = true; }
+      catch (e2) {
+        console.warn('NVStore: sauvegarde locale impossible même allégée (quota dépassé ?).', e2);
+        setStatus('quota');
+      }
+    }
+    if (ok && syncStatus === 'quota') setStatus(backend ? 'saved' : 'local');
     if (backend && !applyingRemote) {
       try { backend.push(state); } catch (e) { console.warn('NVStore: push distant échoué', e); }
     }
