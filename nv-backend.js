@@ -52,13 +52,13 @@
   var MAP = {
     galleries: {
       toRow: function (g) {
-        return { id: g.id, slug: g.slug, name: g.name, description: g.desc || '',
+        return { id: g.id, slug: g.slug, name: g.name, name_en: g.nameEn || '', description: g.desc || '', description_en: g.descEn || '',
           photo_ids: g.photoIds || [], cover_id: g.coverId || null, private: !!g.private,
           client_id: g.clientId || null, face_search: !!g.faceSearch,
           total: (g.total != null ? g.total : null), sub: (g.sub != null ? g.sub : null) };
       },
       fromRow: function (r) {
-        var g = { id: r.id, slug: r.slug, name: r.name, desc: r.description || '',
+        var g = { id: r.id, slug: r.slug, name: r.name, nameEn: r.name_en || '', desc: r.description || '', descEn: r.description_en || '',
           photoIds: r.photo_ids || [], coverId: r.cover_id || null, private: !!r.private,
           clientId: r.client_id || null, faceSearch: !!r.face_search };
         if (r.total != null) g.total = r.total;
