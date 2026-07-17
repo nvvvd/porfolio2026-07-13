@@ -81,9 +81,9 @@
     <h1 style="margin:18px 0 0;font-size:clamp(54px,16vw,150px);font-weight:400;line-height:.9;letter-spacing:-.035em;">{{ pageTitle }}</h1>
     <p style="margin:14px 0 0;max-width:520px;font-size:clamp(16px,4.4vw,19px);line-height:1.45;color:var(--ink-2);font-weight:400;">{{ introText }}</p>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr));gap:clamp(16px,3vw,28px);margin:clamp(24px,4vh,44px) 0 0;{{ gridFit }}">
+    <div style="display:grid;grid-template-columns:{{ gridCols }};gap:clamp(16px,3vw,28px);margin:clamp(24px,4vh,44px) 0 0;{{ gridFit }}">
       <sc-for list="{{ galleries }}" as="g" hint-placeholder-count="4">
-        <a href="{{ g.href }}" style="display:block;min-height:0;text-decoration:none;color:var(--ink);transition:opacity .2s;{{ cardFit }}" style-hover="opacity:.88;">
+        <a href="{{ g.href }}" style="display:block;min-height:0;text-decoration:none;color:var(--ink);transition:opacity .2s;{{ g.spanStyle }}{{ cardFit }}" style-hover="opacity:.88;">
           <div style="position:relative;aspect-ratio:3/2;overflow:hidden;border-radius:2px;background:var(--ph);{{ cardFit }}">
             <img src="{{ g.cover }}" alt="{{ g.name }}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block;">
             <span style="position:absolute;left:12px;bottom:12px;font-size:12px;letter-spacing:.01em;color:var(--on-accent);background:rgba(242,193,60,.82);padding:5px 9px;border-radius:2px;">{{ g.name }}</span>
@@ -150,13 +150,23 @@ class Component extends DCLogic {
       pageFit: mobile ? '' : 'height:100vh;overflow:hidden;display:flex;flex-direction:column;',
       contentFit: mobile ? '' : 'flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;',
       gridFit: mobile ? '' : 'flex:1;min-height:0;overflow:hidden;grid-auto-rows:minmax(0,1fr);',
+      gridCols: mobile ? 'repeat(auto-fit,minmax(min(100%,330px),1fr))' : ('repeat(' + _tracks + ',1fr)'),
       cardFit: mobile ? '' : 'height:100%;width:100%;aspect-ratio:auto;',
       footFit: mobile ? '' : 'margin-top:auto;'
     };
     if (!this.state.ready || !window.NVStore) return { ...base, brandName: 'Nicolas Vivaudou', brandRole: ui.lang === 'en' ? 'Photographer' : 'Photographe', brandLoc: 'Montréal, QC', galleryCount: 5, galleries: [] };
     const s = window.NVStore.get();
     const pub = window.NVStore.publicGalleries();
+    const _n = pub.length;
+    let _cols = 3, _rem = 99; for (const _c of [3, 4]) { const r = (_c - (_n % _c)) % _c; if (r < _rem) { _rem = r; _cols = _c; } }
+    const _full = Math.floor(_n / _cols) * _cols;
+    const _lastCount = (_n - _full) || _cols;
+    const _tracks = (_n - _full) ? _cols * _lastCount : _cols;
+    const _normalSpan = (_n - _full) ? _lastCount : 1;
+    const _lastSpan = (_n - _full) ? _cols : 1;
     let galleries = pub.map((g, i) => ({
+      colSpan: (i >= _full && (_n - _full)) ? _lastSpan : _normalSpan,
+      spanStyle: mobile ? '' : ('grid-column:span ' + ((i >= _full && (_n - _full)) ? _lastSpan : _normalSpan) + ';'),
       name: L(g.name, g.nameEn), desc: L(g.desc, g.descEn), num: ('0' + (i + 1)).slice(-2), count: g.photoIds.length,
       cover: window.NVStore.resolveSrc(s.photos[g.coverId || g.photoIds[0]]), href: 'Galerie.dc.html#' + g.slug
     }));
