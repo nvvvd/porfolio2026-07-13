@@ -249,7 +249,7 @@ class Component extends DCLogic {
         title: L(g.name, g.nameEn), href: 'Galerie.dc.html#' + g.slug, num: ('0' + (i + 1)).slice(-2), count: String(g.photoIds.length),
         enter: setHover(g.id), move: this.rowMove,
         previews, prevVis: previews.length ? '0.3' : '0',
-        rowStyle: 'position:relative;overflow:hidden;display:flex;gap:18px;align-items:baseline;text-decoration:none;padding:16px 0;border-bottom:1px solid var(--line);transition:color .18s,padding-left .22s;padding-left:' + (isActive ? '14px' : '0') + ';color:' + (isActive ? 'var(--ink)' : 'var(--faint)') + ';',
+        rowStyle: 'position:relative;overflow:hidden;display:flex;gap:18px;align-items:baseline;text-decoration:none;padding:16px 0;' + (i === pub.length - 1 ? '' : 'border-bottom:1px solid var(--line);') + 'transition:color .18s,padding-left .22s;padding-left:' + (isActive ? '14px' : '0') + ';color:' + (isActive ? 'var(--ink)' : 'var(--faint)') + ';',
         numStyle: 'font-size:12px;width:30px;flex:none;align-self:center;letter-spacing:.02em;transition:color .18s;color:' + (isActive ? 'var(--accent)' : 'var(--faint)') + ';z-index:1;position:relative;'
       };
     });
