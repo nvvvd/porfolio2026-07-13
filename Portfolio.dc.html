@@ -121,6 +121,11 @@ class Component extends DCLogic {
   }
   renderVals() {
     const mobile = this.state.mobile;
+    const _preN = (window.NVStore && window.NVStore.publicGalleries) ? window.NVStore.publicGalleries().length : 3;
+    let _tCols = 3, _tRem = 99; for (const _c of [3, 4]) { const r = (_c - (_preN % _c)) % _c; if (r < _tRem) { _tRem = r; _tCols = _c; } }
+    const _tFull = Math.floor(_preN / _tCols) * _tCols;
+    const _tLastCount = (_preN - _tFull) || _tCols;
+    const _tracksTop = (_preN - _tFull) ? _tCols * _tLastCount : _tCols;
     const ui = window.NVI18n.ui('galleries');
     const T = window.NVI18n.t, L = window.NVI18n.pick;
     const sort = this.state.sort;
@@ -150,7 +155,7 @@ class Component extends DCLogic {
       pageFit: mobile ? '' : 'height:100vh;overflow:hidden;display:flex;flex-direction:column;',
       contentFit: mobile ? '' : 'flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden;',
       gridFit: mobile ? '' : 'flex:1;min-height:0;overflow:hidden;grid-auto-rows:minmax(0,1fr);',
-      gridCols: mobile ? 'repeat(auto-fit,minmax(min(100%,330px),1fr))' : ('repeat(' + _tracks + ',1fr)'),
+      gridCols: mobile ? 'repeat(auto-fit,minmax(min(100%,330px),1fr))' : ('repeat(' + _tracksTop + ',1fr)'),
       cardFit: mobile ? '' : 'height:100%;width:100%;aspect-ratio:auto;',
       footFit: mobile ? '' : 'margin-top:auto;'
     };
