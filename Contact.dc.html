@@ -278,7 +278,7 @@ class Component extends DCLogic {
       // Mobile : la colonne texte passe en display:contents pour que ses enfants
       // s'ordonnent librement — portrait(1) → titre(2) → texte(3) → coulisses(4) → confiance(5) → CTA(6).
       aboutPhotoCol: mobile ? 'display:flex;flex-direction:column;gap:8px;min-width:0;order:1;' : 'display:flex;flex-direction:column;gap:8px;min-width:0;',
-      aboutTextCol: mobile ? 'display:contents;' : 'min-width:0;',
+      aboutTextCol: mobile ? 'display:contents;' : 'min-width:0;overflow-y:auto;max-height:100%;',
       ordTitle: mobile ? 'order:2;margin-top:24px;' : '',
       ordText: mobile ? 'order:3;' : '',
       ordBackstage: mobile ? 'order:4;margin-top:20px;' : '',
@@ -313,8 +313,8 @@ class Component extends DCLogic {
       msgFit: mobile ? 'resize:vertical;' : 'flex:1;min-height:56px;resize:none;',
       gridStyle: mobile
         ? 'display:flex;flex-direction:column;margin-top:clamp(20px,3vh,32px);'
-        : 'display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,48px);margin-top:clamp(20px,3vh,32px);align-items:stretch;',
-      photoBox: 'position:relative;overflow:hidden;border-radius:2px;background:var(--ph);' + (mobile ? 'aspect-ratio:4/3;' : 'flex:1;min-height:360px;'),
+        : 'display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,4vw,48px);margin-top:clamp(20px,3vh,32px);align-items:stretch;height:calc(100vh - 210px);max-height:calc(100vh - 190px);min-height:420px;',
+      photoBox: 'position:relative;overflow:hidden;border-radius:2px;background:var(--ph);' + (mobile ? 'aspect-ratio:4/3;' : 'flex:1;min-height:0;'),
       ctLabel: T('ct.label'), ctReply: T('ct.reply'), formTitle: T('ct.formTitle'),
       lblName: T('ct.name'), phName: T('ct.namePh'), lblEmail: T('ct.email'),
       lblMessage: T('ct.message'), phMessage: T('ct.messagePh'), lblInstagram: T('ct.instagram'),
