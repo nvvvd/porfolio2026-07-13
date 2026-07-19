@@ -107,7 +107,7 @@
       </sc-for>
     </div>
 
-    <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-top:48px;padding:18px 0 40px;border-top:1px solid var(--line);">
+    <div style="{{ footStyle }}">
       <span style="display:flex;align-items:center;gap:12px;font-size:13px;">
         <a href="Portfolio.dc.html" style="color:var(--muted);text-decoration:none;">{{ allGalleries }}</a>
         <a href="{{ emailHref }}" style="text-decoration:none;color:var(--muted);">{{ email }}</a>
@@ -162,6 +162,7 @@ class Component extends DCLogic {
       setFr: () => { window.NVI18n.setLang('fr'); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
       setEn: () => { window.NVI18n.setLang('en'); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
       mobile, menuOpen: this.state.menuOpen,
+      footStyle: mobile ? 'display:flex;flex-direction:column-reverse;align-items:flex-start;gap:16px;margin-top:48px;padding:18px 0 40px;border-top:1px solid var(--line);' : 'display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;margin-top:48px;padding:18px 0 40px;border-top:1px solid var(--line);',
       themeIcon: (window.NVTheme && NVTheme.theme === 'dark') ? '\u2600\uFE0E' : '\u263e',
       themeLabel: (window.NVTheme && NVTheme.theme === 'dark') ? (ui.lang === 'en' ? 'Light mode' : 'Mode clair') : (ui.lang === 'en' ? 'Dark mode' : 'Mode sombre'),
       themeBtn: 'border:none;background:none;cursor:pointer;font-family:inherit;font-size:15px;line-height:1;color:var(--muted);padding:0;transition:color .15s;',
