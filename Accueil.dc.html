@@ -124,7 +124,7 @@
     </sc-for>
   </div>
 
-  <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end;margin:20px 20px 0;padding:18px 0 28px;">
+  <div style="{{ footStyle }}">
     <span style="font-size:13px;color:var(--muted);display:flex;align-items:center;gap:7px;">{{ availLabel }}<button type="button" onClick="{{ openMentions }}" style="border:none;background:none;padding:0;font-family:inherit;color:var(--faint);font-size:12px;transition:color .15s;cursor:pointer;" style-hover="color:var(--muted);">mentions</button><a href="Admin.dc.html" title="Espace photographe" aria-label="Administration" style="text-decoration:none;color:var(--faint);font-size:13px;transition:color .15s;padding:8px;margin:-8px;" style-hover="color:var(--muted);">·</a><a href="{{ emailHref }}" style="text-decoration:none;color:var(--muted);">{{ email }}</a><a href="{{ instagramHref }}" target="_blank" rel="noopener" aria-label="Instagram" style="display:flex;align-items:center;color:var(--muted);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"></rect><circle cx="12" cy="12" r="4.5"></circle><circle cx="17.6" cy="6.4" r="1.3" fill="currentColor" stroke="none"></circle></svg></a></span>
     <a href="Contact.dc.html" style="font-size:clamp(32px,8vw,56px);color:var(--ink);text-decoration:none;letter-spacing:-.03em;line-height:1.05;transition:opacity .15s;margin-left:auto;text-align:right;" style-hover="opacity:.7;">{{ workLabel }}</a>
   </div>
@@ -206,6 +206,7 @@ class Component extends DCLogic {
       setFr: () => { window.NVI18n.setLang('fr'); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
       setEn: () => { window.NVI18n.setLang('en'); this.setState(s => ({ tick: (s.tick || 0) + 1 })); },
       mobile, menuOpen: this.state.menuOpen,
+      footStyle: mobile ? 'display:flex;flex-direction:column-reverse;align-items:flex-start;gap:14px;margin:20px 20px 0;padding:18px 0 28px;' : 'display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end;margin:20px 20px 0;padding:18px 0 28px;',
       // Mentions légales en surcouche (pas de changement de page).
       mentionsOpen: this.state.mentionsOpen,
       openMentions: () => this.setState({ mentionsOpen: true }),
