@@ -110,7 +110,7 @@
     <span style="position:absolute;right:12px;bottom:12px;font-size:12px;color:var(--on-accent);background:var(--accent);padding:5px 9px;border-radius:2px;">{{ heroCta }}</span>
   </a>
 
-<div onMouseLeave="{{ onLeave }}" style="border-top:1px solid var(--line);margin:22px 20px 0;">
+<div onMouseLeave="{{ onLeave }}" style="margin:22px 20px 0;">
     <sc-for list="{{ rows }}" as="row" hint-placeholder-count="4">
       <a href="{{ row.href }}" onMouseEnter="{{ row.enter }}" onMouseMove="{{ row.move }}" style="{{ row.rowStyle }}">
         <span style="{{ row.numStyle }}">{{ row.num }}</span>
