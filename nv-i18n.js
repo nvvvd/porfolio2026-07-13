@@ -31,7 +31,7 @@
     'home.index':       { fr: 'index',  en: 'index' },
     'home.grid':        { fr: 'grid',   en: 'grid' },
     'home.photos':      { fr: 'photos', en: 'photos' },
-    'home.available':   { fr: 'Disponible pour commandes — 2026', en: 'Available for commissions — 2026' },
+    'home.available':   { fr: 'Disponible pour commandes', en: 'Available for commissions' },
     'home.workTogether':{ fr: 'Travaillons ensemble →', en: "Let's work together →" },
     'home.defaultCta':  { fr: 'voir la série', en: 'view the series' },
 
