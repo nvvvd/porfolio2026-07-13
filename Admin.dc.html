@@ -149,12 +149,8 @@
           </section>
 
           <section style="{{ card }}">
-            <div style="{{ cardTitle }}">Accueil — image d'ouverture</div>
-            <div style="position:relative;aspect-ratio:16/9;border-radius:2px;overflow:hidden;background:#EEE;margin-bottom:12px;">
-              <img src="{{ heroSrc }}" alt="hero" style="width:100%;height:100%;object-fit:cover;display:block;" />
-            </div>
-            <label style="{{ uploadBtn }}"><input type="file" accept="image/*" onChange="{{ onHero }}" style="display:none;" />Remplacer l'image</label>
-            <label class="nvlabel" style="margin-top:14px;">Légende</label>
+            <div style="{{ cardTitle }}">Accueil — diaporama & légende</div>
+            <label class="nvlabel">Légende</label>
             <input class="nvfield" value="{{ f_heroCap }}" onInput="{{ s_heroCap }}" />
             <label class="nvlabel" style="margin-top:14px;">Légende — English</label>
             <input class="nvfield" value="{{ f_heroCapEn }}" onInput="{{ s_heroCapEn }}" placeholder="English caption" />
@@ -170,7 +166,7 @@
                 <button onClick="{{ slideAuto }}" style="{{ slideAutoBtn }}">automatique</button>
                 <button onClick="{{ slideManual }}" style="{{ slideManualBtn }}">sélection manuelle</button>
               </div>
-              <sc-if value="{{ slideIsAuto }}"><p style="font-size:12px;color:#9A9A9A;line-height:1.5;margin:8px 0 0;">Toutes les photos publiques défilent (30 max), en commençant par l'image d'ouverture.</p></sc-if>
+              <sc-if value="{{ slideIsAuto }}"><p style="font-size:12px;color:#9A9A9A;line-height:1.5;margin:8px 0 0;">Toutes les photos publiques défilent (30 max)rture.</p></sc-if>
               <sc-if value="{{ slideIsManual }}">
                 <p style="font-size:12px;color:#9A9A9A;line-height:1.5;margin:8px 0 10px;">Cliquez les photos dans l'ordre d'apparition souhaité ; recliquez pour retirer. {{ slideCount }}</p>
                 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;">
