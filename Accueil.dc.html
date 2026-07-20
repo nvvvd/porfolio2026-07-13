@@ -114,7 +114,7 @@
 
   <a href="Portfolio.dc.html" ref="{{ heroRef }}" aria-label="{{ heroAlt }}" onMouseEnter="{{ heroEnter }}" onMouseMove="{{ heroMove }}" onMouseLeave="{{ heroLeave }}" onTouchStart="{{ heroTouchStart }}" onTouchMove="{{ heroTouchMove }}" onTouchEnd="{{ heroTouchEnd }}" onTouchCancel="{{ heroTouchEnd }}" style="display:block;position:relative;margin:18px 20px 0;aspect-ratio:{{ heroAR }};overflow:hidden;border-radius:2px;background:var(--ph);touch-action:pan-y;{{ heroFull }}">
     <sc-for list="{{ heroFrames }}" as="f" hint-placeholder-count="1">
-      <img src="{{ f.src }}" data-full="{{ f.full }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:opacity .14s linear;{{ f.vis }}" />
+      <img src="{{ f.src }}" data-full="{{ f.full }}" alt="" fetchpriority="{{ f.prio }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:opacity .14s linear;{{ f.vis }}" />
     </sc-for>
     <span style="position:absolute;left:12px;bottom:12px;font-size:12px;color:#fff;background:rgba(17,17,17,.5);padding:5px 9px;letter-spacing:.01em;border-radius:2px;">{{ heroCaption }}</span>
     <span style="position:absolute;right:12px;bottom:12px;font-size:12px;color:var(--on-accent);background:var(--accent);padding:5px 9px;border-radius:2px;">{{ heroCta }}</span>
@@ -152,8 +152,8 @@ class Component extends DCLogic {
     const el = this.heroRef.current; if (!el) return;
     const imgs = el.querySelectorAll('img'); if (imgs.length < 2) return;
     this._heroFrame = ((i % imgs.length) + imgs.length) % imgs.length;
-    // Préchargement intelligent : la photo courante + les 5 suivantes seulement.
-    for (let k = 0; k < 6; k++) {
+    // Préchargement intelligent : la photo courante + les 2 suivantes seulement.
+    for (let k = 0; k < 3; k++) {
       const im = imgs[(this._heroFrame + k) % imgs.length];
       if (im && im.dataset.full && im.getAttribute('src') !== im.dataset.full) im.setAttribute('src', im.dataset.full);
     }
@@ -179,21 +179,28 @@ class Component extends DCLogic {
   };
   heroTouchEnd = () => { this._heroTouchX = null; this._heroHover = false; };
   componentDidMount() {
-    this._heroTimer = setInterval(() => { if (!this._heroHover) this.heroSetFrame(this._heroFrame + 1); }, 180);
+    // LCP : le diaporama (et ses préchargements) ne démarre qu'une fois la 1ère image affichée (+ marge),
+    // pour ne pas concurrencer son téléchargement sur réseau lent.
+    this._heroStart = setTimeout(() => {
+      this._heroTimer = setInterval(() => { if (!this._heroHover) this.heroSetFrame(this._heroFrame + 1); }, 180);
+    }, 2500);
     this._wait = setInterval(() => {
       if (window.NVStore) {
         clearInterval(this._wait);
         this.setState({ ready: true, view: window.NVStore.get().home.defaultView || 'list' });
         this._unsub = window.NVStore.subscribe(() => this.setState(s => ({ tick: s.tick + 1 })));
-        // Préchargement des aperçus flottants : défilement instantané au survol (plus de flash).
-        try { const st = window.NVStore.get(); window.NVStore.publicGalleries().forEach(g => g.photoIds.slice(0, 10).forEach(pid => { const im = new Image(); im.src = window.NVStore.resolveSrc(st.photos[pid]); })); } catch (e) {}
+        // Préchargement des aperçus flottants : ordinateur seulement (pas de survol sur mobile),
+        // et en différé pour laisser la page se charger d'abord.
+        if (!this.state.mobile) setTimeout(() => {
+          try { const st = window.NVStore.get(); window.NVStore.publicGalleries().forEach(g => g.photoIds.slice(0, 10).forEach(pid => { const im = new Image(); im.src = window.NVStore.resolveSrc(st.photos[pid]); })); } catch (e) {}
+        }, 3000);
       }
     }, 30);
     this._r = () => this.setState({ mobile: window.innerWidth < 820, menuOpen: window.innerWidth < 820 ? this.state.menuOpen : false });
     window.addEventListener('resize', this._r);
     this._ulang = window.NVI18n.onChange(() => this.setState(s => ({ tick: s.tick + 1 })));
   }
-  componentWillUnmount() { clearInterval(this._wait); clearInterval(this._cyc); clearInterval(this._heroTimer); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); }
+  componentWillUnmount() { clearInterval(this._wait); clearInterval(this._cyc); clearTimeout(this._heroStart); clearInterval(this._heroTimer); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); }
   hoverEnter = (id) => () => {
     if (this.state.mobile) return;
     this.setState({ hover: id });           // construit les vignettes empilées dans la ligne
@@ -277,9 +284,9 @@ class Component extends DCLogic {
     if (s.hero.slideshow === 'manual' && heroSel.length) heroSel.forEach(p => heroPush(window.NVStore.resolveSrc(p)));
     else { heroPush(window.NVStore.resolveSrc(s.hero.src)); tiles.forEach(t => heroPush(t.src)); }
     const heroCur = heroSrcs.length ? this._heroFrame % heroSrcs.length : 0;
-    // Préchargement intelligent : seules les 6 premières sont chargées ; la suite via data-full.
+    // Préchargement intelligent : seules les 3 premières sont chargées ; la suite via data-full.
     const HERO_PH = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-    const heroFrames = heroSrcs.map((src, i) => ({ src: (i < 6 ? src : HERO_PH), full: src, vis: 'opacity:' + (i === heroCur ? '1' : '0') + ';' }));
+    const heroFrames = heroSrcs.map((src, i) => ({ src: (i < 3 ? src : HERO_PH), full: src, prio: (i === heroCur ? 'high' : 'low'), vis: 'opacity:' + (i === heroCur ? '1' : '0') + ';' }));
     return {
       ...base,
       brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn), brandLoc: s.brand.location,
