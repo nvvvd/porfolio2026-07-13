@@ -92,6 +92,81 @@
     },
 
     /* ------------------------------------------------------------------------
+       recompressAll() — migration en masse : re-télécharge chaque photo déjà
+       en ligne (URL http/https), la compresse (2000px / JPEG q.82 via le même
+       pipeline que l'upload), la re-téléverse et remplace l'URL en base.
+       Nécessite que le bucket autorise la lecture (public) et l'endpoint d'upload.
+
+       Usage (console du site, connecté en admin) :
+         await NVStorage.recompressAll({ dryRun: true });   // simulation : liste ce qui serait fait
+         await NVStorage.recompressAll();                   // migration réelle
+         await NVStorage.recompressAll({ minKB: 800 });     // ne traite que les fichiers > 800 Ko
+       Idempotent : les images déjà légères sont sautées ; relançable sans risque.
+       Renvoie { found, done, skipped, failed, savedMB }.
+       ------------------------------------------------------------------------ */
+    recompressAll: function (opts) {
+      opts = opts || {};
+      var self = this, minBytes = (opts.minKB || 500) * 1024;
+      if (!this.enabled()) return Promise.reject(new Error('Aucun uploadEndpoint configuré.'));
+      if (!window.NVStore) return Promise.reject(new Error('NVStore indisponible.'));
+
+      var targets = [];
+      (function walk(node, path) {
+        if (typeof node === 'string') {
+          if (/^https?:\/\//i.test(node) && /(\.jpe?g|\.png|\.webp)(\?|$)/i.test(node)) targets.push({ path: path.slice(), url: node });
+          else if (/^https?:\/\//i.test(node) && /\/uploads\//.test(node)) targets.push({ path: path.slice(), url: node });
+          return;
+        }
+        if (Array.isArray(node)) { node.forEach(function (v, i) { walk(v, path.concat(i)); }); return; }
+        if (node && typeof node === 'object') { Object.keys(node).forEach(function (k) { walk(node[k], path.concat(k)); }); }
+      })(window.NVStore.get(), []);
+      // Dé-doublonne par URL (une même URL peut apparaître à plusieurs endroits).
+      var byUrl = {};
+      targets.forEach(function (t) { (byUrl[t.url] = byUrl[t.url] || []).push(t.path); });
+      var urls = Object.keys(byUrl);
+
+      var result = { found: urls.length, done: 0, skipped: 0, failed: 0, savedMB: 0 };
+      if (opts.dryRun) { console.log('NVStorage.recompressAll (simulation) :', urls.length, 'URL(s) candidates.', urls); return Promise.resolve(result); }
+
+      var i = 0;
+      function setUrl(paths, url) {
+        paths.forEach(function (path) {
+          var node = window.NVStore.get();
+          for (var k = 0; k < path.length - 1; k++) node = node[path[k]];
+          node[path[path.length - 1]] = url;
+        });
+      }
+      function next() {
+        if (i >= urls.length) {
+          window.NVStore.save();
+          result.savedMB = Math.round(result.savedMB * 10) / 10;
+          console.log('NVStorage.recompressAll terminé :', result);
+          return result;
+        }
+        var url = urls[i++];
+        return fetch(url).then(function (res) {
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          return res.blob();
+        }).then(function (blob) {
+          if (blob.size < minBytes) { result.skipped++; console.log('→ sauté (déjà léger, ' + Math.round(blob.size / 1024) + ' Ko) :', url); return; }
+          return compressBlob(blob).then(function (small) {
+            if (small.size >= blob.size * 0.9) { result.skipped++; return; }
+            return self.upload(small, 'recompressed-' + Date.now() + '.jpg').then(function (newUrl) {
+              setUrl(byUrl[url], newUrl);
+              result.done++;
+              result.savedMB += (blob.size - small.size) / 1048576;
+              console.log('✓ ' + Math.round(blob.size / 1024) + ' Ko → ' + Math.round(small.size / 1024) + ' Ko :', url);
+            });
+          });
+        }).catch(function (e) {
+          result.failed++;
+          console.warn('NVStorage.recompressAll : échec sur', url, e.message || e);
+        }).then(next);
+      }
+      return Promise.resolve().then(next);
+    },
+
+    /* ------------------------------------------------------------------------
        migrateBase64() — déplace vers le stockage externe les images encore en
        base64 dans la base (photos uploadées AVANT la config de l'endpoint).
        Parcourt tout l'état du store, repère les "data:image/…", les téléverse,
