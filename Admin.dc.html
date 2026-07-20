@@ -277,6 +277,7 @@
                   <span style="{{ p.scanBadge }}" title="{{ p.scanTitle }}">{{ p.scanIcon }}</span>
                   <div style="position:absolute;left:0;right:0;bottom:0;display:flex;background:rgba(17,17,17,.55);">
                     <button onClick="{{ p.makeCover }}" title="Couverture" style="flex:1;border:none;background:none;color:#fff;font-size:11px;padding:5px 0;cursor:pointer;">{{ p.coverIcon }}</button>
+                    <button onClick="{{ p.editAlt }}" title="Description (SEO / accessibilité)" style="flex:1;border:none;background:none;color:#fff;font-size:11px;padding:5px 0;cursor:pointer;border-left:1px solid rgba(255,255,255,.25);">{{ p.altIcon }}</button>
                     <button onClick="{{ p.remove }}" title="Retirer" style="flex:1;border:none;background:none;color:#fff;font-size:12px;padding:5px 0;cursor:pointer;border-left:1px solid rgba(255,255,255,.25);">✕</button>
                   </div>
                 </div>
@@ -815,6 +816,12 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
           scanTitle: !scanned ? 'Non analysé' : (hasFace ? (p.faces.length + ' visage(s)') : 'Aucun visage'),
           scanBadge: 'position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:12px;background:' + (!scanned ? 'rgba(17,17,17,.5)' : (hasFace ? '#F2C13C' : 'rgba(17,17,17,.5)')) + ';color:' + (hasFace ? '#111' : '#fff') + ';',
           coverIcon: g.coverId === pid ? '★ couv.' : '☆ couv.',
+          altIcon: p.alt ? 'alt ✓' : 'alt',
+          editAlt: () => {
+            const v = window.prompt('Description de la photo (référencement / accessibilité) :', p.alt || '');
+            if (v === null) return;
+            U((st) => { st.photos[pid].alt = v.trim(); })();
+          },
           makeCover: U((st) => { st.galleries.find(x => x.id === g.id).coverId = pid; }),
           remove: U((st) => { const gg = st.galleries.find(x => x.id === g.id); gg.photoIds = gg.photoIds.filter(x => x !== pid); if (gg.coverId === pid) gg.coverId = gg.photoIds[0] || null; delete st.photos[pid]; })
         };
