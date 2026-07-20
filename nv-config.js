@@ -58,7 +58,7 @@ window.NV_CONFIG = {
      La clé est publique par conception (elle ne fait qu'envoyer vers VOTRE email).
      -------------------------------------------------------------------------- */
   contact: {
-    web3formsKey: '',                 // ex. 'a1b2c3d4-....'
+    web3formsKey: '53770a7e-2963-4644-b8fe-b729e5323861',
     recipientLabel: 'n.vivaudou@gmail.com',
   },
 
