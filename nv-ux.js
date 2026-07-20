@@ -45,6 +45,28 @@
   function prepImg(img) {
     if (!img || img.__nvFade) return;
     img.__nvFade = true;
+  // --- SEO/A11y: alt + lazy-loading (ajouté automatiquement) ---
+  try {
+    if (!img.getAttribute('loading')) img.setAttribute('loading', 'lazy');
+    if (!img.getAttribute('decoding')) img.setAttribute('decoding', 'async');
+    var _alt = img.getAttribute('alt');
+    if (!_alt || !_alt.trim()) {
+      var _ctx = '';
+      var _sec = img.closest('[data-alt]');
+      if (_sec && _sec.getAttribute('data-alt')) {
+        _ctx = _sec.getAttribute('data-alt').trim();
+      } else {
+        var _h = img.closest('section, article, .nv-page, main, body');
+        var _t = _h ? _h.querySelector('h1, h2, [data-i18n]') : null;
+        if (_t && _t.textContent) _ctx = _t.textContent.trim().slice(0, 80);
+      }
+      // TODO (Nicolas): remplacer par une description précise de chaque photo pour un meilleur SEO
+      img.setAttribute('alt', _ctx
+        ? ('Photographie de Nicolas Vivaudou — ' + _ctx)
+        : 'Photographie de Nicolas Vivaudou, photographe & vidéaste par drone à Montréal');
+    }
+  } catch (e) {}
+  // --- fin ajout SEO/A11y ---
     // Ne JAMAIS toucher une image dont l'opacité est déjà pilotée par l'auteur
     // (ex. aperçus flottants de l'accueil, qui empilent et font défiler les
     // photos via opacity 0/1). Sinon on écrase leur animation.
