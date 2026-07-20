@@ -587,15 +587,15 @@ class Component extends DCLogic {
             faces = await withTimeout(window.NVFace.scanImage(this.scanCanvas(img, 640)), 20000, 'scan'); scanned = true;
           } catch (e) { faces = []; scanned = false; }
         }
-        let src = url;
+        let src = url, thumb = '';
         if (window.NVStorage && window.NVStorage.enabled()) {
           this.setState({ scanMsg: label + ' — téléversement…' });
-          try { src = await withTimeout(window.NVStorage.upload(url, files[i].name), 60000, 'upload'); }
+          try { const up = await withTimeout(window.NVStorage.uploadWithThumb(url, files[i].name), 90000, 'upload'); src = up.url; thumb = up.thumb || ''; }
           catch (e) { console.warn('Upload distant échoué, conservation locale.', e); src = url; }
         }
         window.NVStore.update((s) => {
           const id = window.NVStore.uid('ph');
-          s.photos[id] = { id, gallery: galleryId, file: null, src, faces, scanned, uploadedAt: '2026' };
+          s.photos[id] = { id, gallery: galleryId, file: null, src, thumb, faces, scanned, uploadedAt: '2026' };
           const g = s.galleries.find(x => x.id === galleryId);
           g.photoIds.push(id); if (!g.coverId) g.coverId = id;
         });

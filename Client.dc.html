@@ -574,7 +574,7 @@ class Component extends DCLogic {
       expired: this.isExpired(g),
       total: g.total || g.photoIds.length,
       liked: g.photoIds.filter(pid => c.likes[pid]).length,
-      cover: window.NVStore.resolveSrc(s.photos[g.coverId || g.photoIds[0]]),
+      cover: window.NVStore.resolveThumb(s.photos[g.coverId || g.photoIds[0]]),
       open: () => this.setState({ view: 'gallery', galleryId: g.id, faceActive: null, faceTried: false })
     }));
 
@@ -593,9 +593,9 @@ class Component extends DCLogic {
       photos = ids.map(pid => {
         const p = s.photos[pid]; if (!p) return null;
         const liked = !!c.likes[pid];
-        const src = window.NVStore.resolveSrc(p);
+        const src = window.NVStore.resolveThumb(p);
         return {
-          src, zoom: () => this.openLb(srcList, srcList.indexOf(src)),
+          src, zoom: () => this.openLb(srcList, srcList.indexOf(window.NVStore.resolveSrc(p))),
           heart: liked ? '♥' : '♡', toggle: () => this.toggleLike(pid),
           heartStyle: 'position:absolute;right:8px;bottom:8px;width:44px;height:44px;border-radius:999px;border:none;cursor:pointer;font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;background:' + (liked ? 'var(--accent)' : 'rgba(17,17,17,.42)') + ';color:' + (liked ? 'var(--on-accent)' : '#fff') + ';transition:all .15s;'
         };
@@ -607,7 +607,7 @@ class Component extends DCLogic {
     Object.keys(c.likes).forEach(pid => {
       if (!c.likes[pid]) return; const p = s.photos[pid]; if (!p) return;
       const gg = window.NVStore.gallery(p.gallery) || s.galleries.find(x => x.photoIds.includes(pid));
-      selected.push({ src: window.NVStore.resolveSrc(p), gal: gg ? L(gg.name, gg.nameEn) : '', toggle: () => this.toggleLike(pid) });
+      selected.push({ src: window.NVStore.resolveThumb(p), gal: gg ? L(gg.name, gg.nameEn) : '', toggle: () => this.toggleLike(pid) });
     });
     // Regroupe la sélection par galerie (une section par galerie).
     const selGroups = [];

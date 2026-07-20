@@ -185,7 +185,7 @@ class Component extends DCLogic {
     const photoObjs = g ? g.photoIds.map(pid => s.photos[pid]).filter(Boolean) : [];
     const photoSrcs = photoObjs.map(p => window.NVStore.resolveSrc(p));
     const gName = g ? L(g.name, g.nameEn) : '';
-    const photos = photoSrcs.map((src, i) => ({ src, alt: (photoObjs[i].alt || (gName + ' — photo ' + (i + 1))), open: () => { this.setState({ lb: i }); this.preload(i); } }));
+    const photos = photoObjs.map((p, i) => ({ src: window.NVStore.resolveThumb(p), alt: (p.alt || (gName + ' — photo ' + (i + 1))), open: () => { this.setState({ lb: i }); this.preload(i); } }));
     const lbOpen = this.state.lb >= 0;
     return {
       ...base,

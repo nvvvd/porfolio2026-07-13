@@ -37,6 +37,26 @@
   /* Compression automatique avant upload : borne le grand côté à maxDim px et
      ré-encode en JPEG (q .82). Une photo 24 Mpx de 6 Mo devient ~350 Ko — le
      principal levier PageSpeed mobile. PNG avec transparence : conservé tel quel. */
+  /* Vignette 640px (JPEG q .78) pour les grilles — ~40-80 Ko. */
+  function makeThumb(blob) {
+    return new Promise(function (resolve) {
+      var url = URL.createObjectURL(blob);
+      var img = new Image();
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var w = img.naturalWidth, h = img.naturalHeight;
+        var scale = Math.min(1, 640 / Math.max(w, h));
+        if (scale === 1) return resolve(null); // déjà petite : pas de vignette séparée
+        var cv = document.createElement('canvas');
+        cv.width = Math.round(w * scale); cv.height = Math.round(h * scale);
+        cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+        cv.toBlob(function (out) { resolve(out || null); }, 'image/jpeg', 0.78);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); resolve(null); };
+      img.src = url;
+    });
+  }
+
   function compressBlob(blob) {
     var maxDim = cfg().maxDimension || 2000;
     var quality = cfg().jpegQuality || 0.82;
@@ -64,8 +84,25 @@
     });
   }
 
+  /* uploadWithThumb(data, filename) -> Promise<{url, thumb}>
+     Téléverse la photo compressée + une vignette 640px pour les grilles. */
+
   window.NVStorage = {
     enabled: function () { return !!cfg().uploadEndpoint; },
+
+    uploadWithThumb: function (data, filename) {
+      var self = this;
+      var blob = (typeof data === 'string') ? dataURLToBlob(data) : data;
+      return self.upload(blob, filename).then(function (url) {
+        if (!self.enabled() || String(url).slice(0, 5) === 'data:') return { url: url, thumb: '' };
+        return makeThumb(blob).then(function (tb) {
+          if (!tb) return { url: url, thumb: '' };
+          return self.upload(tb, 'thumb-' + (filename || Date.now() + '.jpg')).then(function (turl) {
+            return { url: url, thumb: turl };
+          }).catch(function () { return { url: url, thumb: '' }; });
+        });
+      });
+    },
 
     upload: function (data, filename) {
       var endpoint = cfg().uploadEndpoint;
@@ -89,6 +126,46 @@
         return json.url;
       });
       });
+    },
+
+    /* ------------------------------------------------------------------------
+       buildThumbs() — génère les vignettes 640px manquantes pour les photos déjà
+       en ligne (grilles plus légères). À lancer une fois après déploiement :
+         await NVStorage.buildThumbs({ dryRun: true });   // simulation
+         await NVStorage.buildThumbs();                   // réel
+       Idempotent (saute les photos ayant déjà un thumb). Renvoie {found,done,failed}.
+       ------------------------------------------------------------------------ */
+    buildThumbs: function (opts) {
+      opts = opts || {};
+      var self = this;
+      if (!this.enabled()) return Promise.reject(new Error('Aucun uploadEndpoint configuré.'));
+      if (!window.NVStore) return Promise.reject(new Error('NVStore indisponible.'));
+      var st = window.NVStore.get();
+      var ids = Object.keys(st.photos || {}).filter(function (id) {
+        var p = st.photos[id];
+        return p && !p.thumb && /^https?:\/\//i.test(p.src || '');
+      });
+      var result = { found: ids.length, done: 0, failed: 0 };
+      if (opts.dryRun) { console.log('NVStorage.buildThumbs (simulation) :', result.found, 'photo(s) sans vignette.'); return Promise.resolve(result); }
+      var i = 0;
+      function next() {
+        if (i >= ids.length) { window.NVStore.save(); console.log('NVStorage.buildThumbs terminé :', result); return result; }
+        var id = ids[i++];
+        var p = window.NVStore.get().photos[id];
+        return fetch(p.src).then(function (res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.blob(); })
+          .then(function (blob) { return makeThumb(blob); })
+          .then(function (tb) {
+            if (!tb) { result.done++; return; } // image déjà petite
+            return self.upload(tb, 'thumb-' + id + '.jpg').then(function (turl) {
+              window.NVStore.update(function (s2) { if (s2.photos[id]) s2.photos[id].thumb = turl; });
+              result.done++;
+              if (result.done % 25 === 0) console.log('… ' + result.done + ' / ' + ids.length);
+            });
+          })
+          .catch(function (e) { result.failed++; console.warn('buildThumbs : échec sur', id, e.message || e); })
+          .then(next);
+      }
+      return Promise.resolve().then(next);
     },
 
     /* ------------------------------------------------------------------------

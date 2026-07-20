@@ -69,10 +69,11 @@
     photos: {
       toRow: function (p) {
         return { id: p.id, gallery: p.gallery || null, file: p.file || null, src: p.src || null,
+          alt: p.alt || null, thumb: p.thumb || null,
           faces: p.faces || [], scanned: !!p.scanned, uploaded_at: p.uploadedAt || null };
       },
       fromRow: function (r) {
-        return { id: r.id, gallery: r.gallery, file: r.file, src: r.src,
+        return { id: r.id, gallery: r.gallery, file: r.file, src: r.src, alt: r.alt || '', thumb: r.thumb || '',
           faces: r.faces || [], scanned: !!r.scanned, uploadedAt: r.uploaded_at };
       }
     },

@@ -115,7 +115,7 @@ class Component extends DCLogic {
       const s = window.NVStore.get();
       window.NVStore.publicGalleries().forEach(g => {
         const pid = g.photoIds && g.photoIds[0];
-        if (pid && s.photos[pid]) { const im = new Image(); im.src = window.NVStore.resolveSrc(s.photos[pid]); }
+        if (pid && s.photos[pid]) { const im = new Image(); im.src = window.NVStore.resolveThumb(s.photos[pid]); }
       });
     } catch (e) {}
   }
@@ -173,7 +173,7 @@ class Component extends DCLogic {
       colSpan: (i >= _full && (_n - _full)) ? _lastSpan : _normalSpan,
       spanStyle: mobile ? '' : ('grid-column:span ' + ((i >= _full && (_n - _full)) ? _lastSpan : _normalSpan) + ';'),
       name: L(g.name, g.nameEn), desc: L(g.desc, g.descEn), num: ('0' + (i + 1)).slice(-2), count: g.photoIds.length,
-      cover: window.NVStore.resolveSrc(s.photos[g.coverId || g.photoIds[0]]), href: 'Galerie.dc.html#' + g.slug
+      cover: window.NVStore.resolveThumb(s.photos[g.coverId || g.photoIds[0]]), href: 'Galerie.dc.html#' + g.slug
     }));
     if (sort === 'az') galleries.sort((a, b) => a.name.localeCompare(b.name, ui.lang === 'en' ? 'en' : 'fr'));
     else if (sort === 'count') galleries.sort((a, b) => b.count - a.count);

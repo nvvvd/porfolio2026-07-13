@@ -308,6 +308,16 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
       var base = (window.NV_CONFIG && window.NV_CONFIG.storage && window.NV_CONFIG.storage.baseUrl) || '';
       if (base) return base.replace(/\/+$/, '') + '/' + src.replace(/^\/+/, '');
       return src;
+    },
+    // Vignette légère pour les grilles (retombe sur la pleine taille si absente).
+    resolveThumb: function (p) {
+      if (p && typeof p === 'object' && p.thumb) {
+        if (/^(https?:|data:|blob:)/i.test(p.thumb)) return p.thumb;
+        var base = (window.NV_CONFIG && window.NV_CONFIG.storage && window.NV_CONFIG.storage.baseUrl) || '';
+        if (base) return base.replace(/\/+$/, '') + '/' + p.thumb.replace(/^\/+/, '');
+        return p.thumb;
+      }
+      return this.resolveSrc(p);
     }
   };
   window.NVStore = NVStore;
