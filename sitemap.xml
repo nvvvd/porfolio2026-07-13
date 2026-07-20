@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://porfolio2026-07-13.pages.dev/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>
-  <url><loc>https://porfolio2026-07-13.pages.dev/Portfolio.dc.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
-  <url><loc>https://porfolio2026-07-13.pages.dev/Galerie.dc.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://porfolio2026-07-13.pages.dev/Contact.dc.html</loc><changefreq>yearly</changefreq><priority>0.7</priority></url>
-  <url><loc>https://porfolio2026-07-13.pages.dev/Mentions.dc.html</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://www.nicolasvivaudou.com/</loc><changefreq>monthly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://www.nicolasvivaudou.com/Portfolio.dc.html</loc><changefreq>monthly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.nicolasvivaudou.com/Galerie.dc.html</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.nicolasvivaudou.com/Contact.dc.html</loc><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.nicolasvivaudou.com/Mentions.dc.html</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
 </urlset>
