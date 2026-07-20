@@ -34,6 +34,36 @@
     });
   }
 
+  /* Compression automatique avant upload : borne le grand côté à maxDim px et
+     ré-encode en JPEG (q .82). Une photo 24 Mpx de 6 Mo devient ~350 Ko — le
+     principal levier PageSpeed mobile. PNG avec transparence : conservé tel quel. */
+  function compressBlob(blob) {
+    var maxDim = cfg().maxDimension || 2000;
+    var quality = cfg().jpegQuality || 0.82;
+    if (!/^image\/(jpe?g|png|webp)/i.test(blob.type || '')) return Promise.resolve(blob);
+    return new Promise(function (resolve) {
+      var url = URL.createObjectURL(blob);
+      var img = new Image();
+      img.onload = function () {
+        URL.revokeObjectURL(url);
+        var w = img.naturalWidth, h = img.naturalHeight;
+        var scale = Math.min(1, maxDim / Math.max(w, h));
+        // Déjà petite et déjà JPEG raisonnable → inutile de ré-encoder.
+        if (scale === 1 && /jpe?g/i.test(blob.type) && blob.size < 600 * 1024) return resolve(blob);
+        var cw = Math.round(w * scale), ch = Math.round(h * scale);
+        var cv = document.createElement('canvas');
+        cv.width = cw; cv.height = ch;
+        cv.getContext('2d').drawImage(img, 0, 0, cw, ch);
+        cv.toBlob(function (out) {
+          // Sécurité : si la compression échoue ou grossit le fichier, on garde l'original.
+          resolve(out && out.size < blob.size ? out : blob);
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); resolve(blob); };
+      img.src = url;
+    });
+  }
+
   window.NVStorage = {
     enabled: function () { return !!cfg().uploadEndpoint; },
 
@@ -46,9 +76,10 @@
         }
         return (typeof data === 'string') ? Promise.resolve(data) : blobToDataURL(data);
       }
-      var blob = (typeof data === 'string') ? dataURLToBlob(data) : data;
+      var raw = (typeof data === 'string') ? dataURLToBlob(data) : data;
+      return compressBlob(raw).then(function (blob) {
       var fd = new FormData();
-      fd.append('file', blob, filename || ('photo-' + Date.now() + '.jpg'));
+      fd.append('file', blob, (filename || ('photo-' + Date.now())).replace(/\.(png|webp)$/i, '.jpg'));
       var headers = cfg().uploadToken ? { 'X-Upload-Token': cfg().uploadToken } : undefined;
       return fetch(endpoint, { method: 'POST', body: fd, headers: headers }).then(function (res) {
         if (!res.ok) throw new Error('Upload HTTP ' + res.status);
@@ -56,6 +87,7 @@
       }).then(function (json) {
         if (!json || !json.url) throw new Error('Réponse d\'upload sans champ "url"');
         return json.url;
+      });
       });
     },
 

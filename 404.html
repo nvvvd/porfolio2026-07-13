@@ -7,6 +7,20 @@
 <title>404 — Nicolas Vivaudou</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <script src="nv-theme.js"></script>
+<script>
+// Redirections des URL « devinées » : /fr, /en, /contact… → vraie page.
+(function () {
+  var p = location.pathname.replace(/\/+$/, '').split('/').pop().toLowerCase();
+  var map = { 'fr': 'Accueil.dc.html', 'en': 'Accueil.dc.html', 'home': 'Accueil.dc.html', 'accueil': 'Accueil.dc.html',
+    'contact': 'Contact.dc.html', 'about': 'Contact.dc.html?view=apropos', 'a-propos': 'Contact.dc.html?view=apropos',
+    'portfolio': 'Portfolio.dc.html', 'galeries': 'Portfolio.dc.html', 'galerie': 'Galerie.dc.html', 'gallery': 'Galerie.dc.html',
+    'client': 'Client.dc.html', 'admin': 'Admin.dc.html', 'mentions': 'Mentions.dc.html', 'mentions-legales': 'Mentions.dc.html' };
+  if (map[p]) {
+    try { if (p === 'en') localStorage.setItem('nv_lang', 'en'); if (p === 'fr') localStorage.setItem('nv_lang', 'fr'); } catch (e) {}
+    location.replace('/' + map[p]);
+  }
+})();
+</script>
 <style>
   :root{--bg:#FFFFFF;--ink:#111111;--ink-2:#4A4A4A;--muted:#767171;--line:#E6E6E6;--accent:#F2C13C;--on-accent:#161310;}
   html[data-theme="dark"]{--bg:#100F0D;--ink:#F1EDE6;--ink-2:#B4AEA3;--muted:#86817A;--line:#2A2723;}
