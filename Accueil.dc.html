@@ -238,7 +238,7 @@ class Component extends DCLogic {
       listFit: mobile ? '' : 'flex:1;display:flex;flex-direction:column;min-height:' + (40 * Math.max(1, (window.NVStore && window.NVStore.publicGalleries) ? window.NVStore.publicGalleries().length : 5)) + 'px;',
       heroAR: mobile ? '4/3' : '24/9',
       // Mobile : image d'accueil pleine largeur (bord à bord), inchangé sur ordinateur.
-      heroFull: mobile ? 'margin:18px 0 0;border-radius:0;' : 'max-height:min(60vh,calc(100vh - 290px));min-height:150px;flex:none;',
+      heroFull: mobile ? 'margin:18px 0 0;border-radius:0;' : 'max-height:min(60vh,calc(100vh - 290px));min-height:150px;flex:none;width:min(calc(100% - 40px),calc(min(60vh,100vh - 290px) * 24 / 9));margin-left:auto;margin-right:auto;',
       onLeave: this.hoverLeave,
       heroRef: this.heroRef, heroEnter: this.heroEnter, heroMove: this.heroMove, heroLeave: this.heroLeave,
       heroTouchStart: this.heroTouchStart, heroTouchMove: this.heroTouchMove, heroTouchEnd: this.heroTouchEnd

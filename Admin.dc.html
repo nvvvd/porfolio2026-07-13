@@ -402,11 +402,14 @@
             </section>
 
             <section style="{{ card }};margin-top:16px;">
-            <div style="{{ cardTitle }}">Sélection du client — {{ c.selCount }} / {{ c.likeLimit }} photo(s)</div>
+            <div style="{{ cardTitle }};display:flex;justify-content:space-between;align-items:center;"><span>Sélection du client — {{ c.selCount }} / {{ c.likeLimit }} photo(s)</span><sc-if value="{{ c.hasSel }}"><button onClick="{{ c.copyNames }}" style="{{ ghostBtnSm }}">{{ c.copyNamesLabel }}</button></sc-if></div>
             <sc-if value="{{ c.hasSel }}">
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px;">
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;">
               <sc-for list="{{ c.selected }}" as="p" hint-placeholder-count="4">
-                <div style="aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;">{{ p.img }}</div>
+                <div style="min-width:0;">
+                  <div style="aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;">{{ p.img }}</div>
+                  <div title="{{ p.name }}" style="font-size:10px;color:#7A7A7A;margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ p.name }}</div>
+                </div>
               </sc-for>
             </div>
             </sc-if>
@@ -872,7 +875,8 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
     });
     const clientList = s.clients.filter(c => c.id === activeClientId).map(c => {
       const selectedIds = Object.keys(c.likes).filter(k => c.likes[k]);
-      const selected = selectedIds.map(pid => ({ src: window.NVStore.resolveSrc(s.photos[pid]) })).filter(x => x.src).map(x => ({ src: x.src, img: React.createElement('img', { src: x.src, alt: '', loading: 'lazy', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }) }));
+      const fileNameOf = (pid) => { const p = s.photos[pid] || {}; if (p.file) return p.file; const m = String(p.src || '').split('/').pop(); return m || pid; };
+      const selected = selectedIds.filter(pid => s.photos[pid]).map(pid => ({ name: fileNameOf(pid), src: window.NVStore.resolveSrc(s.photos[pid]) })).filter(x => x.src).map(x => ({ name: x.name, img: React.createElement('img', { src: x.src, alt: x.name, loading: 'lazy', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }) }));
       // Galeries privées de ce client (édition complète, même carte que l'onglet Galeries).
       const clientGalleries = s.galleries.filter(g => g.private && g.clientId === c.id).map(mkGalleryCard);
       const invoices = c.invoices.map(inv => ({
@@ -1009,6 +1013,8 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
         dlBtn: 'border:1px solid #E0E0E0;border-radius:2px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;' + (c.canDownload ? 'background:#111;color:#fff;' : 'background:#fff;color:#333;'),
         toggleDl: U((st) => { const cc = st.clients.find(x => x.id === c.id); cc.canDownload = !cc.canDownload; }),
         downloadUrl: c.downloadUrl || '', setDownloadUrl: onInput((st, v) => st.clients.find(x => x.id === c.id).downloadUrl = v),
+        copyNamesLabel: this.state.copiedNamesId === c.id ? 'liste copiée ✓' : '⎘ copier les noms de fichiers',
+        copyNames: () => { try { const txt = selected.map(x => x.name).join('\n'); if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt); this.setState({ copiedNamesId: c.id }); setTimeout(() => this.setState({ copiedNamesId: null }), 1800); } catch (e) {} },
         addInvoice: U((st) => { const cc = st.clients.find(x => x.id === c.id); cc.invoices.push({ id: window.NVStore.uid('inv'), num: 'F-2026', label: 'Nouvelle prestation', amount: '0 $', date: '2026', status: 'À régler' }); }),
         remove: () => { if (confirm('Supprimer ce client ?')) this.upd((st) => { st.clients = st.clients.filter(x => x.id !== c.id); if (st.settings.archivedClients) delete st.settings.archivedClients[c.id]; }); }
       };

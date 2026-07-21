@@ -185,6 +185,13 @@
         var photos = {};
         photosArr.forEach(function (p) { photos[p.id] = p; });
         var data = (siteRow && siteRow.data) || {};
+        // La base ne renvoie jamais les mots de passe clients (hash serveur) :
+        // on conserve le code saisi localement pour qu'il reste visible dans l'admin.
+        try {
+          var prevClients = {};
+          (getState().clients || []).forEach(function (pc) { prevClients[pc.id] = pc; });
+          clients.forEach(function (nc) { if (!nc.password && prevClients[nc.id] && prevClients[nc.id].password) nc.password = prevClients[nc.id].password; });
+        } catch (e) {}
         var state = {
           version: data.version || 5,
           brand: data.brand, hero: data.hero, home: data.home,
