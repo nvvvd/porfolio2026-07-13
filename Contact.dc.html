@@ -57,8 +57,8 @@
 <div class="nv-page" role="main" style="background:var(--bg);min-height:100vh;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--ink);{{ pageFit }}">
 
   <header style="display:flex;justify-content:space-between;align-items:baseline;padding:18px 20px 0;gap:10px;">
-    <a href="Accueil.dc.html" style="text-decoration:none;font-size:14px;color:var(--ink);letter-spacing:-.01em;">{{ brandName }}<span style="color:var(--muted);"> — {{ brandRole }}</span></a>
-    <div style="display:flex;align-items:baseline;gap:16px;">
+    <a href="Accueil.dc.html" style="text-decoration:none;font-size:14px;color:var(--ink);letter-spacing:-.01em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ brandName }}<span style="color:var(--muted);"> — {{ brandRole }}</span></a>
+    <div style="display:flex;align-items:baseline;gap:16px;flex:none;">
       <nav style="{{ deskNav }}"><a href="Accueil.dc.html" style="{{ navHomeStyle }}">{{ navHome }}</a><span style="color:var(--muted);">, </span><a href="Portfolio.dc.html" style="{{ navGalleriesStyle }}">{{ navGalleries }}</a><span style="color:var(--muted);">, </span><a href="Client.dc.html" style="{{ navClientStyle }}">{{ navClient }}</a><span style="color:var(--muted);">, </span><a href="Contact.dc.html" style="{{ navContactStyle }}">{{ navContact }}</a></nav>
       <div style="{{ langWrap }}"><button onClick="{{ setFr }}" style="{{ frBtn }}">FR</button><span style="color:var(--faint);font-size:13px;">/</span><button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button></div>
       <button onClick="{{ toggleTheme }}" aria-label="{{ themeLabel }}" title="{{ themeLabel }}" style="{{ themeBtn }}">{{ themeIcon }}</button>
@@ -146,7 +146,7 @@
         </label>
         <label style="margin-bottom:18px;{{ msgLabelFit }}">
           <span style="display:block;font-size:13px;color:var(--muted);margin-bottom:4px;">{{ lblMessage }}</span>
-          <textarea rows="3" value="{{ fMsg }}" onInput="{{ setMsg }}" placeholder="{{ phMessage }}" style="width:100%;padding:10px 0;border:none;background:transparent;font-size:16px;color:var(--ink);{{ msgFit }}"></textarea>
+          <textarea rows="3" value="{{ fMsg }}" onInput="{{ setMsg }}" placeholder="{{ phMessage }}" style="width:100%;padding:10px 0;border:none;border-bottom:1px solid var(--line);background:transparent;font-size:16px;color:var(--ink);{{ msgFit }}"></textarea>
         </label>
         <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
           <label>Ne pas remplir<input type="text" tabindex="-1" autocomplete="off" value="{{ fHp }}" onInput="{{ setHp }}" /></label>
@@ -278,11 +278,11 @@ class Component extends DCLogic {
       // Mobile : la colonne texte passe en display:contents pour que ses enfants
       // s'ordonnent librement — portrait(1) → titre(2) → texte(3) → coulisses(4) → confiance(5) → CTA(6).
       aboutPhotoCol: mobile ? 'display:flex;flex-direction:column;gap:8px;min-width:0;order:1;' : 'display:flex;flex-direction:column;gap:8px;min-width:0;',
-      aboutTextCol: mobile ? 'display:contents;' : 'min-width:0;min-height:0;overflow-y:auto;max-height:100%;',
+      aboutTextCol: mobile ? 'display:contents;' : 'min-width:0;min-height:0;overflow-y:auto;display:flex;flex-direction:column;',
       ordTitle: mobile ? 'order:2;margin-top:24px;' : '',
       ordText: mobile ? 'order:3;' : '',
       ordBackstage: mobile ? 'order:4;margin-top:20px;' : '',
-      ordTrust: mobile ? 'order:5;' : '',
+      ordTrust: mobile ? 'order:5;' : 'margin-top:auto;',
       ordCta: mobile ? 'order:6;' : '',
       pickContact: this.setView('contact'), pickAbout: this.setView('about'),
       tabContact: 'contact', tabAbout: aboutWord,
@@ -313,7 +313,7 @@ class Component extends DCLogic {
       msgFit: mobile ? 'resize:vertical;' : 'flex:1;min-height:56px;resize:none;',
       gridStyle: mobile
         ? 'display:flex;flex-direction:column;margin-top:clamp(20px,3vh,32px);'
-        : 'display:grid;grid-template-columns:1fr 1fr;grid-template-rows:minmax(0,1fr);gap:clamp(28px,4vw,48px);margin-top:clamp(20px,3vh,32px);align-items:stretch;height:calc(100vh - 210px);max-height:calc(100vh - 190px);min-height:420px;',
+        : 'display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);grid-template-rows:minmax(0,1fr);gap:clamp(28px,4vw,48px);margin-top:clamp(20px,3vh,32px);align-items:stretch;height:calc(100vh - 210px);max-height:calc(100vh - 190px);min-height:420px;',
       photoBox: 'position:relative;overflow:hidden;border-radius:2px;background:var(--ph);' + (mobile ? 'aspect-ratio:4/3;' : 'flex:1;min-height:0;'),
       ctLabel: T('ct.label'), ctReply: T('ct.reply'), formTitle: T('ct.formTitle'),
       lblName: T('ct.name'), phName: T('ct.namePh'), lblEmail: T('ct.email'),

@@ -54,8 +54,8 @@
 <div class="nv-page" role="main" style="background:var(--bg);min-height:100vh;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--ink);">
 
   <header style="display:flex;justify-content:space-between;align-items:baseline;padding:18px 20px 0;gap:10px;">
-    <a href="Accueil.dc.html" style="text-decoration:none;font-size:14px;color:var(--ink);letter-spacing:-.01em;">{{ brandName }}<span style="color:var(--muted);"> — {{ brandRole }}</span></a>
-    <div style="display:flex;align-items:baseline;gap:16px;">
+    <a href="Accueil.dc.html" style="text-decoration:none;font-size:14px;color:var(--ink);letter-spacing:-.01em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ brandName }}<span style="color:var(--muted);"> — {{ brandRole }}</span></a>
+    <div style="display:flex;align-items:baseline;gap:16px;flex:none;">
       <nav style="{{ deskNav }}"><a href="Accueil.dc.html" style="{{ navHomeStyle }}">{{ navHome }}</a><span style="color:var(--muted);">, </span><a href="Portfolio.dc.html" style="{{ navGalleriesStyle }}">{{ navGalleries }}</a><span style="color:var(--muted);">, </span><a href="Client.dc.html" style="{{ navClientStyle }}">{{ navClient }}</a><span style="color:var(--muted);">, </span><a href="Contact.dc.html" style="{{ navContactStyle }}">{{ navContact }}</a></nav>
       <div style="{{ langWrap }}"><button onClick="{{ setFr }}" style="{{ frBtn }}">FR</button><span style="color:var(--faint);font-size:13px;">/</span><button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button></div>
       <button onClick="{{ toggleTheme }}" aria-label="{{ themeLabel }}" title="{{ themeLabel }}" style="{{ themeBtn }}">{{ themeIcon }}</button>
@@ -117,12 +117,12 @@
     </div>
   </div>
 
-  <sc-if value="{{ lightboxOpen }}">
+  <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="">
   <div onClick="{{ closeLightbox }}" onTouchStart="{{ tStart }}" onTouchEnd="{{ tEnd }}" style="position:fixed;inset:0;z-index:80;background:rgba(17,17,17,.96);touch-action:pan-y;display:flex;align-items:center;justify-content:center;padding:clamp(12px,4vw,48px);">
     <button onClick="{{ closeLightbox }}" aria-label="Fermer" style="position:absolute;top:16px;right:18px;border:none;background:none;color:#fff;font-size:34px;line-height:1;cursor:pointer;z-index:2;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">×</button>
     <button onClick="{{ prev }}" aria-label="Précédent" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px;border-radius:999px;font-size:20px;cursor:pointer;z-index:2;">‹</button>
     <button onClick="{{ next }}" aria-label="Suivant" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px;border-radius:999px;font-size:20px;cursor:pointer;z-index:2;">›</button>
-    <img src="{{ lightboxSrc }}" alt="{{ activeName }}" onClick="{{ stop }}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:2px;" />
+    <img src="{{ lightboxSrc }}" loading="lazy" decoding="async" alt="{{ activeName }}" onClick="{{ stop }}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:2px;" />
     <span style="position:absolute;bottom:18px;left:50%;transform:translateX(-50%);font-size:13px;color:var(--faint);letter-spacing:-.01em;">{{ activeName }}</span>
   </div>
   </sc-if>
@@ -147,8 +147,14 @@ class Component extends DCLogic {
     this._ulang = window.NVI18n.onChange(() => this.setState(s => ({ tick: s.tick + 1 })));
     this._k = (e) => { if (this.state.lb < 0) return; if (e.key === 'Escape') this.setState({ lb: -1 }); if (e.key === 'ArrowRight') this.move(1); if (e.key === 'ArrowLeft') this.move(-1); };
     window.addEventListener('keydown', this._k);
+    // Synchronise la galerie affichée avec l'ancre de l'URL (#portrait, #mariage…)
+    // — corrige les liens qui n'ouvraient pas la bonne galerie (changement d'ancre
+    // sans rechargement, retour navigateur / bfcache).
+    this._h = () => { try { const h = (location.hash || '').replace('#', ''); if (!h || !window.NVStore) return; const g = window.NVStore.publicGalleries().find(x => x.slug === h); if (g && g.slug !== this.state.slug) this.setState({ slug: g.slug, lb: -1, galPick: false, fade: false }); } catch (e) {} };
+    window.addEventListener('hashchange', this._h);
+    window.addEventListener('pageshow', this._h);
   }
-  componentWillUnmount() { clearInterval(this._wait); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); window.removeEventListener('keydown', this._k); }
+  componentWillUnmount() { clearInterval(this._wait); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); window.removeEventListener('keydown', this._k); window.removeEventListener('hashchange', this._h); window.removeEventListener('pageshow', this._h); }
   curGallery() { const pub = window.NVStore.publicGalleries(); return pub.find(g => g.slug === this.state.slug) || pub[0]; }
   move(d) { const g = this.curGallery(); if (!g) return; const n = g.photoIds.length; let i = this.state.lb + d; if (i < 0) i = n - 1; if (i >= n) i = 0; this.setState({ lb: i }); this.preload(i); }
   // Précharge les photos voisines pour un défilement instantané dans la lightbox.
@@ -181,7 +187,7 @@ class Component extends DCLogic {
     const pub = window.NVStore.publicGalleries();
     const g = this.curGallery();
     const tabBase = 'display:block;width:100%;text-align:left;border:none;background:none;padding:11px 18px;cursor:pointer;font-family:inherit;font-size:16px;white-space:nowrap;letter-spacing:-.02em;transition:color .15s,background .15s;';
-    const tabs = pub.map(x => ({ label: L(x.name, x.nameEn), pick: () => { this.setState({ galPick: false, fade: true }); clearTimeout(this._fadeT); this._fadeT = setTimeout(() => this.setState({ slug: x.slug, lb: -1, fade: false }), 220); }, style: tabBase + (g && x.slug === g.slug ? 'color:var(--ink);border-left:2px solid var(--accent);padding-left:16px;' : 'color:var(--muted);border-left:2px solid transparent;padding-left:16px;') }));
+    const tabs = pub.map(x => ({ label: L(x.name, x.nameEn), pick: () => { this.setState({ galPick: false, fade: true }); clearTimeout(this._fadeT); this._fadeT = setTimeout(() => { this.setState({ slug: x.slug, lb: -1, fade: false }); try { history.replaceState(null, '', '#' + x.slug); } catch (e) {} }, 220); }, style: tabBase + (g && x.slug === g.slug ? 'color:var(--ink);border-left:2px solid var(--accent);padding-left:16px;' : 'color:var(--muted);border-left:2px solid transparent;padding-left:16px;') }));
     const photoObjs = g ? g.photoIds.map(pid => s.photos[pid]).filter(Boolean) : [];
     const photoSrcs = photoObjs.map(p => window.NVStore.resolveSrc(p));
     const gName = g ? L(g.name, g.nameEn) : '';

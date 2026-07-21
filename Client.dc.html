@@ -54,8 +54,8 @@
   <sc-if value="{{ showLogin }}" hint-placeholder-val="{{ true }}">
   <div style="min-height:100vh;display:flex;flex-direction:column;">
     <header style="display:flex;justify-content:space-between;align-items:center;padding:18px 20px;">
-      <a href="Accueil.dc.html" style="text-decoration:none;font-size:14px;color:var(--ink);letter-spacing:-.01em;">{{ brandName }}<span style="color:var(--muted);"> — {{ brandRole }}</span></a>
-      <div style="display:flex;align-items:center;gap:16px;">
+      <a href="Accueil.dc.html" style="text-decoration:none;font-size:14px;color:var(--ink);letter-spacing:-.01em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ brandName }}<span style="color:var(--muted);"> — {{ brandRole }}</span></a>
+      <div style="display:flex;align-items:center;gap:16px;flex:none;">
         <div style="{{ langWrap }}"><button onClick="{{ setFr }}" style="{{ frBtn }}">FR</button><span style="color:var(--faint);font-size:13px;">/</span><button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button></div> <button onClick="{{ toggleTheme }}" aria-label="{{ themeLabel }}" title="{{ themeLabel }}" style="{{ themeBtn }}">{{ themeIcon }}</button>
         <a href="Accueil.dc.html" style="text-decoration:none;font-size:13px;color:var(--muted);">{{ siteLink }}</a>
       </div>
