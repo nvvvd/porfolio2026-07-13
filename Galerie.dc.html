@@ -100,9 +100,9 @@
     </div>
 
     <div style="columns:{{ colWidth }};column-gap:clamp(8px,2vw,14px);margin-top:18px;opacity:{{ gridOpacity }};transition:opacity .22s ease;">
-      <sc-for list="{{ photos }}" as="p" hint-placeholder-count="8">
+      <sc-for list="{{ photos }}" as="p" hint-placeholder-count="0">
         <button onClick="{{ p.open }}" style="display:block;width:100%;border:none;padding:0;margin:0 0 clamp(8px,2vw,14px);background:var(--ph);border-radius:2px;overflow:hidden;cursor:zoom-in;break-inside:avoid;">
-          <img src="{{ p.src }}" alt="{{ p.alt }}" loading="lazy" decoding="async" fetchpriority="low" style="width:100%;display:block;" />
+          {{ p.img }}
         </button>
       </sc-for>
     </div>
@@ -133,13 +133,13 @@ class Component extends DCLogic {
   state = { ready: false, tick: 0, mobile: typeof window !== 'undefined' && window.innerWidth < 820, menuOpen: false, slug: null, lb: -1, galPick: false, fade: false };
   componentDidMount() {
     this._wait = setInterval(() => {
-      if (window.NVStore) {
+      if (window.NVStore && (!window.NVStore.hydrated || window.NVStore.hydrated())) {
         clearInterval(this._wait);
         const h = (location.hash || '').replace('#', '');
         const pub = window.NVStore.publicGalleries();
         const slug = pub.find(g => g.slug === h) ? h : (pub[0] && pub[0].slug);
         this.setState({ ready: true, slug });
-        this._unsub = window.NVStore.subscribe(() => this.setState(s => ({ tick: s.tick + 1 })));
+        this._unsub = window.NVStore.subscribe(() => this.setState(s => { const h2 = (location.hash || '').replace('#', ''); const ok = h2 && window.NVStore.publicGalleries().some(g => g.slug === h2); return { tick: s.tick + 1, slug: (ok && s.slug !== h2) ? h2 : s.slug }; }));
       }
     }, 30);
     this._r = () => this.setState({ mobile: window.innerWidth < 820, menuOpen: window.innerWidth < 820 ? this.state.menuOpen : false });
@@ -191,7 +191,7 @@ class Component extends DCLogic {
     const photoObjs = g ? g.photoIds.map(pid => s.photos[pid]).filter(Boolean) : [];
     const photoSrcs = photoObjs.map(p => window.NVStore.resolveSrc(p));
     const gName = g ? L(g.name, g.nameEn) : '';
-    const photos = photoObjs.map((p, i) => ({ src: window.NVStore.resolveThumb(p), alt: (p.alt || (gName + ' — photo ' + (i + 1))), open: () => { this.setState({ lb: i }); this.preload(i); } }));
+    const photos = photoObjs.map((p, i) => ({ img: React.createElement('img', { src: window.NVStore.resolveThumb(p), alt: (p.alt || (gName + ' — photo ' + (i + 1))), loading: 'lazy', decoding: 'async', fetchPriority: 'low', style: { width: '100%', display: 'block' } }), open: () => { this.setState({ lb: i }); this.preload(i); } }));
     const lbOpen = this.state.lb >= 0;
     return {
       ...base,

@@ -113,9 +113,7 @@
   </sc-if>
 
   <a href="Portfolio.dc.html" ref="{{ heroRef }}" aria-label="{{ heroAlt }}" onMouseEnter="{{ heroEnter }}" onMouseMove="{{ heroMove }}" onMouseLeave="{{ heroLeave }}" onTouchStart="{{ heroTouchStart }}" onTouchMove="{{ heroTouchMove }}" onTouchEnd="{{ heroTouchEnd }}" onTouchCancel="{{ heroTouchEnd }}" style="display:block;position:relative;margin:18px 20px 0;aspect-ratio:{{ heroAR }};overflow:hidden;border-radius:2px;background:var(--ph);touch-action:pan-y;{{ heroFull }}">
-    <sc-for list="{{ heroFrames }}" as="f" hint-placeholder-count="1">
-      <img src="{{ f.src }}" data-full="{{ f.full }}" alt="" fetchpriority="{{ f.prio }}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:opacity .14s linear;{{ f.vis }}" />
-    </sc-for>
+    {{ heroImgs }}
     <span style="position:absolute;left:12px;bottom:12px;font-size:12px;color:#fff;background:rgba(17,17,17,.5);padding:5px 9px;letter-spacing:.01em;border-radius:2px;">{{ heroCaption }}</span>
     <span style="position:absolute;right:12px;bottom:12px;font-size:12px;color:var(--on-accent);background:var(--accent);padding:5px 9px;border-radius:2px;">{{ heroCta }}</span>
   </a>
@@ -126,9 +124,7 @@
         <span style="{{ row.numStyle }}">{{ row.num }}</span>
         <span style="flex:1;font-size:clamp(30px,9vw,56px);font-weight:400;line-height:1.05;letter-spacing:-.03em;position:relative;z-index:1;">{{ row.title }}</span>
         <div data-row-preview="1" aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:{{ row.prevVis }};transition:opacity .25s ease;">
-          <sc-for list="{{ row.previews }}" as="p" hint-placeholder-count="0">
-            <img src="{{ p.src }}" alt="" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .08s linear;{{ p.vis }}" />
-          </sc-for>
+          {{ row.previewEls }}
         </div>
       </a>
     </sc-for>
@@ -244,7 +240,7 @@ class Component extends DCLogic {
       heroTouchStart: this.heroTouchStart, heroTouchMove: this.heroTouchMove, heroTouchEnd: this.heroTouchEnd
     };
     if (!this.state.ready || !window.NVStore) {
-      return { ...base, brandName: 'Nicolas Vivaudou', brandRole: ui.lang === 'en' ? 'Photographer' : 'Photographe', brandLoc: 'Montréal, QC',
+      return { ...base, ready: false, heroImgs: [React.createElement('img', { key: 'h0', src: 'images/L1190335.jpg', alt: '', style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' } })], brandName: 'Nicolas Vivaudou', brandRole: ui.lang === 'en' ? 'Photographer' : 'Photographe', brandLoc: 'Montréal, QC',
         heroFrames: [{ src: 'images/L1190335.jpg', vis: 'opacity:1;' }], heroCaption: '', heroCta: ui.t ? '' : '', metaLabel: '',
         availLabel: window.NVI18n.t('home.available'), workLabel: window.NVI18n.t('home.workTogether'),
         heroAlt: 'Nicolas Vivaudou — Photographe',
@@ -254,7 +250,8 @@ class Component extends DCLogic {
     const view = this.state.view, hover = this.state.hover;
     const toggleBase = 'border:none;background:transparent;cursor:pointer;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:13px;padding:0;letter-spacing:-.01em;';
     const setHover = this.hoverEnter;
-    const pub = window.NVStore.publicGalleries();
+    const hyd = !window.NVStore.hydrated || window.NVStore.hydrated();
+    const pub = hyd ? window.NVStore.publicGalleries() : [];
     const L = window.NVI18n.pick;
     // Aperçu intégré : les photos de la galerie survolée s'empilent DANS la ligne
     // (clippées par la ligne) ; le défilement est piloté en DOM par hoverEnter.
@@ -267,6 +264,7 @@ class Component extends DCLogic {
         title: L(g.name, g.nameEn), href: 'Galerie.dc.html#' + g.slug, num: ('0' + (i + 1)).slice(-2), count: String(g.photoIds.length),
         enter: setHover(g.id), move: this.rowMove,
         previews, prevVis: previews.length ? '0.3' : '0',
+        previewEls: previews.map((p, j) => React.createElement('img', { key: 'p' + j, src: p.src, alt: '', style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity .08s linear', opacity: j === 0 ? 1 : 0 } })),
         rowStyle: 'position:relative;overflow:hidden;display:flex;gap:18px;align-items:baseline;text-decoration:none;padding:16px 0;' + (i === pub.length - 1 ? '' : 'border-bottom:1px solid var(--line);') + 'transition:color .18s,padding-left .22s;padding-left:' + (isActive ? '14px' : '0') + ';color:' + (isActive ? 'var(--ink)' : 'var(--faint)') + ';',
         numStyle: 'font-size:12px;width:30px;flex:none;align-self:center;letter-spacing:.02em;transition:color .18s;color:' + (isActive ? 'var(--accent)' : 'var(--faint)') + ';z-index:1;position:relative;'
       };
@@ -286,16 +284,17 @@ class Component extends DCLogic {
     const heroCur = heroSrcs.length ? this._heroFrame % heroSrcs.length : 0;
     // Préchargement intelligent : seules les 3 premières sont chargées ; la suite via data-full.
     const HERO_PH = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-    const heroFrames = heroSrcs.map((src, i) => ({ src: (i < 3 ? src : HERO_PH), full: src, prio: (i === heroCur ? 'high' : 'low'), vis: 'opacity:' + (i === heroCur ? '1' : '0') + ';' }));
+    const heroImgs = heroSrcs.map((src, i) => React.createElement('img', { key: 'h' + i, src: (i < 3 ? src : HERO_PH), 'data-full': src, alt: '', fetchPriority: (i === heroCur ? 'high' : 'low'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'opacity .14s linear', opacity: i === heroCur ? 1 : 0 } }));
     return {
       ...base,
       brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn), brandLoc: s.brand.location,
-      heroFrames,
       heroAlt: (L(s.hero.caption, s.hero.captionEn) || (s.brand.name + ' — ' + L(s.brand.role, s.brand.roleEn))), heroCaption: L(s.hero.caption, s.hero.captionEn), heroCta: stripArrow(L(s.hero.cta, s.hero.ctaEn) || window.NVI18n.t('home.defaultCta')),
       metaLabel: L(s.home.metaLabel, s.home.metaLabelEn) + ' / ' + ('00' + total).slice(-3) + ' ' + window.NVI18n.t('home.photos'),
       availLabel: window.NVI18n.t('home.available'), workLabel: window.NVI18n.t('home.workTogether'),
       email: s.contact.email, emailHref: 'mailto:' + s.contact.email,
       instagramHref: 'https://instagram.com/' + String(s.contact.instagram || '').replace(/^@/, ''),
+      ready: true,
+      heroImgs,
       rows
     };
   }

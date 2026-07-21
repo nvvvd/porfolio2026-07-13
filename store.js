@@ -17,6 +17,11 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
 */
 (function () {
   var KEY = 'nv_site_v6';
+  // Hydratation : vrai si un cache local existe déjà, si on est en mode local,
+  // ou dès la première réception des données distantes. Tant que faux, les pages
+  // évitent d'afficher les galeries par défaut (flash au 1er chargement).
+  var hadCache = false; try { hadCache = !!localStorage.getItem(KEY); } catch (e) {}
+  var hydrated = hadCache;
   var listeners = [];
   var state = null;
 
@@ -33,6 +38,7 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
   // --- Branchement base de données (voir nv-config.js / nv-backend.js) ---
   var CFG = window.NV_CONFIG || {};
   var REMOTE = !!(CFG.backend && CFG.backend !== 'local');
+  if (!REMOTE) hydrated = true;
   var backend = null;          // adaptateur distant, attaché après le premier load()
   var applyingRemote = false;  // garde : ne pas re-pousser ce qui arrive du distant
 
@@ -266,6 +272,7 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
     save: function () { save(); emit(); },
     // Re-render tous les abonnés sans rien sauvegarder (utilisé par le changement de langue).
     ping: function () { emit(); },
+    hydrated: function () { return hydrated; },
     reset: function () {
       try { localStorage.removeItem(KEY); } catch (e) {}
       state = load();
@@ -277,6 +284,7 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
     _ingest: function (incoming) {
       if (!incoming) return;
       applyingRemote = true;
+      hydrated = true;
       state = incoming;
       try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
       applyingRemote = false;
