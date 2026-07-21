@@ -145,6 +145,7 @@
             <div style="font-size:13px;color:var(--muted);margin-top:6px;">{{ galSub }} · {{ galTotal }} {{ photosWord }}</div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <sc-if value="{{ hasDlLink }}" hint-placeholder-val=""><a href="{{ dlLink }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;border:none;background:var(--accent);color:var(--on-accent);border-radius:2px;padding:11px 16px;font-size:13px;font-weight:500;text-decoration:none;">↓ {{ dlLinkLabel }}</a></sc-if>
             <sc-if value="{{ canDownload }}" hint-placeholder-val=""><button onClick="{{ downloadGallery }}" style="border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:2px;padding:11px 16px;font-size:13px;cursor:pointer;">↓ {{ dlGalleryLabel }}</button></sc-if>
             <button onClick="{{ shareGallery }}" style="border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:2px;padding:11px 16px;font-size:13px;cursor:pointer;">{{ shareLabel }}</button>
             <sc-if value="{{ galFace }}">
@@ -289,7 +290,7 @@
     <button onClick="{{ closeZoom }}" aria-label="Fermer" style="position:absolute;top:16px;right:18px;border:none;background:none;color:#fff;font-size:34px;line-height:1;cursor:pointer;z-index:2;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">×</button>
     <button onClick="{{ zoomPrev }}" aria-label="Précédent" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px;border-radius:999px;font-size:20px;cursor:pointer;z-index:2;">‹</button>
     <button onClick="{{ zoomNext }}" aria-label="Suivant" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px;border-radius:999px;font-size:20px;cursor:pointer;z-index:2;">›</button>
-    <img src="{{ zoomSrc }}" alt="" onClick="{{ zoomStop }}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:2px;" />
+    {{ zoomImg }}
     <span aria-hidden="true" style="{{ wmZoomStyle }}">{{ wmText }}</span>
     <div style="position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:14px;z-index:2;">
       <span style="font-size:13px;color:rgba(255,255,255,.7);letter-spacing:-.01em;">{{ zoomIdx }} / {{ zoomTotal }}</span>
@@ -320,7 +321,7 @@
         <div style="display:flex;gap:8px;justify-content:center;">
           <sc-for list="{{ sampleFaces }}" as="sf" hint-placeholder-count="3">
             <button onClick="{{ sf.pick }}" style="border:1px solid var(--line);background:var(--card);border-radius:2px;padding:6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;width:88px;">
-              <span style="width:72px;height:72px;border-radius:2px;overflow:hidden;background:var(--ph);display:block;"><img src="{{ sf.src }}" alt="{{ sf.label }}" style="width:100%;height:100%;object-fit:cover;display:block;" /></span>
+              <span style="width:72px;height:72px;border-radius:2px;overflow:hidden;background:var(--ph);display:block;">{{ sf.img }}</span>
               <span style="font-size:12px;color:var(--ink-2);">{{ sf.label }}</span>
             </button>
           </sc-for>
@@ -331,7 +332,7 @@
       <sc-if value="{{ faceScanning }}">
         <div style="padding:30px 0 24px;text-align:center;">
           <div style="position:relative;width:120px;height:120px;margin:0 auto;border-radius:8px;overflow:hidden;background:var(--bg-2);">
-            <img src="{{ scanPreview }}" alt="" style="width:100%;height:100%;object-fit:cover;display:{{ scanPreviewShow }};" />
+            {{ scanPreviewImg }}
             <span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:38px;color:var(--faint);display:{{ scanFaceShow }};">☺</span>
             <div style="position:absolute;left:0;width:100%;height:2px;background:var(--accent);box-shadow:0 0 12px 2px rgba(242,193,60,.7);animation:nvscan 1.4s ease-in-out infinite alternate;"></div>
           </div>
@@ -623,7 +624,7 @@ class Component extends DCLogic {
 
     const invoices = (c.invoices || []).map(i => ({ ...i, statusLabel: (i.status === 'Payée' ? (ui.lang === 'en' ? 'Paid' : 'Payée') : (ui.lang === 'en' ? 'Due' : 'À régler')), badge: 'flex:none;font-size:11px;letter-spacing:-.01em;padding:6px 11px;border-radius:2px;' + (i.status === 'Payée' ? 'background:var(--ok-bg);color:var(--ok-fg);' : 'background:var(--warn-bg);color:var(--warn-fg);') }));
 
-    const sampleFaces = (s.sampleFaces || []).map(sf => ({ label: sf.label, src: sf.src, pick: () => this.pickSample(sf.file) }));
+    const sampleFaces = (s.sampleFaces || []).map(sf => ({ label: sf.label, img: React.createElement('img', { src: sf.src, alt: sf.label, style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }), pick: () => this.pickSample(sf.file) }));
     const faceActiveOn = !!this.state.faceActive;
 
     return {
@@ -710,6 +711,7 @@ class Component extends DCLogic {
       // Lightbox plein écran : flèches, clavier, balayage, compteur, préchargement.
       zoomOpen: this.state.lb >= 0,
       zoomSrc: this.state.lb >= 0 ? this.state.lbList[this.state.lb] : '',
+      zoomImg: this.state.lb >= 0 ? React.createElement('img', { src: this.state.lbList[this.state.lb], alt: '', onClick: (e) => e.stopPropagation(), style: { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 2 } }) : null,
       zoomIdx: this.state.lb + 1, zoomTotal: this.state.lbList.length,
       closeZoom: () => this.setState({ lb: -1 }),
       zoomCanLike: !!zoomPid,
@@ -733,6 +735,10 @@ class Component extends DCLogic {
       },
       // Téléchargement HD (activé par Nicolas dans l'admin, ex. une fois la facture réglée).
       canDownload: !!c.canDownload,
+      // Lien de téléchargement externe (WeTransfer, Drive…) fourni par Nicolas — optionnel.
+      hasDlLink: !!(c.downloadUrl && String(c.downloadUrl).trim()),
+      dlLink: c.downloadUrl || '#',
+      dlLinkLabel: ui.lang === 'en' ? 'Download my photos' : 'Télécharger mes photos',
       dlWord: ui.lang === 'en' ? 'download' : 'télécharger',
       dlGalleryLabel: ui.lang === 'en' ? 'download the gallery' : 'télécharger la galerie',
       downloadGallery: () => {
@@ -751,7 +757,7 @@ class Component extends DCLogic {
       faceNoface: this.state.faceStep === 'noface', faceDone: this.state.faceStep === 'done',
       retryFace: () => this.setState({ faceStep: 'idle' }),
       sampleFaces, onSelfie: (e) => this.onSelfie(e),
-      scanPreview: this.state.scanPreview, scanPreviewShow: this.state.scanPreview ? 'block' : 'none', scanFaceShow: this.state.scanPreview ? 'none' : 'block',
+      scanPreviewImg: this.state.scanPreview ? React.createElement('img', { src: this.state.scanPreview, alt: '', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }) : null, scanFaceShow: this.state.scanPreview ? 'none' : 'block',
       scanMsg: this.state.scanMsg,
       faceResultCount: this.state.faceCount,
       faceResultMsg: this.state.faceCount

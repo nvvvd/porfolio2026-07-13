@@ -330,6 +330,9 @@
                   <button onClick="{{ c.copyLink }}" style="{{ ghostBtnSm }}">{{ c.linkLabel }}</button>
                   <button onClick="{{ c.toggleDl }}" style="{{ c.dlBtn }}">{{ c.dlLabel }}</button>
                 </div>
+                <label class="nvlabel" style="margin-top:12px;">Lien de téléchargement externe (optionnel — WeTransfer, Drive, Dropbox…)</label>
+                <input class="nvfield" type="url" value="{{ c.downloadUrl }}" onInput="{{ c.setDownloadUrl }}" placeholder="https://we.tl/…" />
+                <p style="font-size:12px;color:#9A9A9A;line-height:1.5;margin:6px 0 0;">S'il est renseigné, un bouton « Télécharger mes photos » apparaît dans l'espace du client et ouvre ce lien. Laissez vide pour ne rien afficher.</p>
                 <p style="font-size:12px;color:#9A9A9A;line-height:1.5;margin:8px 0 0;">Le lien connecte le client directement, sans saisir ses identifiants. Activez le téléchargement HD une fois la facture réglée.</p>
               </section>
 
@@ -999,6 +1002,7 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
         dlLabel: c.canDownload ? 'téléchargement HD activé ✓' : 'téléchargement HD désactivé',
         dlBtn: 'border:1px solid #E0E0E0;border-radius:2px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;' + (c.canDownload ? 'background:#111;color:#fff;' : 'background:#fff;color:#333;'),
         toggleDl: U((st) => { const cc = st.clients.find(x => x.id === c.id); cc.canDownload = !cc.canDownload; }),
+        downloadUrl: c.downloadUrl || '', setDownloadUrl: onInput((st, v) => st.clients.find(x => x.id === c.id).downloadUrl = v),
         addInvoice: U((st) => { const cc = st.clients.find(x => x.id === c.id); cc.invoices.push({ id: window.NVStore.uid('inv'), num: 'F-2026', label: 'Nouvelle prestation', amount: '0 $', date: '2026', status: 'À régler' }); }),
         remove: () => { if (confirm('Supprimer ce client ?')) this.upd((st) => { st.clients = st.clients.filter(x => x.id !== c.id); if (st.settings.archivedClients) delete st.settings.archivedClients[c.id]; }); }
       };
