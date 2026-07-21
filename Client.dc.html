@@ -62,9 +62,9 @@
     </header>
     <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:24px 20px 60px;">
       <form onSubmit="{{ onLogin }}" style="width:100%;max-width:400px;">
-        <div style="font-size:13px;color:var(--muted);letter-spacing:-.01em;">{{ privateLabel }}</div>
-        <h1 style="margin:8px 0 0;font-size:clamp(44px,12vw,60px);font-weight:400;line-height:.95;letter-spacing:-.035em;">{{ loginTitle }}</h1>
-        <p style="margin:14px 0 30px;font-size:14px;line-height:1.55;color:var(--ink-2);">{{ loginIntro }}</p>
+        <div style="display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;"><span style="width:22px;height:1px;background:var(--accent);display:inline-block;"></span>{{ privateLabel }}</div>
+        <h1 style="margin:14px 0 0;font-size:clamp(44px,12vw,60px);font-weight:400;line-height:.95;letter-spacing:-.04em;">{{ loginTitle }}</h1>
+        <p style="margin:16px 0 34px;font-size:14px;line-height:1.6;color:var(--ink-2);max-width:340px;">{{ loginIntro }}</p>
         <label style="display:block;margin-bottom:20px;">
           <span style="display:block;font-size:13px;color:var(--muted);margin-bottom:6px;">{{ lblEmail }}</span>
           <input type="text" value="{{ loginEmail }}" onInput="{{ setEmail }}" placeholder="camille@exemple.com" style="width:100%;padding:13px 0;border:none;border-bottom:1px solid var(--line);background:transparent;font-size:16px;" />
@@ -74,7 +74,7 @@
           <input type="password" value="{{ loginPass }}" onInput="{{ setPass }}" placeholder="••••••" style="width:100%;padding:13px 0;border:none;border-bottom:1px solid var(--line);background:transparent;font-size:16px;" />
         </label>
         <sc-if value="{{ loginError }}"><div style="margin-bottom:16px;font-size:13px;color:var(--error);">{{ badCreds }}</div></sc-if>
-        <button type="submit" style="width:100%;margin-top:14px;padding:16px;border:none;border-radius:2px;background:var(--accent);color:var(--on-accent);font-size:15px;font-weight:500;cursor:pointer;">{{ signIn }}</button>
+        <button type="submit" style="width:100%;margin-top:18px;padding:16px;border:none;border-radius:2px;background:var(--accent);color:var(--on-accent);font-size:15px;font-weight:500;letter-spacing:.01em;cursor:pointer;transition:opacity .2s;" style-hover="opacity:.88;">{{ signIn }}</button>
         <div style="margin-top:16px;font-size:13px;color:var(--muted);text-align:center;line-height:1.5;">{{ demoPrefix }}{{ demoHint }}</div>
       </form>
     </div>
@@ -116,9 +116,9 @@
         <sc-if value="{{ hasGalleries }}">
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px;">
           <sc-for list="{{ galleryCards }}" as="g" hint-placeholder-count="2">
-            <button onClick="{{ g.open }}" style="text-align:left;border:1px solid var(--line);background:var(--card);border-radius:2px;overflow:hidden;cursor:pointer;padding:0;transition:opacity .2s;" style-hover="opacity:.92;">
-              <div style="position:relative;aspect-ratio:16/10;background:var(--ph);">
-                <img src="{{ g.cover }}" alt="{{ g.name }}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block;" />
+            <button onClick="{{ g.open }}" style="text-align:left;border:1px solid var(--line);background:var(--card);border-radius:4px;overflow:hidden;cursor:pointer;padding:0;transition:transform .3s cubic-bezier(.2,.7,.3,1),box-shadow .3s ease,border-color .3s ease;display:block;" style-hover="transform:translateY(-4px);box-shadow:0 18px 40px -18px rgba(0,0,0,.35);border-color:var(--ink);">
+              <div style="position:relative;aspect-ratio:16/10;background:var(--ph);overflow:hidden;">
+                <img src="{{ g.cover }}" alt="{{ g.name }}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.2,.7,.3,1);" />
                 <sc-if value="{{ g.faceSearch }}"><span style="position:absolute;left:10px;top:10px;font-size:11px;color:var(--on-accent);background:var(--accent);padding:4px 8px;border-radius:2px;">{{ faceBadge }}</span></sc-if>
                 <sc-if value="{{ g.expired }}" hint-placeholder-val=""><span style="position:absolute;inset:0;background:rgba(17,17,17,.55);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;letter-spacing:.08em;text-transform:uppercase;">{{ expiredWord }}</span></sc-if>
               </div>
