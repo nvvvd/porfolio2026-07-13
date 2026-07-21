@@ -135,8 +135,8 @@
     var dirty = false;        // l'état local diffère de `last`, à pousser
     var retryDelay = 0;       // backoff courant
     var lastPushAt = 0;       // horodatage du dernier push réussi (anti-écho)
-    var ECHO_MS = 6000;       // fenêtre pendant laquelle on ignore nos propres échos (élargie : latence realtime)
-    var LOCAL_EDIT_MS = 4000;   // on ne ré-hydrate pas si l'utilisateur a saisi dans cette fenêtre
+    var ECHO_MS = 20000;       // fenêtre pendant laquelle on ignore nos propres échos (élargie : latence realtime)
+    var LOCAL_EDIT_MS = 15000;   // on ne ré-hydrate pas si l'utilisateur a saisi dans cette fenêtre
     var lastLocalEditAt = 0;    // horodatage de la dernière écriture locale (saisie)
 
     /* ---- HYDRATER : lire toutes les tables -> assembler un state -> ingest ---- */
@@ -194,7 +194,7 @@
         };
         last = clone(state);
         hydrating = false;
-        if (pushing || dirty) { console.warn('NVBackend: hydratation ignoree (edition locale en cours).'); onStatus('conflict'); return; }
+        if (pushing || dirty || Date.now() - lastLocalEditAt < LOCAL_EDIT_MS) { console.warn('NVBackend: hydratation ignoree (edition locale en cours).'); return; }
         ingest(state);
         onStatus('saved');
       }).catch(function (e) {

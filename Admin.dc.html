@@ -105,7 +105,7 @@
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;">
               <sc-for list="{{ topPhotos }}" as="tp" hint-placeholder-count="4">
                 <div style="position:relative;aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;">
-                  <img src="{{ tp.src }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                  {{ tp.img }}
                   <span style="position:absolute;right:4px;top:4px;font-size:11px;background:#F2C13C;color:#111;border-radius:99px;padding:2px 7px;">♥ {{ tp.count }}</span>
                 </div>
               </sc-for>
@@ -172,7 +172,7 @@
                 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;">
                   <sc-for list="{{ slidePhotos }}" as="sp" hint-placeholder-count="6">
                     <div onClick="{{ sp.toggle }}" title="{{ sp.title }}" style="position:relative;aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;cursor:pointer;{{ sp.ring }}">
-                      <img src="{{ sp.src }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                      {{ sp.img }}
                       <span style="{{ sp.numStyle }}">{{ sp.num }}</span>
                     </div>
                   </sc-for>
@@ -185,7 +185,7 @@
             <div style="{{ cardTitle }}">À propos</div>
             <div style="display:flex;gap:14px;align-items:flex-start;">
               <div style="position:relative;width:96px;flex:none;aspect-ratio:3/4;border-radius:2px;overflow:hidden;background:#EEE;">
-                <img src="{{ aboutPhoto }}" alt="portrait" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                {{ aboutPhotoImg }}
               </div>
               <div style="flex:1;min-width:0;">
                 <label style="{{ uploadBtn }}"><input type="file" accept="image/*" onChange="{{ onAbout }}" style="display:none;" />Changer la photo</label>
@@ -201,7 +201,7 @@
             <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
               <sc-for list="{{ backstageAdmin }}" as="b" hint-placeholder-count="0">
                 <div style="position:relative;width:72px;aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;">
-                  <img src="{{ b.src }}" alt="coulisses" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                  {{ b.img }}
                   <button onClick="{{ b.remove }}" title="Retirer" style="position:absolute;top:2px;right:2px;width:20px;height:20px;border:none;border-radius:999px;background:rgba(17,17,17,.65);color:#fff;font-size:12px;line-height:1;cursor:pointer;">×</button>
                 </div>
               </sc-for>
@@ -269,7 +269,7 @@
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;margin-top:14px;">
               <sc-for list="{{ g.photos }}" as="p" hint-placeholder-count="6">
                 <div draggable="true" onDragStart="{{ p.dragStart }}" onDragOver="{{ p.dragOver }}" onDrop="{{ p.drop }}" title="Glisser pour réordonner" style="position:relative;aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;cursor:grab;{{ p.ring }}">
-                  <img src="{{ p.src }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                  {{ p.img }}
                   <span style="{{ p.scanBadge }}" title="{{ p.scanTitle }}">{{ p.scanIcon }}</span>
                   <div style="position:absolute;left:0;right:0;bottom:0;display:flex;background:rgba(17,17,17,.55);">
                     <button onClick="{{ p.makeCover }}" title="Couverture" style="flex:1;border:none;background:none;color:#fff;font-size:11px;padding:5px 0;cursor:pointer;">{{ p.coverIcon }}</button>
@@ -376,7 +376,7 @@
                 <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:6px;margin-top:12px;">
                   <sc-for list="{{ g.photos }}" as="p" hint-placeholder-count="4">
                     <div draggable="true" onDragStart="{{ p.dragStart }}" onDragOver="{{ p.dragOver }}" onDrop="{{ p.drop }}" title="Glisser pour réordonner" style="position:relative;aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;cursor:grab;{{ p.ring }}">
-                      <img src="{{ p.src }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" />
+                      {{ p.img }}
                       <span style="{{ p.scanBadge }}" title="{{ p.scanTitle }}">{{ p.scanIcon }}</span>
                       <span style="{{ p.likeBadge }}" title="Aimée par le client">♥</span>
                       <div style="position:absolute;left:0;right:0;bottom:0;display:flex;background:rgba(17,17,17,.55);">
@@ -405,7 +405,7 @@
             <sc-if value="{{ c.hasSel }}">
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:6px;">
               <sc-for list="{{ c.selected }}" as="p" hint-placeholder-count="4">
-                <div style="aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;"><img src="{{ p.src }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;display:block;" /></div>
+                <div style="aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;">{{ p.img }}</div>
               </sc-for>
             </div>
             </sc-if>
@@ -733,7 +733,7 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
     const slidePhotos = pubPhotos.map(p => {
       const idx = slideIds.indexOf(p.id);
       return {
-        src: window.NVStore.resolveSrc(p),
+        img: React.createElement('img', { src: window.NVStore.resolveSrc(p), alt: '', loading: 'lazy', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }),
         num: idx >= 0 ? String(idx + 1) : '',
         title: idx >= 0 ? 'Position ' + (idx + 1) + ' — cliquer pour retirer' : 'Cliquer pour ajouter au diaporama',
         numStyle: idx >= 0 ? 'position:absolute;top:4px;left:4px;min-width:20px;height:20px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:11px;background:#F2C13C;color:#111;padding:0 4px;' : 'display:none;',
@@ -766,9 +766,9 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
         f_heroCtaEn: s.hero.ctaEn || '', s_heroCtaEn: onInput((st, v) => st.hero.ctaEn = v),
         f_heroCapEn: s.hero.captionEn || '', s_heroCapEn: onInput((st, v) => st.hero.captionEn = v),
       f_homeMeta: s.home.metaLabel, s_homeMeta: onInput((st, v) => st.home.metaLabel = v),
-      aboutPhoto: window.NVStore.resolveSrc(s.about.photo),
+      aboutPhotoImg: React.createElement('img', { src: window.NVStore.resolveSrc(s.about.photo), alt: 'portrait', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }),
       onAbout: (e) => { const f = e.target.files[0]; if (f) this.setImageField(f, (url, st) => st.about.photo = url); },
-      backstageAdmin: (s.about.backstage || []).map((p, i) => ({ src: window.NVStore.resolveSrc(p), remove: () => this.upd((st) => { (st.about.backstage = st.about.backstage || []).splice(i, 1); }) })),
+      backstageAdmin: (s.about.backstage || []).map((p, i) => ({ img: React.createElement('img', { src: window.NVStore.resolveSrc(p), alt: 'coulisses', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }), remove: () => this.upd((st) => { (st.about.backstage = st.about.backstage || []).splice(i, 1); }) })),
       onBackstageAdd: (e) => { const f = e.target.files[0]; if (f) this.setImageField(f, (url, st) => { st.about.backstage = st.about.backstage || []; st.about.backstage.push(url); }); e.target.value = ''; },
       f_aboutName: s.about.name, s_aboutName: onInput((st, v) => st.about.name = v),
       f_aboutText: s.about.text, s_aboutText: onInput((st, v) => st.about.text = v),
@@ -791,6 +791,7 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
         const hasFace = p && p.faces && p.faces.length > 0;
         const liked = !!(owner && owner.likes && owner.likes[pid]);
         return {
+          img: React.createElement('img', { src: window.NVStore.resolveSrc(p), alt: '', loading: 'lazy', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }),
           // Réorganisation par glisser-déposer.
           dragStart: (e) => { this._drag = { gid: g.id, pid }; try { e.dataTransfer.effectAllowed = 'move'; } catch (x) {} },
           dragOver: (e) => { e.preventDefault(); try { e.dataTransfer.dropEffect = 'move'; } catch (x) {} },
@@ -870,7 +871,7 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
     });
     const clientList = s.clients.filter(c => c.id === activeClientId).map(c => {
       const selectedIds = Object.keys(c.likes).filter(k => c.likes[k]);
-      const selected = selectedIds.map(pid => ({ src: window.NVStore.resolveSrc(s.photos[pid]) })).filter(x => x.src);
+      const selected = selectedIds.map(pid => ({ src: window.NVStore.resolveSrc(s.photos[pid]) })).filter(x => x.src).map(x => ({ src: x.src, img: React.createElement('img', { src: x.src, alt: '', loading: 'lazy', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }) }));
       // Galeries privées de ce client (édition complète, même carte que l'onglet Galeries).
       const clientGalleries = s.galleries.filter(g => g.private && g.clientId === c.id).map(mkGalleryCard);
       const invoices = c.invoices.map(inv => ({
@@ -1015,7 +1016,7 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
       .filter(pid => s.photos[pid])
       .sort((a, b) => likeCounts[b] - likeCounts[a])
       .slice(0, 8)
-      .map(pid => ({ src: window.NVStore.resolveSrc(s.photos[pid]), count: likeCounts[pid] }));
+      .map(pid => ({ img: React.createElement('img', { src: window.NVStore.resolveSrc(s.photos[pid]), alt: '', loading: 'lazy', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }), count: likeCounts[pid] }));
     // Sommes des factures : extrait les nombres de champs libres comme "1 050 $".
     const amt = (a) => { const m = String(a || '').replace(/\s/g, '').replace(',', '.').match(/[\d.]+/); return m ? parseFloat(m[0]) : 0; };
     let paidSum = 0, dueSum = 0;
