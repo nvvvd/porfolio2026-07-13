@@ -146,7 +146,7 @@
         </label>
         <label style="margin-bottom:18px;{{ msgLabelFit }}">
           <span style="display:block;font-size:13px;color:var(--muted);margin-bottom:4px;">{{ lblMessage }}</span>
-          <textarea rows="3" value="{{ fMsg }}" onInput="{{ setMsg }}" placeholder="{{ phMessage }}" style="width:100%;padding:10px 0;border:none;border-bottom:1px solid var(--line);background:transparent;font-size:16px;color:var(--ink);{{ msgFit }}"></textarea>
+          <textarea rows="3" value="{{ fMsg }}" onInput="{{ setMsg }}" placeholder="{{ phMessage }}" style="width:100%;box-sizing:border-box;font-size:16px;color:var(--ink);{{ msgFit }}"></textarea>
         </label>
         <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden;">
           <label>Ne pas remplir<input type="text" tabindex="-1" autocomplete="off" value="{{ fHp }}" onInput="{{ setHp }}" /></label>
@@ -180,7 +180,7 @@
       </div>
       <div style="{{ aboutTextCol }}">
         <h2 style="margin:0;font-size:clamp(24px,6vw,32px);font-weight:400;line-height:1;letter-spacing:-.03em;{{ ordTitle }}">{{ aboutName }}</h2>
-        <p style="margin:12px 0 0;font-size:clamp(14px,3.6vw,15px);line-height:1.5;color:var(--ink-2);white-space:pre-line;{{ ordText }}">{{ aboutText }}</p>
+        <p style="margin:12px 0 0;color:var(--ink-2);white-space:pre-line;{{ ordText }}">{{ aboutText }}</p>
         <div style="margin-top:22px;padding:14px 16px;background:var(--bg-2);border:1px solid var(--line);border-radius:6px;{{ ordTrust }}">
           <div style="display:flex;align-items:center;gap:9px;font-size:14px;font-weight:500;color:var(--ink);letter-spacing:-.02em;margin-bottom:13px;">
             <span style="width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;"></span>{{ trustTitle }}
@@ -280,7 +280,9 @@ class Component extends DCLogic {
       aboutPhotoCol: mobile ? 'display:flex;flex-direction:column;gap:8px;min-width:0;order:1;' : 'display:flex;flex-direction:column;gap:8px;min-width:0;',
       aboutTextCol: mobile ? 'display:contents;' : 'min-width:0;min-height:0;overflow-y:auto;display:flex;flex-direction:column;',
       ordTitle: mobile ? 'order:2;margin-top:24px;' : '',
-      ordText: mobile ? 'order:3;' : '',
+      // Ordinateur : le texte occupe toute la hauteur entre le titre et le bloc du bas —
+      // taille de police liée à la hauteur d'écran, centré verticalement dans l'espace libre.
+      ordText: mobile ? 'order:3;font-size:clamp(14px,3.6vw,15px);line-height:1.5;' : 'flex:1;display:flex;flex-direction:column;justify-content:center;font-size:clamp(15px,.65vw+1.15vh,21px);line-height:1.75;max-width:62ch;',
       ordBackstage: mobile ? 'order:4;margin-top:20px;' : '',
       ordTrust: mobile ? 'order:5;' : 'margin-top:auto;',
       ordCta: mobile ? 'order:6;' : '',
@@ -309,8 +311,8 @@ class Component extends DCLogic {
       // Le formulaire occupe toute la hauteur restante du navigateur (la zone message s'étire).
       formWrapFit: mobile ? '' : 'flex:1;display:flex;flex-direction:column;',
       formFit: mobile ? '' : 'flex:1;display:flex;flex-direction:column;',
-      msgLabelFit: mobile ? 'display:block;' : 'display:flex;flex-direction:column;flex:1;min-height:96px;',
-      msgFit: mobile ? 'resize:vertical;' : 'flex:1;min-height:56px;resize:none;',
+      msgLabelFit: mobile ? 'display:block;' : 'display:flex;flex-direction:column;flex:1;min-height:96px;margin-bottom:0;',
+      msgFit: (mobile ? 'resize:vertical;min-height:110px;' : 'flex:1;min-height:56px;resize:none;') + 'padding:12px 14px;border:1px solid var(--line);border-radius:4px;background:var(--bg-2);',
       gridStyle: mobile
         ? 'display:flex;flex-direction:column;margin-top:clamp(20px,3vh,32px);'
         : 'display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);grid-template-rows:minmax(0,1fr);gap:clamp(28px,4vw,48px);margin-top:clamp(20px,3vh,32px);align-items:stretch;height:calc(100vh - 210px);max-height:calc(100vh - 190px);min-height:420px;',
