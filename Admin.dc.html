@@ -314,7 +314,10 @@
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;">
                   <div>
                     <label class="nvlabel">Code d'accès</label>
-                    <input class="nvfield" value="{{ c.password }}" onInput="{{ c.setPassword }}" />
+                    <div style="display:flex;gap:6px;">
+                      <input class="nvfield" value="{{ c.password }}" onInput="{{ c.setPassword }}" style="flex:1;min-width:0;" />
+                      <button onClick="{{ c.savePassword }}" style="{{ c.savePwBtn }}">{{ c.savePwLabel }}</button>
+                    </div>
                   </div>
                   <div>
                     <label class="nvlabel">Limite de likes</label>
@@ -926,6 +929,20 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
         name: c.name, setName: onInput((st, v) => st.clients.find(x => x.id === c.id).name = v),
         email: c.email, setEmail: onInput((st, v) => st.clients.find(x => x.id === c.id).email = v),
         password: c.password, setPassword: onInput((st, v) => st.clients.find(x => x.id === c.id).password = v),
+        // Enregistrement EXPLICITE du code : force la RPC serveur (hash bcrypt) et
+        // confirme visuellement — le diff automatique pouvait échouer en silence.
+        savePwLabel: this.state.pwSavedId === c.id ? '✓' : (this.state.pwBusyId === c.id ? '…' : 'OK'),
+        savePwBtn: 'flex:none;border:1px solid #111;background:#111;color:#fff;border-radius:2px;padding:0 12px;font-size:12px;cursor:pointer;font-family:inherit;',
+        savePassword: () => {
+          const pw = (window.NVStore.get().clients.find(x => x.id === c.id) || {}).password || '';
+          if (pw.length < 4) { alert('Le code doit faire au moins 4 caractères.'); return; }
+          if (window.NV_CONFIG && window.NV_CONFIG.backend === 'supabase' && window.NVBackend && window.NVBackend.rpc) {
+            this.setState({ pwBusyId: c.id });
+            window.NVBackend.rpc('nv_set_client_password', { p_id: c.id, p_password: pw })
+              .then(() => { this.setState({ pwBusyId: null, pwSavedId: c.id }); setTimeout(() => this.setState({ pwSavedId: null }), 2000); })
+              .catch((e) => { this.setState({ pwBusyId: null }); alert('Échec de l\'enregistrement du code : ' + (e.message || e) + '\n\nVérifie que la ligne client est bien synchronisée (attends 2 s puis réessaie), et que la fonction nv_set_client_password existe dans Supabase.'); });
+          } else { this.setState({ pwSavedId: c.id }); setTimeout(() => this.setState({ pwSavedId: null }), 2000); }
+        },
         likeLimit: c.likeLimit, setLimit: onInput((st, v) => st.clients.find(x => x.id === c.id).likeLimit = parseInt(v) || 0),
         galleries: clientGalleries, noGalleries: clientGalleries.length === 0,
         addGallery: U((st) => { const id = window.NVStore.uid('g'); st.galleries.push({ id, slug: 'prive-' + id.slice(-4), name: 'Nouvelle galerie privée', desc: '', photoIds: [], coverId: null, private: true, clientId: c.id, faceSearch: false }); const cc = st.clients.find(x => x.id === c.id); if (!cc.galleryIds.includes(id)) cc.galleryIds.push(id); }),
