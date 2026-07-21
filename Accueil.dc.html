@@ -74,7 +74,7 @@
 </style>
 </helmet>
 
-<div class="nv-page" role="main" style="background:var(--bg);min-height:100vh;display:flex;flex-direction:column;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--ink);">
+<div class="nv-page" role="main" style="background:var(--bg);min-height:100vh;display:flex;flex-direction:column;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--ink);{{ pageFit }}">
 
   <header style="display:flex;justify-content:space-between;align-items:baseline;padding:18px 20px 0;gap:10px;">
     <a href="Accueil.dc.html" style="text-decoration:none;font-size:14px;color:var(--ink);letter-spacing:-.01em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><h1 style="display:inline;margin:0;font-size:inherit;font-weight:400;letter-spacing:inherit;">{{ brandName }}<span style="color:var(--muted);"> — {{ brandRole }}</span></h1></a>
@@ -118,11 +118,11 @@
     <span style="position:absolute;right:12px;bottom:12px;font-size:12px;color:var(--on-accent);background:var(--accent);padding:5px 9px;border-radius:2px;">{{ heroCta }}</span>
   </a>
 
-<div onMouseLeave="{{ onLeave }}" style="margin:22px 20px 0;">
-    <sc-for list="{{ rows }}" as="row" hint-placeholder-count="4">
+<div onMouseLeave="{{ onLeave }}" style="margin:22px 20px 0;{{ listFit }}">
+    <sc-for list="{{ rows }}" as="row" hint-placeholder-count="0">
       <a href="{{ row.href }}" onMouseEnter="{{ row.enter }}" onMouseMove="{{ row.move }}" style="{{ row.rowStyle }}">
         <span style="{{ row.numStyle }}">{{ row.num }}</span>
-        <span style="flex:1;font-size:clamp(30px,9vw,56px);font-weight:400;line-height:1.05;letter-spacing:-.03em;position:relative;z-index:1;">{{ row.title }}</span>
+        <span style="flex:1;font-weight:400;line-height:1;letter-spacing:-.03em;position:relative;z-index:1;{{ row.titleFit }}">{{ row.title }}</span>
         <div data-row-preview="1" aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:{{ row.prevVis }};transition:opacity .25s ease;">
           {{ row.previewEls }}
         </div>
@@ -232,9 +232,13 @@ class Component extends DCLogic {
       toggleMenu: () => this.setState({ menuOpen: !this.state.menuOpen }),
       deskNav: 'display:' + (mobile ? 'none' : 'block') + ';font-size:14px;letter-spacing:-.01em;',
       menuBtn: 'display:' + (mobile ? 'block' : 'none') + ';border:none;background:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--ink);padding:0;',
+      // Ordinateur : accueil verrouillé à la hauteur d'écran — l'image garde son format
+      // panoramique (plafonné) et les lignes de galeries s'étirent pour remplir le reste.
+      pageFit: mobile ? '' : 'height:100vh;overflow-y:auto;',
+      listFit: mobile ? '' : 'flex:1;display:flex;flex-direction:column;min-height:' + (40 * Math.max(1, (window.NVStore && window.NVStore.publicGalleries) ? window.NVStore.publicGalleries().length : 5)) + 'px;',
       heroAR: mobile ? '4/3' : '24/9',
       // Mobile : image d'accueil pleine largeur (bord à bord), inchangé sur ordinateur.
-      heroFull: mobile ? 'margin:18px 0 0;border-radius:0;' : '',
+      heroFull: mobile ? 'margin:18px 0 0;border-radius:0;' : 'max-height:min(60vh,calc(100vh - 290px));min-height:150px;flex:none;',
       onLeave: this.hoverLeave,
       heroRef: this.heroRef, heroEnter: this.heroEnter, heroMove: this.heroMove, heroLeave: this.heroLeave,
       heroTouchStart: this.heroTouchStart, heroTouchMove: this.heroTouchMove, heroTouchEnd: this.heroTouchEnd
@@ -263,9 +267,11 @@ class Component extends DCLogic {
       return {
         title: L(g.name, g.nameEn), href: 'Galerie.dc.html#' + g.slug, num: ('0' + (i + 1)).slice(-2), count: String(g.photoIds.length),
         enter: setHover(g.id), move: this.rowMove,
+        // Ordinateur : la taille du titre suit la hauteur de ligne disponible (jamais coupé).
+        titleFit: mobile ? 'font-size:clamp(30px,9vw,56px);line-height:1.05;' : 'font-size:clamp(26px,min(4.5vw,' + (Math.round(140 / Math.max(1, pub.length)) / 10) + 'vh),56px);',
         previews, prevVis: previews.length ? '0.3' : '0',
         previewEls: previews.map((p, j) => React.createElement('img', { key: 'p' + j, src: p.src, alt: '', style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity .08s linear', opacity: j === 0 ? 1 : 0 } })),
-        rowStyle: 'position:relative;overflow:hidden;display:flex;gap:18px;align-items:baseline;text-decoration:none;padding:16px 0;' + (i === pub.length - 1 ? '' : 'border-bottom:1px solid var(--line);') + 'transition:color .18s,padding-left .22s;padding-left:' + (isActive ? '14px' : '0') + ';color:' + (isActive ? 'var(--ink)' : 'var(--faint)') + ';',
+        rowStyle: 'position:relative;overflow:hidden;display:flex;gap:18px;align-items:baseline;text-decoration:none;' + (mobile ? 'padding:16px 0;' : 'flex:1;min-height:0;align-items:center;padding:0;') + (i === pub.length - 1 ? '' : 'border-bottom:1px solid var(--line);') + 'transition:color .18s,padding-left .22s;padding-left:' + (isActive ? '14px' : '0') + ';color:' + (isActive ? 'var(--ink)' : 'var(--faint)') + ';',
         numStyle: 'font-size:12px;width:30px;flex:none;align-self:center;letter-spacing:.02em;transition:color .18s;color:' + (isActive ? 'var(--accent)' : 'var(--faint)') + ';z-index:1;position:relative;'
       };
     });
