@@ -402,7 +402,7 @@
             </section>
 
             <section style="{{ card }};margin-top:16px;">
-            <div style="{{ cardTitle }};display:flex;justify-content:space-between;align-items:center;"><span>Sélection du client — {{ c.selCount }} / {{ c.likeLimit }} photo(s)</span><sc-if value="{{ c.hasSel }}"><button onClick="{{ c.copyNames }}" style="{{ ghostBtnSm }}">{{ c.copyNamesLabel }}</button></sc-if></div>
+            <div style="{{ cardTitle }};display:flex;justify-content:space-between;align-items:center;"><span>Sélection du client — {{ c.selCount }} / {{ c.likeLimit }} photo(s)</span><sc-if value="{{ c.hasSel }}"><button onClick="{{ c.downloadSel }}" style="{{ ghostBtnSm }}">{{ c.downloadSelLabel }}</button></sc-if></div>
             <sc-if value="{{ c.hasSel }}">
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px;">
               <sc-for list="{{ c.selected }}" as="p" hint-placeholder-count="4">
@@ -512,6 +512,30 @@ class Component extends DCLogic {
     this._r = () => this.setState({ mobile: window.innerWidth < 900 });
     window.addEventListener('resize', this._r);
     if (window.NVFace) { this._ueng = window.NVFace.progress((p) => this.setState({ engine: p.ready ? 'ready' : p.stage })); }
+  }
+  // Télécharge toutes les photos sélectionnées d'un client dans un dossier .zip.
+  downloadSelectionZip(c, ids) {
+    if (this.state.zipBusyId) return;
+    const s = window.NVStore.get();
+    const items = ids.filter(pid => s.photos[pid]).map(pid => { const p = s.photos[pid]; const name = p.file || String(p.src || '').split('/').pop() || (pid + '.jpg'); return { name, url: window.NVStore.resolveSrc(p) }; });
+    if (!items.length) return;
+    this.setState({ zipBusyId: c.id, zipProgress: '0/' + items.length });
+    const loadZip = () => window.JSZip ? Promise.resolve() : new Promise((ok, ko) => { const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'; sc.onload = ok; sc.onerror = () => ko(new Error('Chargement de JSZip impossible')); document.head.appendChild(sc); });
+    loadZip().then(() => {
+      const zip = new JSZip();
+      const folder = zip.folder('selection-' + (c.name || 'client').toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+      const seen = {};
+      let done = 0;
+      const one = (it) => fetch(it.url).then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); }).then(bl => { let n = it.name; if (seen[n]) { const dot = n.lastIndexOf('.'); n = dot > 0 ? n.slice(0, dot) + '-' + (seen[it.name] + 1) + n.slice(dot) : n + '-' + (seen[it.name] + 1); } seen[it.name] = (seen[it.name] || 0) + 1; folder.file(n, bl); }).catch(e => console.warn('zip: échec sur', it.url, e)).then(() => { done++; this.setState({ zipProgress: done + '/' + items.length }); });
+      return items.reduce((p, it) => p.then(() => one(it)), Promise.resolve()).then(() => zip.generateAsync({ type: 'blob' }));
+    }).then(blob => {
+      const a2 = document.createElement('a');
+      a2.href = URL.createObjectURL(blob);
+      a2.download = 'selection-' + (c.name || 'client').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.zip';
+      document.body.appendChild(a2); a2.click(); a2.remove();
+      setTimeout(() => URL.revokeObjectURL(a2.href), 10000);
+      this.setState({ zipBusyId: null, zipProgress: '' });
+    }).catch(e => { alert('Échec de la création du zip : ' + (e.message || e)); this.setState({ zipBusyId: null, zipProgress: '' }); });
   }
   componentWillUnmount() {
     clearInterval(this._wait);
@@ -1013,8 +1037,8 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
         dlBtn: 'border:1px solid #E0E0E0;border-radius:2px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;' + (c.canDownload ? 'background:#111;color:#fff;' : 'background:#fff;color:#333;'),
         toggleDl: U((st) => { const cc = st.clients.find(x => x.id === c.id); cc.canDownload = !cc.canDownload; }),
         downloadUrl: c.downloadUrl || '', setDownloadUrl: onInput((st, v) => st.clients.find(x => x.id === c.id).downloadUrl = v),
-        copyNamesLabel: this.state.copiedNamesId === c.id ? 'liste copiée ✓' : '⎘ copier les noms de fichiers',
-        copyNames: () => { try { const txt = selected.map(x => x.name).join('\n'); if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt); this.setState({ copiedNamesId: c.id }); setTimeout(() => this.setState({ copiedNamesId: null }), 1800); } catch (e) {} },
+        downloadSelLabel: this.state.zipBusyId === c.id ? ('préparation… ' + (this.state.zipProgress || '')) : '↓ télécharger la sélection (.zip)',
+        downloadSel: () => this.downloadSelectionZip(c, selectedIds),
         addInvoice: U((st) => { const cc = st.clients.find(x => x.id === c.id); cc.invoices.push({ id: window.NVStore.uid('inv'), num: 'F-2026', label: 'Nouvelle prestation', amount: '0 $', date: '2026', status: 'À régler' }); }),
         remove: () => { if (confirm('Supprimer ce client ?')) this.upd((st) => { st.clients = st.clients.filter(x => x.id !== c.id); if (st.settings.archivedClients) delete st.settings.archivedClients[c.id]; }); }
       };
