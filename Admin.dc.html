@@ -343,6 +343,7 @@
                     <input class="nvfield" value="{{ inv.label }}" onInput="{{ inv.setLabel }}" style="flex:2;min-width:140px;" />
                     <input class="nvfield" value="{{ inv.amount }}" onInput="{{ inv.setAmount }}" style="flex:1;min-width:80px;" />
                     <button onClick="{{ inv.toggle }}" style="{{ inv.badge }}">{{ inv.status }}</button>
+                    <label style="{{ inv.fileBtn }}">{{ inv.fileLabel }}<input type="file" accept="application/pdf,image/*" onChange="{{ inv.onFile }}" style="display:none;" /></label>
                     <button onClick="{{ inv.remove }}" style="{{ dangerBtnSm }}">✕</button>
                   </div>
                 </sc-for>
@@ -878,6 +879,10 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
         label: inv.label, setLabel: onInput((st, v) => st.clients.find(x => x.id === c.id).invoices.find(y => y.id === inv.id).label = v),
         amount: inv.amount, setAmount: onInput((st, v) => st.clients.find(x => x.id === c.id).invoices.find(y => y.id === inv.id).amount = v),
         status: inv.status,
+        // Fichier joint (PDF) : téléversé via le worker, URL stockée sur la facture.
+        fileLabel: this.state.invUploading === inv.id ? 'envoi…' : (inv.fileUrl ? 'PDF joint ✓ (remplacer)' : '⎙ joindre le PDF'),
+        fileBtn: 'border:1px solid #E0E0E0;border-radius:2px;padding:6px 11px;font-size:12px;cursor:pointer;font-family:inherit;flex:none;' + (inv.fileUrl ? 'background:#E8F0EA;color:#2F6B3F;' : 'background:#fff;color:#5A5A5A;'),
+        onFile: (e) => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; if (!window.NVStorage || !window.NVStorage.enabled()) { alert('Aucun endpoint d\'upload configuré.'); return; } this.setState({ invUploading: inv.id }); window.NVStorage.upload(f, 'facture-' + inv.id + '-' + f.name).then((url) => { this.upd((st) => { const y = st.clients.find(x => x.id === c.id).invoices.find(z => z.id === inv.id); if (y) y.fileUrl = url; }); this.setState({ invUploading: null }); }).catch((err) => { alert('Échec de l\'envoi : ' + (err.message || err)); this.setState({ invUploading: null }); }); },
         badge: 'border:none;border-radius:2px;padding:6px 11px;font-size:12px;cursor:pointer;font-family:inherit;flex:none;' + (inv.status === 'Payée' ? 'background:#E8F0EA;color:#2F6B3F;' : 'background:#FBF1D8;color:#7A610F;'),
         toggle: U((st) => { const iv = st.clients.find(x => x.id === c.id).invoices.find(y => y.id === inv.id); iv.status = iv.status === 'Payée' ? 'À régler' : 'Payée'; }),
         remove: U((st) => { const cc = st.clients.find(x => x.id === c.id); cc.invoices = cc.invoices.filter(y => y.id !== inv.id); })

@@ -211,6 +211,7 @@
               </div>
               <div style="font-size:18px;flex:none;letter-spacing:-.02em;">{{ i.amount }}</div>
               <span style="{{ i.badge }}">{{ i.statusLabel }}</span>
+              <sc-if value="{{ i.hasFile }}" hint-placeholder-val=""><a href="{{ i.fileUrl }}" target="_blank" rel="noopener" style="flex:none;font-size:13px;color:var(--ink);border:1px solid var(--line);border-radius:2px;padding:8px 12px;text-decoration:none;">{{ i.fileWord }} ↗</a></sc-if>
             </div>
           </sc-for>
         </div>
@@ -622,7 +623,7 @@ class Component extends DCLogic {
     if (this.state.lb >= 0) { const zs = this.state.lbList[this.state.lb]; zoomPid = Object.keys(s.photos).find(k => window.NVStore.resolveSrc(s.photos[k]) === zs) || null; }
     const zoomLiked = zoomPid ? !!c.likes[zoomPid] : false;
 
-    const invoices = (c.invoices || []).map(i => ({ ...i, statusLabel: (i.status === 'Payée' ? (ui.lang === 'en' ? 'Paid' : 'Payée') : (ui.lang === 'en' ? 'Due' : 'À régler')), badge: 'flex:none;font-size:11px;letter-spacing:-.01em;padding:6px 11px;border-radius:2px;' + (i.status === 'Payée' ? 'background:var(--ok-bg);color:var(--ok-fg);' : 'background:var(--warn-bg);color:var(--warn-fg);') }));
+    const invoices = (c.invoices || []).map(i => ({ ...i, hasFile: !!i.fileUrl, fileWord: ui.lang === 'en' ? 'View invoice' : 'Voir la facture', statusLabel: (i.status === 'Payée' ? (ui.lang === 'en' ? 'Paid' : 'Payée') : (ui.lang === 'en' ? 'Due' : 'À régler')), badge: 'flex:none;font-size:11px;letter-spacing:-.01em;padding:6px 11px;border-radius:2px;' + (i.status === 'Payée' ? 'background:var(--ok-bg);color:var(--ok-fg);' : 'background:var(--warn-bg);color:var(--warn-fg);') }));
 
     const sampleFaces = (s.sampleFaces || []).map(sf => ({ label: sf.label, img: React.createElement('img', { src: sf.src, alt: sf.label, style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }), pick: () => this.pickSample(sf.file) }));
     const faceActiveOn = !!this.state.faceActive;
