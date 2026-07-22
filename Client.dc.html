@@ -45,6 +45,12 @@
   @keyframes nvspin{to{transform:rotate(360deg);}}
   @keyframes nvscan{0%{top:0;}100%{top:100%;}}
   @keyframes nvpop{0%{transform:scale(.6);}60%{transform:scale(1.15);}100%{transform:scale(1);}}
+  .nv-ph img{transition:transform .5s cubic-bezier(.2,.7,.3,1);}
+  .nv-ph:hover img{transform:scale(1.04);}
+  .nv-ph .nv-ph-ov,.nv-ph .nv-ph-heart{opacity:0;transition:opacity .18s ease,transform .15s ease,background .15s ease;}
+  .nv-ph:hover .nv-ph-ov,.nv-ph:hover .nv-ph-heart{opacity:1;}
+  .nv-ph .nv-ph-heart.nv-on{opacity:1;}
+  @media (hover:none){.nv-ph .nv-ph-ov,.nv-ph .nv-ph-heart{opacity:1;}}
 </style>
 </helmet>
 
@@ -106,6 +112,63 @@
       </div>
     </header>
 
+    <!-- SINGLE GALLERY — pleine largeur, inspiration Pixieset -->
+    <sc-if value="{{ viewGallery }}">
+      <section style="position:relative;width:100%;height:clamp(440px,82vh,880px);overflow:hidden;background:var(--ph);">
+        {{ coverImg }}
+        <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,9,8,.34) 0%,rgba(10,9,8,.10) 30%,rgba(10,9,8,.20) 60%,rgba(10,9,8,.74) 100%);"></div>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;color:#fff;">
+          <div style="font-size:12px;letter-spacing:.28em;text-transform:uppercase;color:rgba(255,255,255,.82);">{{ galDate }}</div>
+          <h1 style="margin:16px 0 0;font-size:clamp(40px,8vw,92px);font-weight:400;line-height:.98;letter-spacing:-.03em;text-shadow:0 2px 30px rgba(0,0,0,.3);">{{ galName }}</h1>
+          <div style="margin-top:14px;font-size:13px;letter-spacing:.05em;color:rgba(255,255,255,.86);">{{ galTotal }} {{ photosWord }}</div>
+          <button onClick="{{ scrollToGrid }}" style="margin-top:30px;border:1px solid rgba(255,255,255,.7);background:rgba(255,255,255,.06);color:#fff;border-radius:2px;padding:13px 28px;font-family:inherit;font-size:12px;letter-spacing:.18em;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s;" style-hover="background:#fff;color:#161310;">{{ viewGalleryCta }}</button>
+        </div>
+        <div style="position:absolute;left:0;right:0;bottom:22px;display:flex;flex-direction:column;align-items:center;gap:8px;">
+          <span style="width:42px;height:42px;border-radius:999px;overflow:hidden;background:rgba(255,255,255,.2);display:block;border:1px solid rgba(255,255,255,.55);">{{ photographerAvatar }}</span>
+          <span style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.82);">{{ brandName }}</span>
+        </div>
+      </section>
+
+      <div style="position:sticky;top:{{ stickyTop }};z-index:20;background:var(--header-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line);">
+        <div style="max-width:1500px;margin:0 auto;padding:9px clamp(12px,2vw,18px);display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:150px;max-width:320px;">
+            <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:6px;"><span style="color:var(--ink-2);">{{ selectionWord }}</span><span style="color:var(--ink);">{{ likeCount }} / {{ limit }}</span></div>
+            <div style="height:4px;background:var(--ph);border-radius:99px;overflow:hidden;"><div style="height:100%;width:{{ likePct }};background:var(--accent);border-radius:99px;transition:width .25s;"></div></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto;">
+            <sc-if value="{{ faceActive }}"><button onClick="{{ clearFace }}" style="border:none;background:var(--btn-bg);color:var(--btn-fg);border-radius:2px;padding:9px 13px;font-size:12px;cursor:pointer;">{{ faceResultsLabel }}</button></sc-if>
+            <sc-if value="{{ galFace }}"><button onClick="{{ openFace }}" style="display:flex;align-items:center;gap:7px;border:1px solid var(--btn-bg);background:var(--btn-bg);color:var(--btn-fg);border-radius:2px;padding:9px 14px;font-size:12px;cursor:pointer;"><span style="display:inline-block;width:12px;height:12px;border:1.5px solid var(--btn-fg);border-radius:4px;position:relative;"><span style="position:absolute;inset:2px;border:1.4px solid var(--btn-fg);border-radius:50%;"></span></span>{{ findMyPhotos }}</button></sc-if>
+            <sc-if value="{{ hasDlLink }}" hint-placeholder-val=""><a href="{{ dlLink }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;border:none;background:var(--accent);color:var(--on-accent);border-radius:2px;padding:9px 14px;font-size:12px;font-weight:500;text-decoration:none;">↓ {{ dlLinkLabel }}</a></sc-if>
+            <sc-if value="{{ canDownload }}" hint-placeholder-val=""><button onClick="{{ downloadGallery }}" style="border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:2px;padding:9px 14px;font-size:12px;cursor:pointer;">↓ {{ dlGalleryLabel }}</button></sc-if>
+            <button onClick="{{ shareGallery }}" style="border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:2px;padding:9px 14px;font-size:12px;cursor:pointer;">{{ shareLabel }}</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="max-width:900px;margin:0 auto;padding:0 clamp(12px,2vw,18px);">
+        <sc-if value="{{ limitReached }}"><div style="margin-top:16px;padding:11px 15px;background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:2px;font-size:13px;color:var(--warn-fg);">{{ limitMsg }}</div></sc-if>
+        <sc-if value="{{ faceEmpty }}"><div style="margin-top:16px;padding:11px 15px;background:var(--bg-2);border:1px solid var(--line);border-radius:2px;font-size:13px;color:var(--ink-2);">{{ faceEmptyMsg }}</div></sc-if>
+      </div>
+
+      <div style="max-width:1500px;margin:0 auto;padding:clamp(12px,2.4vw,22px) clamp(8px,2vw,18px);">
+        <div ref="{{ gridRef }}">
+          <sc-for list="{{ rows }}" as="row" hint-placeholder-count="6">
+            <div style="display:flex;gap:{{ rowGap }};margin-bottom:{{ rowGap }};">
+              <sc-for list="{{ row }}" as="p" hint-placeholder-count="4">
+                <div class="nv-ph" style="{{ p.wrapStyle }}">
+                  <img src="{{ p.src }}" alt="photo" loading="lazy" decoding="async" onLoad="{{ p.onLoad }}" onClick="{{ p.zoom }}" style="width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;" />
+                  <span aria-hidden="true" style="{{ wmStyle }}">{{ wmText }}</span>
+                  <sc-if value="{{ canDownload }}" hint-placeholder-val=""><a class="nv-ph-ov" href="{{ p.full }}" download aria-label="Télécharger" style="position:absolute;left:7px;bottom:7px;display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:rgba(17,17,17,.5);color:#fff;font-size:15px;text-decoration:none;line-height:1;">↓</a></sc-if>
+                  <button onClick="{{ p.toggle }}" aria-label="Aimer" class="{{ p.heartCls }}" style="{{ p.heartStyle }}">{{ p.heart }}</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showCentered }}" hint-placeholder-val="{{ true }}">
     <div style="max-width:1180px;margin:0 auto;padding:clamp(20px,4vw,34px) 20px;">
 
       <!-- GALLERIES -->
@@ -134,56 +197,6 @@
         </div>
         </sc-if>
         <sc-if value="{{ noGalleries }}"><div style="padding:40px 24px;text-align:center;border:1px dashed var(--line);border-radius:2px;color:var(--muted);">{{ noGalleriesMsg }}</div></sc-if>
-      </sc-if>
-
-      <!-- SINGLE GALLERY -->
-      <sc-if value="{{ viewGallery }}">
-        <div style="display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px;">
-          <div>
-            <h1 style="margin:0;font-size:clamp(30px,8vw,46px);font-weight:400;line-height:1;letter-spacing:-.035em;">{{ galName }}</h1>
-            <div style="font-size:13px;color:var(--muted);margin-top:6px;">{{ galSub }} · {{ galTotal }} {{ photosWord }}</div>
-          </div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
-            <sc-if value="{{ hasDlLink }}" hint-placeholder-val=""><a href="{{ dlLink }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:8px;border:none;background:var(--accent);color:var(--on-accent);border-radius:2px;padding:11px 16px;font-size:13px;font-weight:500;text-decoration:none;">↓ {{ dlLinkLabel }}</a></sc-if>
-            <sc-if value="{{ canDownload }}" hint-placeholder-val=""><button onClick="{{ downloadGallery }}" style="border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:2px;padding:11px 16px;font-size:13px;cursor:pointer;">↓ {{ dlGalleryLabel }}</button></sc-if>
-            <button onClick="{{ shareGallery }}" style="border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:2px;padding:11px 16px;font-size:13px;cursor:pointer;">{{ shareLabel }}</button>
-            <sc-if value="{{ galFace }}">
-            <button onClick="{{ openFace }}" style="display:flex;align-items:center;gap:8px;border:1px solid var(--btn-bg);background:var(--btn-bg);color:var(--btn-fg);border-radius:2px;padding:11px 16px;font-size:13px;cursor:pointer;">
-              <span style="display:inline-block;width:13px;height:13px;border:1.5px solid var(--btn-fg);border-radius:4px;position:relative;"><span style="position:absolute;inset:2px;border:1.4px solid var(--btn-fg);border-radius:50%;"></span></span>
-              {{ findMyPhotos }}
-            </button>
-            </sc-if>
-          </div>
-        </div>
-
-        <div style="position:sticky;top:{{ stickyTop }};z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:18px 0 20px;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:2px;">
-          <div style="flex:1;min-width:160px;">
-            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px;"><span style="color:var(--ink-2);">{{ selectionWord }}</span><span style="color:var(--ink);">{{ likeCount }} / {{ limit }}</span></div>
-            <div style="height:5px;background:var(--ph);border-radius:99px;overflow:hidden;"><div style="height:100%;width:{{ likePct }};background:var(--accent);border-radius:99px;transition:width .25s;"></div></div>
-          </div>
-          <sc-if value="{{ faceActive }}">
-            <button onClick="{{ clearFace }}" style="flex:none;border:none;background:var(--btn-bg);color:var(--btn-fg);border-radius:2px;padding:8px 14px;font-size:12px;cursor:pointer;">{{ faceResultsLabel }}</button>
-          </sc-if>
-        </div>
-
-        <sc-if value="{{ limitReached }}">
-        <div style="margin-bottom:16px;padding:11px 15px;background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:2px;font-size:13px;color:var(--warn-fg);">{{ limitMsg }}</div>
-        </sc-if>
-
-        <sc-if value="{{ faceEmpty }}">
-        <div style="margin-bottom:16px;padding:11px 15px;background:var(--bg-2);border:1px solid var(--line);border-radius:2px;font-size:13px;color:var(--ink-2);">{{ faceEmptyMsg }}</div>
-        </sc-if>
-
-        <div style="columns:{{ colWidth }};column-gap:clamp(8px,2vw,14px);">
-          <sc-for list="{{ photos }}" as="p" hint-placeholder-count="9">
-            <div style="position:relative;margin:0 0 clamp(8px,2vw,14px);break-inside:avoid;border-radius:2px;overflow:hidden;background:var(--ph);">
-              <img src="{{ p.src }}" alt="photo" loading="lazy" decoding="async" style="width:100%;display:block;cursor:zoom-in;" onClick="{{ p.zoom }}" />
-              <span aria-hidden="true" style="{{ wmStyle }}">{{ wmText }}</span>
-              <sc-if value="{{ canDownload }}" hint-placeholder-val=""><a href="{{ p.src }}" download aria-label="Télécharger" style="position:absolute;left:8px;bottom:8px;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:999px;background:rgba(17,17,17,.42);color:#fff;font-size:16px;text-decoration:none;line-height:1;">↓</a></sc-if>
-              <button onClick="{{ p.toggle }}" aria-label="Aimer" style="{{ p.heartStyle }}">{{ p.heart }}</button>
-            </div>
-          </sc-for>
-        </div>
       </sc-if>
 
       <!-- GALLERY UNAVAILABLE (expirée ou supprimée) -->
@@ -272,6 +285,7 @@
         </sc-if>
       </sc-if>
     </div>
+    </sc-if>
 
     <div style="{{ bottomBar }}">
       <sc-for list="{{ navTabs }}" as="t" hint-placeholder-count="3">
@@ -370,7 +384,7 @@ class Component extends DCLogic {
     clientId: null, loginEmail: '', loginPass: '', loginError: false,
     view: 'galleries', galleryId: null,
     faceModal: false, faceStep: 'idle', faceActive: null, faceCount: 0, faceTried: false,
-    scanPreview: '', scanMsg: '', sent: false, lb: -1, lbList: [], shareCopied: false
+    scanPreview: '', scanMsg: '', sent: false, lb: -1, lbList: [], shareCopied: false, gridW: 0
   };
   componentDidMount() {
     this._wait = setInterval(() => {
@@ -397,7 +411,7 @@ class Component extends DCLogic {
     };
     window.addEventListener('keydown', this._k);
   }
-  componentWillUnmount() { clearInterval(this._wait); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); window.removeEventListener('keydown', this._k); }
+  componentWillUnmount() { clearInterval(this._wait); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); window.removeEventListener('keydown', this._k); if (this._ro) this._ro.disconnect(); if (this._raf) cancelAnimationFrame(this._raf); }
 
   // Connexion automatique via lien d'accès direct (?acces=… copié depuis l'admin).
   tryLinkLogin() {
@@ -432,6 +446,28 @@ class Component extends DCLogic {
     } catch (e) {}
   }
   openLb(list, i) { this.setState({ lbList: list, lb: i }); setTimeout(() => this.preloadLb(i), 0); }
+  // Grille justifiée (style Pixieset) : mesure la largeur du conteneur.
+  gridRefCb = (node) => {
+    this._gridNode = node || null;
+    if (node) {
+      const w = node.clientWidth;
+      if (w && Math.abs(w - this.state.gridW) > 1) this.setState({ gridW: w });
+      if (!this._ro && typeof ResizeObserver !== 'undefined') {
+        this._ro = new ResizeObserver(() => { const n = this._gridNode; if (!n) return; const cw = n.clientWidth; if (cw && Math.abs(cw - this.state.gridW) > 1) this.setState({ gridW: cw }); });
+      }
+      if (this._ro) this._ro.observe(node);
+    } else if (this._ro) { this._ro.disconnect(); }
+  };
+  // Mémorise le ratio d'une photo (mesuré au chargement) puis relance un rendu groupé.
+  setRatio(key, r) {
+    if (!r || !isFinite(r)) return;
+    if (!this._ratios) this._ratios = {};
+    if (Math.abs((this._ratios[key] || 0) - r) < 0.002) return;
+    this._ratios[key] = r;
+    if (this._raf) return;
+    this._raf = requestAnimationFrame(() => { this._raf = null; this.forceUpdate(); });
+  }
+  cellStyle(w, h) { return 'flex:0 1 auto;width:' + w + 'px;height:' + h + 'px;position:relative;overflow:hidden;border-radius:2px;background:var(--ph);'; }
 
   // Trace la dernière visite du client (visible dans l'admin).
   recordVisit(cid) { try { window.NVStore.update((st) => { const cc = st.clients.find(x => x.id === cid); if (cc) cc.lastVisit = new Date().toISOString(); }); } catch (e) {} }
@@ -585,9 +621,10 @@ class Component extends DCLogic {
     const galGone = view === 'gallery' && !g;
     const galExpired = view === 'gallery' && !!g && this.isExpired(g);
     const expDate = galExpired ? new Date(g.expiresAt + 'T12:00:00').toLocaleDateString(window.NVI18n.ui().lang === 'en' ? 'en-CA' : 'fr-CA', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-    let photos = [], galName = '', galSub = '', galTotal = 0, galFace = false;
+    let photos = [], galName = '', galSub = '', galDate = '', coverSrc = '', galTotal = 0, galFace = false;
     if (g) {
-      galName = L(g.name, g.nameEn); galSub = L(g.sub || g.desc, g.subEn || g.descEn); galTotal = g.total || g.photoIds.length; galFace = g.faceSearch;
+      galName = L(g.name, g.nameEn); galDate = L(g.sub || g.desc, g.subEn || g.descEn); galSub = galDate; galTotal = g.total || g.photoIds.length; galFace = g.faceSearch;
+      coverSrc = window.NVStore.resolveSrc(s.photos[g.coverId || g.photoIds[0]]);
       const exp = this.expiryLabel(g, ui.lang); if (exp) galSub += ' · ' + exp;
       const ids = this.state.faceActive ? this.state.faceActive : g.photoIds;
       const srcList = ids.map(pid => s.photos[pid] ? window.NVStore.resolveSrc(s.photos[pid]) : null).filter(Boolean);
@@ -595,12 +632,35 @@ class Component extends DCLogic {
         const p = s.photos[pid]; if (!p) return null;
         const liked = !!c.likes[pid];
         const src = window.NVStore.resolveThumb(p);
+        const full = window.NVStore.resolveSrc(p);
         return {
-          src, zoom: () => this.openLb(srcList, srcList.indexOf(window.NVStore.resolveSrc(p))),
+          key: pid, src, full, zoom: () => this.openLb(srcList, srcList.indexOf(full)),
+          onLoad: (e) => this.setRatio(pid, e.target.naturalWidth / e.target.naturalHeight),
           heart: liked ? '♥' : '♡', toggle: () => this.toggleLike(pid),
-          heartStyle: 'position:absolute;right:8px;bottom:8px;width:44px;height:44px;border-radius:999px;border:none;cursor:pointer;font-size:19px;line-height:1;display:flex;align-items:center;justify-content:center;background:' + (liked ? 'var(--accent)' : 'rgba(17,17,17,.42)') + ';color:' + (liked ? 'var(--on-accent)' : '#fff') + ';transition:all .15s;'
+          heartCls: 'nv-ph-heart' + (liked ? ' nv-on' : ''),
+          heartStyle: 'position:absolute;right:7px;bottom:7px;width:36px;height:36px;border-radius:999px;border:none;cursor:pointer;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;background:' + (liked ? 'var(--accent)' : 'rgba(17,17,17,.5)') + ';color:' + (liked ? 'var(--on-accent)' : '#fff') + ';transition:transform .15s,background .15s;'
         };
       }).filter(Boolean);
+    }
+
+    // Grille justifiée (style Pixieset) : rangées de hauteur égale, largeurs variables.
+    const gapN = mobile ? 4 : 6;
+    const targetH = mobile ? 172 : 300;
+    const contW = Math.max(240, this.state.gridW || (mobile ? 380 : 1180));
+    const rows = [];
+    let cur = [], sumR = 0;
+    photos.forEach((pp) => {
+      const r = (this._ratios && this._ratios[pp.key]) || 1.4;
+      cur.push({ p: pp, r }); sumR += r;
+      if (sumR * targetH + gapN * (cur.length - 1) >= contW) {
+        const h = (contW - gapN * (cur.length - 1)) / sumR;
+        rows.push(cur.map(x => ({ ...x.p, wrapStyle: this.cellStyle(Math.round(x.r * h), Math.round(h)) })));
+        cur = []; sumR = 0;
+      }
+    });
+    if (cur.length) {
+      const h = Math.min(targetH, (contW - gapN * (cur.length - 1)) / sumR);
+      rows.push(cur.map(x => ({ ...x.p, wrapStyle: this.cellStyle(Math.round(x.r * h), Math.round(h)) })));
     }
 
     // selection across galleries
@@ -662,7 +722,13 @@ class Component extends DCLogic {
       unavailBack: ui.lang === 'en' ? '← Back to my galleries' : '← Retour à mes galeries',
       expiredWord: ui.lang === 'en' ? 'expired' : 'expirée',
       galleryCards, hasGalleries: galleryCards.length > 0, noGalleries: galleryCards.length === 0,
-      photos, galName, galSub, galTotal, galFace,
+      photos, galName, galSub, galDate, galTotal, galFace, coverSrc, rows, rowGap: gapN + 'px',
+      coverImg: coverSrc ? React.createElement('img', { src: coverSrc, alt: galName, style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }) : null,
+      gridRef: this.gridRefCb,
+      scrollToGrid: () => { const n = this._gridNode; if (!n) return; const off = mobile ? 54 : 62; const y = n.getBoundingClientRect().top + window.scrollY - off; try { window.scrollTo({ top: y, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, y); } },
+      viewGalleryCta: ui.lang === 'en' ? 'View gallery' : 'Voir la galerie',
+      photographerAvatar: (s.about && s.about.photo) ? React.createElement('img', { src: s.about.photo, alt: s.brand.name, style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }) : null,
+      showCentered: (view === 'galleries') || (view === 'invoices') || (view === 'selection') || galGone || galExpired,
       colWidth: mobile ? '110px' : '210px', stickyTop: mobile ? '60px' : '104px',
       likeCount, limit, likePct: Math.min(100, Math.round(likeCount / limit * 100)) + '%', limitReached: likeCount >= limit,
       faceActive: faceActiveOn, faceCount: this.state.faceCount,
