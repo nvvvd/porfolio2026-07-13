@@ -928,14 +928,16 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
         sentChip: statChip(!!c.selectionSentAt),
         name: c.name, setName: onInput((st, v) => st.clients.find(x => x.id === c.id).name = v),
         email: c.email, setEmail: onInput((st, v) => st.clients.find(x => x.id === c.id).email = v),
-        password: c.password, setPassword: onInput((st, v) => st.clients.find(x => x.id === c.id).password = v),
+        password: c.password || (function () { try { return localStorage.getItem('nv_code_' + c.id) || ''; } catch (e) { return ''; } })(),
+        setPassword: (e) => { const v = e.target.value; try { localStorage.setItem('nv_code_' + c.id, v); } catch (x) {} this.upd((st) => { const cc = st.clients.find(x => x.id === c.id); if (cc) cc.password = v; }); },
         // Enregistrement EXPLICITE du code : force la RPC serveur (hash bcrypt) et
         // confirme visuellement — le diff automatique pouvait échouer en silence.
         savePwLabel: this.state.pwSavedId === c.id ? '✓' : (this.state.pwBusyId === c.id ? '…' : 'OK'),
         savePwBtn: 'flex:none;border:1px solid #111;background:#111;color:#fff;border-radius:2px;padding:0 12px;font-size:12px;cursor:pointer;font-family:inherit;',
         savePassword: () => {
-          const pw = (window.NVStore.get().clients.find(x => x.id === c.id) || {}).password || '';
+          const pw = ((window.NVStore.get().clients.find(x => x.id === c.id) || {}).password) || (function () { try { return localStorage.getItem('nv_code_' + c.id) || ''; } catch (e) { return ''; } })();
           if (pw.length < 4) { alert('Le code doit faire au moins 4 caractères.'); return; }
+          try { localStorage.setItem('nv_code_' + c.id, pw); } catch (x) {}
           if (window.NV_CONFIG && window.NV_CONFIG.backend === 'supabase' && window.NVBackend && window.NVBackend.rpc) {
             this.setState({ pwBusyId: c.id });
             window.NVBackend.rpc('nv_set_client_password', { p_id: c.id, p_password: pw })
@@ -1042,7 +1044,9 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
         linkLabel: this.state.copiedLinkId === c.id ? 'lien copié ✓' : '⎘ copier le lien d\u2019accès',
         copyLink: () => {
           try {
-            const tok = btoa(unescape(encodeURIComponent(c.email + ':' + c.password))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+            const pw = c.password || (function () { try { return localStorage.getItem('nv_code_' + c.id) || ''; } catch (e) { return ''; } })();
+            if (!pw) { alert('Renseigne d\'abord un code d\'accès pour ce client, puis clique OK pour l\'enregistrer.'); return; }
+            const tok = btoa(unescape(encodeURIComponent(c.email + ':' + pw))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
             const url = new URL('Client.dc.html', location.href).href + '?acces=' + tok;
             if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url);
             this.setState({ copiedLinkId: c.id });
