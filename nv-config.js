@@ -43,8 +43,11 @@ window.NV_CONFIG = {
     uploadToken: '61d97d51-7ffb-495d-9972-348858660126-005d0cfe-c2ce-4c37-b57f-fa0ede74cc41',
   },
 
-  // Temps réel : l'admin publie -> le client voit en direct (Supabase uniquement).
-  realtime: true,
+  /* Temps réel : DÉSACTIVÉ pour économiser la bande passante (chaque visiteur
+     ouvrait une connexion websocket permanente vers Supabase). Les pages se
+     rafraîchissent via le cache (10 min) ; l'admin voit toujours l'état à jour à
+     chaque chargement. Remettre à true seulement si un vrai direct est requis. */
+  realtime: false,
 
   /* --------------------------------------------------------------------------
      FORMULAIRE DE CONTACT — réception des messages par email.

@@ -45,22 +45,17 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
   function uid(p) { return (p || 'id') + '-' + Math.random().toString(36).slice(2, 8); }
 
   function seed() {
-    var FD = window.NV_FACEDATA || {};
     var photos = {};
     function mk(gallery, file, src) {
       var id = uid('ph');
-      var has = FD.hasOwnProperty(file);
-      photos[id] = { id: id, gallery: gallery, file: file, src: src || ('images/' + file),
-        faces: (has ? FD[file].map(function (d) { return d.slice(); }) : []),
-        scanned: has, uploadedAt: '2026-05-01' };
+      photos[id] = { id: id, gallery: gallery, file: file, src: src || ('images/' + file), uploadedAt: '2026-05-01' };
       return id;
     }
     function gal(slug, name, desc, files, opts) {
       var ids = files.map(function (f) { return mk(slug, f); });
       var g = { id: uid('g'), slug: slug, name: name, desc: desc, photoIds: ids, coverId: ids[0],
         nameEn: (opts && opts.nameEn) || name, descEn: (opts && opts.descEn) || desc, subEn: (opts && opts.subEn) || null,
-        private: !!(opts && opts.private), clientId: (opts && opts.clientId) || null,
-        faceSearch: !!(opts && opts.faceSearch) };
+        private: !!(opts && opts.private), clientId: (opts && opts.clientId) || null };
       return g;
     }
 
@@ -86,16 +81,15 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
     ];
 
     var clientId = uid('cl');
-    // private wedding gallery: faces repeat across photos so a selfie matches several
     var wedding = gal('mariage-camille-theo', 'Camille & Théo', 'Mariage · 14 juin 2026',
       ['DSC07445.jpg', 'DSC08766.jpg', '_DSC8239.jpg', 'L1220728.jpg', 'L1003478.jpg',
        'DSC07445.jpg', '_DSC0246-Modifier.jpg', '_DSC8239.jpg', 'DSC08766.jpg', 'DSC07445.jpg',
        'DSC_8510HD.jpg', 'L1003478.jpg', '_DSC8239.jpg', '_DSC0246-Modifier.jpg', 'DSC08766.jpg', 'L1200035.jpg'],
-      { private: true, clientId: clientId, faceSearch: true, nameEn: 'Camille & Théo', descEn: 'Wedding · June 14, 2026', subEn: 'Wedding · June 14, 2026' });
+      { private: true, clientId: clientId, nameEn: 'Camille & Théo', descEn: 'Wedding · June 14, 2026', subEn: 'Wedding · June 14, 2026' });
     wedding.total = 214; wedding.sub = 'Mariage · 14 juin 2026';
     var studio = gal('seance-studio', 'Séance studio', 'Portrait · 02 mai 2026',
       ['DSC07445.jpg', '_DSC8239.jpg', '_DSC0246-Modifier.jpg', '_DSC7841-Edit.jpg', 'DSC07445.jpg', '_DSC8239.jpg'],
-      { private: true, clientId: clientId, faceSearch: false, nameEn: 'Studio session', descEn: 'Portrait · May 02, 2026', subEn: 'Portrait · May 02, 2026' });
+      { private: true, clientId: clientId, nameEn: 'Studio session', descEn: 'Portrait · May 02, 2026', subEn: 'Portrait · May 02, 2026' });
     studio.total = 36; studio.sub = 'Portrait · 02 mai 2026';
     galleries.push(wedding, studio);
 
@@ -124,7 +118,7 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
       contact: { email: 'hello@nicolasvivaudou.com', instagram: '@nicolas.vivaudou', location: 'Montréal, QC', heading: 'parlons lumière.', headingEn: "let's talk light.",
         intro: 'Portrait, paysage par drone, évènement ou projet sur mesure — dites-moi ce que vous avez en tête. Les disponibilités 2026 ouvrent ce printemps.',
         introEn: 'Portrait, drone landscape, event or bespoke project — tell me what you have in mind. 2026 availability opens this spring.' },
-      settings: { likeLimit: 20, faceThreshold: 0.54, adminPin: '1234', watermark: false },
+      settings: { likeLimit: 20, adminPin: '1234', watermark: false },
       services: [
         { id: uid('sv'), name: 'Portrait & studio', nameEn: 'Portrait & studio', price: 'à partir de 250 $', priceEn: 'from $250', desc: 'Séance individuelle ou duo d\u2019environ une heure — repérage lumière, direction naturelle, galerie privée et photos retouchées incluses.', descEn: 'Individual or duo session, about one hour — light scouting, natural direction, private gallery and retouched photos included.' },
         { id: uid('sv'), name: 'Mariage', nameEn: 'Wedding', price: 'à partir de 1 500 $', priceEn: 'from $1,500', desc: 'Des préparatifs aux dernières lueurs — galerie privée en ligne, sélection par vos soins et fichiers haute résolution livrés.', descEn: 'From getting ready to the last light — private online gallery, your own selection and high-resolution files delivered.' },
@@ -135,11 +129,7 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
       photos: photos,
       clients: clients,
       messages: [],
-      sampleFaces: [
-        { label: 'Camille', file: 'DSC07445.jpg', src: 'images/DSC07445.jpg' },
-        { label: 'Théo', file: '_DSC8239.jpg', src: 'images/_DSC8239.jpg' },
-        { label: 'Invité', file: 'DSC08766.jpg', src: 'images/DSC08766.jpg' }
-      ]
+      sampleFaces: []
     };
   }
 
@@ -270,6 +260,8 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
     subscribe: function (cb) { listeners.push(cb); return function () { listeners = listeners.filter(function (x) { return x !== cb; }); }; },
     update: function (fn) { fn(state); emit(); if (backend && !applyingRemote) { try { backend.push(state); } catch (e) {} } scheduleSave(); },
     save: function () { save(); emit(); },
+    // Force une re-lecture immédiate depuis la base (après connexion : données privées).
+    refresh: function () { if (backend && backend.refresh) { try { return backend.refresh(); } catch (e) {} } return Promise.resolve(); },
     // Re-render tous les abonnés sans rien sauvegarder (utilisé par le changement de langue).
     ping: function () { emit(); },
     hydrated: function () { return hydrated; },

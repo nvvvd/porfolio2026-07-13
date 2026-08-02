@@ -105,22 +105,33 @@
   /* --- Implémentation SUPABASE : vérification serveur (pgcrypto/bcrypt) --- */
   var remote = {
     loginClient: function (email, password) {
-      if (!window.NVBackend || !window.NVBackend.rpc) return Promise.resolve(null);
+      if (!window.NVBackend || !window.NVBackend.rpc) return Promise.reject(new Error('service indisponible'));
       return window.NVBackend.rpc('nv_login_client', {
         p_email: String(email).trim().toLowerCase(),
         p_password: password
       }).then(function (rows) {
         var id = rows && rows[0] && rows[0].id;
         if (id) { setClientSession(id); return id; }
-        return null;
-      }).catch(function (e) { console.warn('NVAuth: échec login client', e); return null; });
+        return null;   // identifiants invalides (0 ligne)
+      }).catch(function (e) {
+        console.warn('NVAuth: service login client indisponible', e);
+        return Promise.reject(e);   // panne (egress/réseau) -> l'appelant affiche un message clair
+      });
     },
       loginAdmin: function (email, password) {
-                 if (!window.NVBackend || !window.NVBackend.client) return Promise.resolve(false);
+                 if (!window.NVBackend || !window.NVBackend.client) return Promise.reject(new Error('service indisponible'));
                  return window.NVBackend.client().then(function (db) {
                               return db.auth.signInWithPassword({ email: String(email).trim().toLowerCase(), password: password });
-                 }).then(function (res) { var ok = !!(res && res.data && res.data.session && !res.error); if (ok) setAdminSession(); return ok; })
-                   .catch(function (e) { console.warn('NVAuth: échec login admin', e); return false; });
+                 }).then(function (res) {
+                              if (res && res.error) {
+                                var m = (res.error.message || '');
+                                if (/invalid login|invalid credential|email not confirmed/i.test(m)) return false; // mauvais identifiants
+                                return Promise.reject(res.error); // panne service/réseau
+                              }
+                              var ok = !!(res && res.data && res.data.session);
+                              if (ok) setAdminSession();
+                              return ok;
+                 }).catch(function (e) { console.warn('NVAuth: service login admin indisponible', e); return Promise.reject(e); });
     }
   };
 

@@ -1,0 +1,11 @@
+# URLs propres pour Cloudflare Pages (pages.dev)
+# Chaque règle « 200 » sert le fichier .dc.html SANS changer l'adresse affichée.
+# Les anciens liens *.dc.html continuent de fonctionner.
+/accueil     /Accueil.dc.html     200
+/portfolio   /Portfolio.dc.html   200
+/galerie     /Galerie.dc.html     200
+/client      /Client.dc.html      200
+/admin       /Admin.dc.html       200
+/contact     /Contact.dc.html     200
+/mentions    /Mentions.dc.html    200
+/guide       /Guide%20client.dc.html   200

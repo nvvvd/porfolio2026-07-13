@@ -25,7 +25,6 @@
 <script src="nv-auth.js"></script>
 <script src="store.js"></script>
 <script src="nv-ux.js"></script>
-<script src="face.js"></script>
 <style>
   :root{--bg:#FFFFFF;--bg-2:#FAFAFA;--card:#FFFFFF;--header-bg:rgba(255,255,255,.92);--ink:#111111;--ink-2:#4A4A4A;--muted:#767171;--faint:#B0AAA2;--line:#E6E6E6;--ph:#EEEEEE;--accent:#F2C13C;--on-accent:#161310;--error:#C0392B;--btn-bg:#111111;--btn-fg:#FFFFFF;--ok-bg:#E8F0EA;--ok-fg:#2F6B3F;--warn-bg:#FBF1D8;--warn-line:#F0DCA0;--warn-fg:#7A610F;}
   [data-theme="dark"]{--bg:#100F0D;--bg-2:#1A1815;--card:#1A1815;--header-bg:rgba(18,16,14,.86);--ink:#F1EDE6;--ink-2:#B4AEA3;--muted:#86817A;--faint:#4C4840;--line:#2A2723;--ph:#1E1B17;--accent:#F2C13C;--on-accent:#161310;--error:#E8746A;--btn-bg:#F1EDE6;--btn-fg:#100F0D;--ok-bg:#15241B;--ok-fg:#83C49B;--warn-bg:#2A2113;--warn-line:#4A3A1A;--warn-fg:#E2B85E;color-scheme:dark;}
@@ -43,14 +42,15 @@
   input::placeholder{color:var(--faint);}
   input:focus{outline:none;border-color:var(--ink);}
   @keyframes nvspin{to{transform:rotate(360deg);}}
-  @keyframes nvscan{0%{top:0;}100%{top:100%;}}
   @keyframes nvpop{0%{transform:scale(.6);}60%{transform:scale(1.15);}100%{transform:scale(1);}}
   .nv-ph img{transition:transform .5s cubic-bezier(.2,.7,.3,1);}
   .nv-ph:hover img{transform:scale(1.04);}
-  .nv-ph .nv-ph-ov,.nv-ph .nv-ph-heart{opacity:0;transition:opacity .18s ease,transform .15s ease,background .15s ease;}
+  .nv-ph::after{content:"";position:absolute;inset:0;background:rgba(17,17,17,0);transition:background .2s ease;pointer-events:none;z-index:1;}
+  .nv-ph:hover::after{background:rgba(17,17,17,.16);}
+  .nv-ph .nv-ph-ov,.nv-ph .nv-ph-heart{opacity:0;z-index:2;transition:opacity .18s ease,transform .15s ease,background .15s ease;}
   .nv-ph:hover .nv-ph-ov,.nv-ph:hover .nv-ph-heart{opacity:1;}
   .nv-ph .nv-ph-heart.nv-on{opacity:1;}
-  @media (hover:none){.nv-ph .nv-ph-ov,.nv-ph .nv-ph-heart{opacity:1;}}
+  @media (hover:none){.nv-ph .nv-ph-ov,.nv-ph .nv-ph-heart{opacity:1;}.nv-ph::after{display:none;}}
 </style>
 </helmet>
 
@@ -80,6 +80,7 @@
           <input type="password" value="{{ loginPass }}" onInput="{{ setPass }}" placeholder="••••••" style="width:100%;padding:13px 0;border:none;border-bottom:1px solid var(--line);background:transparent;font-size:16px;" />
         </label>
         <sc-if value="{{ loginError }}"><div style="margin-bottom:16px;font-size:13px;color:var(--error);">{{ badCreds }}</div></sc-if>
+        <sc-if value="{{ serviceDown }}"><div style="margin-bottom:16px;font-size:13px;color:var(--error);line-height:1.5;">{{ serviceMsg }}</div></sc-if>
         <button type="submit" style="width:100%;margin-top:18px;padding:16px;border:none;border-radius:2px;background:var(--accent);color:var(--on-accent);font-size:15px;font-weight:500;letter-spacing:.01em;cursor:pointer;transition:opacity .2s;" style-hover="opacity:.88;">{{ signIn }}</button>
       </form>
     </div>
@@ -136,8 +137,6 @@
             <div style="height:4px;background:var(--ph);border-radius:99px;overflow:hidden;"><div style="height:100%;width:{{ likePct }};background:var(--accent);border-radius:99px;transition:width .25s;"></div></div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-left:auto;">
-            <sc-if value="{{ faceActive }}"><button onClick="{{ clearFace }}" style="border:none;background:var(--btn-bg);color:var(--btn-fg);border-radius:2px;padding:9px 13px;font-size:12px;cursor:pointer;">{{ faceResultsLabel }}</button></sc-if>
-            <sc-if value="{{ galFace }}"><button onClick="{{ openFace }}" style="display:flex;align-items:center;gap:7px;border:1px solid var(--btn-bg);background:var(--btn-bg);color:var(--btn-fg);border-radius:2px;padding:9px 14px;font-size:12px;cursor:pointer;"><span style="display:inline-block;width:12px;height:12px;border:1.5px solid var(--btn-fg);border-radius:4px;position:relative;"><span style="position:absolute;inset:2px;border:1.4px solid var(--btn-fg);border-radius:50%;"></span></span>{{ findMyPhotos }}</button></sc-if>
             <sc-if value="{{ hasDlLink }}" hint-placeholder-val=""><a href="{{ dlLink }}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;border:none;background:var(--accent);color:var(--on-accent);border-radius:2px;padding:9px 14px;font-size:12px;font-weight:500;text-decoration:none;">↓ {{ dlLinkLabel }}</a></sc-if>
             <sc-if value="{{ canDownload }}" hint-placeholder-val=""><button onClick="{{ downloadGallery }}" style="border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:2px;padding:9px 14px;font-size:12px;cursor:pointer;">↓ {{ dlGalleryLabel }}</button></sc-if>
             <button onClick="{{ shareGallery }}" style="border:1px solid var(--line);background:var(--card);color:var(--ink-2);border-radius:2px;padding:9px 14px;font-size:12px;cursor:pointer;">{{ shareLabel }}</button>
@@ -147,7 +146,6 @@
 
       <div style="max-width:900px;margin:0 auto;padding:0 clamp(12px,2vw,18px);">
         <sc-if value="{{ limitReached }}"><div style="margin-top:16px;padding:11px 15px;background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:2px;font-size:13px;color:var(--warn-fg);">{{ limitMsg }}</div></sc-if>
-        <sc-if value="{{ faceEmpty }}"><div style="margin-top:16px;padding:11px 15px;background:var(--bg-2);border:1px solid var(--line);border-radius:2px;font-size:13px;color:var(--ink-2);">{{ faceEmptyMsg }}</div></sc-if>
       </div>
 
       <div style="max-width:1500px;margin:0 auto;padding:clamp(12px,2.4vw,22px) clamp(8px,2vw,18px);">
@@ -156,7 +154,7 @@
             <div style="display:flex;gap:{{ rowGap }};margin-bottom:{{ rowGap }};">
               <sc-for list="{{ row }}" as="p" hint-placeholder-count="4">
                 <div class="nv-ph" style="{{ p.wrapStyle }}">
-                  <img src="{{ p.src }}" alt="photo" loading="lazy" decoding="async" onLoad="{{ p.onLoad }}" onClick="{{ p.zoom }}" style="width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;" />
+                  <img src="{{ p.src }}" alt="photo" loading="lazy" decoding="async" onLoad="{{ p.onLoad }}" onError="{{ p.onErr }}" onClick="{{ p.zoom }}" style="width:100%;height:100%;object-fit:cover;display:block;cursor:zoom-in;" />
                   <span aria-hidden="true" style="{{ wmStyle }}">{{ wmText }}</span>
                   <sc-if value="{{ canDownload }}" hint-placeholder-val=""><a class="nv-ph-ov" href="{{ p.full }}" download aria-label="Télécharger" style="position:absolute;left:7px;bottom:7px;display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:999px;background:rgba(17,17,17,.5);color:#fff;font-size:15px;text-decoration:none;line-height:1;">↓</a></sc-if>
                   <button onClick="{{ p.toggle }}" aria-label="Aimer" class="{{ p.heartCls }}" style="{{ p.heartStyle }}">{{ p.heart }}</button>
@@ -180,8 +178,7 @@
           <sc-for list="{{ galleryCards }}" as="g" hint-placeholder-count="2">
             <button onClick="{{ g.open }}" style="text-align:left;border:1px solid var(--line);background:var(--card);border-radius:4px;overflow:hidden;cursor:pointer;padding:0;transition:transform .3s cubic-bezier(.2,.7,.3,1),box-shadow .3s ease,border-color .3s ease;display:block;" style-hover="transform:translateY(-4px);box-shadow:0 18px 40px -18px rgba(0,0,0,.35);border-color:var(--ink);">
               <div style="position:relative;aspect-ratio:16/10;background:var(--ph);overflow:hidden;">
-                <img src="{{ g.cover }}" alt="{{ g.name }}" loading="lazy" decoding="async" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.2,.7,.3,1);" />
-                <sc-if value="{{ g.faceSearch }}"><span style="position:absolute;left:10px;top:10px;font-size:11px;color:var(--on-accent);background:var(--accent);padding:4px 8px;border-radius:2px;">{{ faceBadge }}</span></sc-if>
+                <img src="{{ g.cover }}" alt="{{ g.name }}" loading="lazy" decoding="async" onError="{{ imgErr }}" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.2,.7,.3,1);" />
                 <sc-if value="{{ g.expired }}" hint-placeholder-val=""><span style="position:absolute;inset:0;background:rgba(17,17,17,.55);display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;letter-spacing:.08em;text-transform:uppercase;">{{ expiredWord }}</span></sc-if>
               </div>
               <div style="padding:14px 16px 16px;">
@@ -314,74 +311,13 @@
   </div>
   </sc-if>
 
-  <!-- FACE SEARCH MODAL -->
-  <sc-if value="{{ faceModal }}">
-  <div style="position:fixed;inset:0;z-index:90;background:rgba(17,17,17,.5);display:flex;align-items:flex-end;justify-content:center;">
-    <div style="width:100%;max-width:460px;background:var(--bg);border-radius:14px 14px 0 0;padding:22px 22px 30px;{{ sheetDesktop }}">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div style="font-size:13px;color:var(--muted);letter-spacing:-.01em;">{{ faceTitle }}</div>
-        <button onClick="{{ closeFace }}" aria-label="Fermer" style="border:none;background:none;font-size:26px;line-height:1;cursor:pointer;color:var(--ink);">×</button>
-      </div>
-
-      <sc-if value="{{ faceIdle }}">
-        <h2 style="margin:14px 0 6px;font-size:30px;font-weight:400;line-height:1.05;letter-spacing:-.03em;">{{ faceHead }}</h2>
-        <p style="margin:0 0 18px;font-size:14px;line-height:1.55;color:var(--ink-2);">{{ faceIntro1 }}{{ galTotal }}{{ faceIntro2 }}</p>
-        <label style="display:block;width:100%;padding:15px;border:1.5px dashed var(--faint);border-radius:2px;background:var(--bg-2);cursor:pointer;text-align:center;color:var(--ink-2);">
-          <input type="file" accept="image/*" onChange="{{ onSelfie }}" style="display:none;" />
-          <div style="font-size:24px;">⬆</div>
-          <div style="font-size:14px;margin-top:4px;">{{ faceUpload }}</div>
-        </label>
-        <div style="margin:18px 0 10px;font-size:12px;color:var(--muted);text-align:center;">{{ faceOrSample }}</div>
-        <div style="display:flex;gap:8px;justify-content:center;">
-          <sc-for list="{{ sampleFaces }}" as="sf" hint-placeholder-count="3">
-            <button onClick="{{ sf.pick }}" style="border:1px solid var(--line);background:var(--card);border-radius:2px;padding:6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;width:88px;">
-              <span style="width:72px;height:72px;border-radius:2px;overflow:hidden;background:var(--ph);display:block;">{{ sf.img }}</span>
-              <span style="font-size:12px;color:var(--ink-2);">{{ sf.label }}</span>
-            </button>
-          </sc-for>
-        </div>
-        <div style="margin-top:16px;font-size:12px;color:var(--muted);text-align:center;line-height:1.5;">{{ facePrivacy }}</div>
-      </sc-if>
-
-      <sc-if value="{{ faceScanning }}">
-        <div style="padding:30px 0 24px;text-align:center;">
-          <div style="position:relative;width:120px;height:120px;margin:0 auto;border-radius:8px;overflow:hidden;background:var(--bg-2);">
-            {{ scanPreviewImg }}
-            <span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:38px;color:var(--faint);display:{{ scanFaceShow }};">☺</span>
-            <div style="position:absolute;left:0;width:100%;height:2px;background:var(--accent);box-shadow:0 0 12px 2px rgba(242,193,60,.7);animation:nvscan 1.4s ease-in-out infinite alternate;"></div>
-          </div>
-          <div style="display:inline-block;margin-top:24px;width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--ink);border-radius:999px;animation:nvspin .8s linear infinite;"></div>
-          <p style="margin:14px 0 0;font-size:13px;color:var(--ink-2);">{{ scanMsg }}</p>
-        </div>
-      </sc-if>
-
-      <sc-if value="{{ faceNoface }}">
-        <div style="padding:18px 0 6px;text-align:center;">
-          <div style="font-size:34px;">😕</div>
-          <h2 style="margin:8px 0 4px;font-size:26px;font-weight:400;letter-spacing:-.03em;">{{ noFaceTitle }}</h2>
-          <p style="margin:0 0 20px;font-size:14px;color:var(--ink-2);">{{ noFaceHint }}</p>
-          <button onClick="{{ retryFace }}" style="width:100%;padding:14px;border:1px solid var(--line);border-radius:2px;background:var(--card);font-size:14px;cursor:pointer;">{{ retryLabel }}</button>
-        </div>
-      </sc-if>
-
-      <sc-if value="{{ faceDone }}">
-        <div style="padding:18px 0 6px;text-align:center;">
-          <div style="font-size:40px;animation:nvpop .4s ease;color:var(--ink);">✓</div>
-          <h2 style="margin:8px 0 4px;font-size:30px;font-weight:400;letter-spacing:-.03em;">{{ faceResultCount }} {{ faceFoundWord }}</h2>
-          <p style="margin:0 0 20px;font-size:14px;color:var(--ink-2);">{{ faceResultMsg }}</p>
-          <button onClick="{{ applyFace }}" style="width:100%;padding:15px;border:none;border-radius:2px;background:var(--accent);color:var(--on-accent);font-size:14px;font-weight:500;cursor:pointer;">{{ faceApplyLabel }}</button>
-        </div>
-      </sc-if>
-    </div>
-  </div>
-  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
   state = {
     ready: false, tick: 0, mobile: typeof window !== 'undefined' && window.innerWidth < 820,
-    clientId: null, loginEmail: '', loginPass: '', loginError: false,
+    clientId: null, loginEmail: '', loginPass: '', loginError: false, serviceDown: false,
     view: 'galleries', galleryId: null,
     faceModal: false, faceStep: 'idle', faceActive: null, faceCount: 0, faceTried: false,
     scanPreview: '', scanMsg: '', sent: false, lb: -1, lbList: [], shareCopied: false, gridW: 0
@@ -396,7 +332,6 @@ class Component extends DCLogic {
         if (valid) this.recordVisit(valid);
         else this.tryLinkLogin();
         this._unsub = window.NVStore.subscribe(() => this.setState(s => ({ tick: s.tick + 1 })));
-        if (window.NVFace) window.NVFace.ready();
       }
     }, 30);
     this._r = () => this.setState({ mobile: window.innerWidth < 820 });
@@ -425,9 +360,10 @@ class Component extends DCLogic {
         if (id) {
           this.setState({ clientId: id, view: 'galleries' });
           this.recordVisit(id);
+          if (window.NVStore.refresh) window.NVStore.refresh();
           try { history.replaceState(null, '', location.pathname); } catch (e) {}
         }
-      });
+      }).catch(() => {});
     } catch (e) {}
   }
 
@@ -446,6 +382,8 @@ class Component extends DCLogic {
     } catch (e) {}
   }
   openLb(list, i) { this.setState({ lbList: list, lb: i }); setTimeout(() => this.preloadLb(i), 0); }
+  // Image introuvable : on la masque complètement (jamais de nom de fichier ni de lien vide).
+  onImgErr(e) { try { const cell = e.target.closest('.nv-ph'); if (cell) cell.style.display = 'none'; else e.target.style.display = 'none'; } catch (x) {} }
   // Grille justifiée (style Pixieset) : mesure la largeur du conteneur.
   gridRefCb = (node) => {
     this._gridNode = node || null;
@@ -507,43 +445,6 @@ class Component extends DCLogic {
     });
   }
 
-  runMatch(queryDesc) {
-    const g = this.curGallery();
-    const s = window.NVStore.get();
-    const th = s.settings.faceThreshold || window.NVFace.THRESHOLD;
-    const scored = [];
-    let strong = 0;
-    g.photoIds.forEach(pid => {
-      const p = s.photos[pid];
-      if (!p || !p.faces || !p.faces.length) return;
-      const m = window.NVFace.match(queryDesc, p.faces, th);
-      if (m.hit) { scored.push({ pid, dist: m.dist }); if (m.strong) strong++; }
-    });
-    scored.sort((a, b) => a.dist - b.dist);          // closest matches first
-    const matched = scored.map(x => x.pid);
-    this.setState({ faceStep: 'done', faceActive: null, faceCount: matched.length, faceStrong: strong, _matched: matched });
-  }
-  pickSample(file) {
-    const fd = window.NV_FACEDATA || {};
-    const desc = fd[file] && fd[file][0];
-    if (!desc) return;
-    this.setState({ faceStep: 'scanning', scanMsg: window.NVI18n.t('cl.scanSample'), scanPreview: 'images/' + file });
-    setTimeout(() => this.runMatch(desc), 900);
-  }
-  async onSelfie(e) {
-    const file = e.target.files[0]; if (!file) return;
-    const url = URL.createObjectURL(file);
-    this.setState({ faceStep: 'scanning', scanMsg: window.NVI18n.t('cl.scanInit'), scanPreview: url });
-    try {
-      await window.NVFace.ready();
-      this.setState({ scanMsg: window.NVI18n.t('cl.scanFace') });
-      const img = await this.downscaled(url, 720);
-      const desc = await window.NVFace.detectPrimary(img);
-      if (!desc) { this.setState({ faceStep: 'noface' }); return; }
-      this.runMatch(desc);
-    } catch (err) { this.setState({ faceStep: 'noface' }); }
-  }
-
   renderVals() {
     const mobile = this.state.mobile;
     const ui = window.NVI18n.ui();
@@ -559,10 +460,11 @@ class Component extends DCLogic {
     const loginLabels = {
       privateLabel: T('cl.private'), loginTitle: T('cl.h1'), loginIntro: T('cl.loginIntro'),
       lblEmail: T('ct.email'), lblAccessCode: T('cl.accessCode'), badCreds: T('cl.badCreds'),
-      signIn: T('cl.signIn'), demoPrefix: T('cl.demo')
+      signIn: T('cl.signIn'), demoPrefix: T('cl.demo'),
+      serviceMsg: ui.lang === 'en' ? 'Service temporarily unavailable — please try again in a few minutes.' : 'Service temporairement indisponible — réessayez dans quelques minutes.'
     };
     if (!this.state.ready || !window.NVStore) {
-      return { ...chrome, ...loginLabels, showLogin: true, showApp: false, brandName: 'Nicolas Vivaudou', brandRole: ui.lang === 'en' ? 'Photographer' : 'Photographe', demoHint: '', loginEmail: '', loginPass: '', loginError: false, setEmail: () => {}, setPass: () => {}, onLogin: (e) => e.preventDefault(), faceModal: false, zoomOpen: false };
+      return { ...chrome, ...loginLabels, showLogin: true, showApp: false, brandName: 'Nicolas Vivaudou', brandRole: ui.lang === 'en' ? 'Photographer' : 'Photographe', demoHint: '', loginEmail: '', loginPass: '', loginError: false, serviceDown: false, setEmail: () => {}, setPass: () => {}, onLogin: (e) => e.preventDefault(), faceModal: false, zoomOpen: false };
     }
     const s = window.NVStore.get();
     const c = this.state.clientId ? window.NVStore.client(this.state.clientId) : null;
@@ -571,18 +473,19 @@ class Component extends DCLogic {
     if (!c) {
       return {
         ...chrome, ...loginLabels,
-        showLogin: true, showApp: false, faceModal: false, zoomOpen: false,
+        showLogin: true, showApp: false, faceModal: false, zoomOpen: false, serviceDown: this.state.serviceDown,
         brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn),
         demoHint: (window.NV_CONFIG && window.NV_CONFIG.backend !== 'local') ? '' : (demoClient ? (demoClient.email + ' / ' + demoClient.password) : ''),
         loginEmail: this.state.loginEmail, loginPass: this.state.loginPass, loginError: this.state.loginError,
-        setEmail: (e) => this.setState({ loginEmail: e.target.value, loginError: false }),
-        setPass: (e) => this.setState({ loginPass: e.target.value, loginError: false }),
+        setEmail: (e) => this.setState({ loginEmail: e.target.value, loginError: false, serviceDown: false }),
+        setPass: (e) => this.setState({ loginPass: e.target.value, loginError: false, serviceDown: false }),
         onLogin: (e) => {
           e.preventDefault();
+          this.setState({ serviceDown: false });
           window.NVAuth.loginClient(this.state.loginEmail, this.state.loginPass).then((id) => {
-            if (id) { this.setState({ clientId: id, view: 'galleries', loginPass: '' }); this.recordVisit(id); }
+            if (id) { this.setState({ clientId: id, view: 'galleries', loginPass: '', loginError: false }); this.recordVisit(id); if (window.NVStore.refresh) window.NVStore.refresh(); }
             else this.setState({ loginError: true });
-          });
+          }).catch(() => this.setState({ serviceDown: true }));
         }
       };
     }
@@ -636,6 +539,7 @@ class Component extends DCLogic {
         return {
           key: pid, src, full, zoom: () => this.openLb(srcList, srcList.indexOf(full)),
           onLoad: (e) => this.setRatio(pid, e.target.naturalWidth / e.target.naturalHeight),
+          onErr: (e) => this.onImgErr(e),
           heart: liked ? '♥' : '♡', toggle: () => this.toggleLike(pid),
           heartCls: 'nv-ph-heart' + (liked ? ' nv-on' : ''),
           heartStyle: 'position:absolute;right:7px;bottom:7px;width:36px;height:36px;border-radius:999px;border:none;cursor:pointer;font-size:17px;line-height:1;display:flex;align-items:center;justify-content:center;background:' + (liked ? 'var(--accent)' : 'rgba(17,17,17,.5)') + ';color:' + (liked ? 'var(--on-accent)' : '#fff') + ';transition:transform .15s,background .15s;'
@@ -723,11 +627,12 @@ class Component extends DCLogic {
       expiredWord: ui.lang === 'en' ? 'expired' : 'expirée',
       galleryCards, hasGalleries: galleryCards.length > 0, noGalleries: galleryCards.length === 0,
       photos, galName, galSub, galDate, galTotal, galFace, coverSrc, rows, rowGap: gapN + 'px',
-      coverImg: coverSrc ? React.createElement('img', { src: coverSrc, alt: galName, style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }) : null,
+      coverImg: coverSrc ? React.createElement('img', { src: coverSrc, alt: galName, onError: (e) => this.onImgErr(e), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }) : null,
       gridRef: this.gridRefCb,
+      imgErr: (e) => this.onImgErr(e),
       scrollToGrid: () => { const n = this._gridNode; if (!n) return; const off = mobile ? 54 : 62; const y = n.getBoundingClientRect().top + window.scrollY - off; try { window.scrollTo({ top: y, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, y); } },
       viewGalleryCta: ui.lang === 'en' ? 'View gallery' : 'Voir la galerie',
-      photographerAvatar: (s.about && s.about.photo) ? React.createElement('img', { src: s.about.photo, alt: s.brand.name, style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }) : null,
+      photographerAvatar: (s.about && s.about.photo) ? React.createElement('img', { src: s.about.photo, alt: s.brand.name, onError: (e) => this.onImgErr(e), style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }) : null,
       showCentered: (view === 'galleries') || (view === 'invoices') || (view === 'selection') || galGone || galExpired,
       colWidth: mobile ? '110px' : '210px', stickyTop: mobile ? '60px' : '104px',
       likeCount, limit, likePct: Math.min(100, Math.round(likeCount / limit * 100)) + '%', limitReached: likeCount >= limit,

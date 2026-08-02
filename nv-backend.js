@@ -54,13 +54,13 @@
       toRow: function (g) {
         return { id: g.id, slug: g.slug, name: g.name, name_en: g.nameEn || '', description: g.desc || '', description_en: g.descEn || '',
           photo_ids: g.photoIds || [], cover_id: g.coverId || null, private: !!g.private,
-          client_id: g.clientId || null, face_search: !!g.faceSearch,
+          client_id: g.clientId || null, face_search: false,
           total: (g.total != null ? g.total : null), sub: (g.sub != null ? g.sub : null) };
       },
       fromRow: function (r) {
         var g = { id: r.id, slug: r.slug, name: r.name, nameEn: r.name_en || '', desc: r.description || '', descEn: r.description_en || '',
           photoIds: r.photo_ids || [], coverId: r.cover_id || null, private: !!r.private,
-          clientId: r.client_id || null, faceSearch: !!r.face_search };
+          clientId: r.client_id || null, faceSearch: false };
         if (r.total != null) g.total = r.total;
         if (r.sub != null) g.sub = r.sub;
         return g;
@@ -69,12 +69,11 @@
     photos: {
       toRow: function (p) {
         return { id: p.id, gallery: p.gallery || null, file: p.file || null, src: p.src || null,
-          alt: p.alt || null, thumb: p.thumb || null,
-          faces: p.faces || [], scanned: !!p.scanned, uploaded_at: p.uploadedAt || null };
+          alt: p.alt || null, thumb: p.thumb || null, uploaded_at: p.uploadedAt || null };
       },
       fromRow: function (r) {
         return { id: r.id, gallery: r.gallery, file: r.file, src: r.src, alt: r.alt || '', thumb: r.thumb || '',
-          faces: r.faces || [], scanned: !!r.scanned, uploadedAt: r.uploaded_at };
+          uploadedAt: r.uploaded_at };
       }
     },
     clients: {
@@ -135,6 +134,10 @@
     var dirty = false;        // l'état local diffère de `last`, à pousser
     var retryDelay = 0;       // backoff courant
     var lastPushAt = 0;       // horodatage du dernier push réussi (anti-écho)
+    var HYDRATE_TTL = 10 * 60 * 1000;  // cache-first : un visiteur public avec un cache < 10 min ne relit pas la base (egress)
+    function cacheFresh() {
+      try { var t = +localStorage.getItem('nv_hydrated_at') || 0; return t && (Date.now() - t) < HYDRATE_TTL; } catch (e) { return false; }
+    }
     var ECHO_MS = 20000;       // fenêtre pendant laquelle on ignore nos propres échos (élargie : latence realtime)
     var LOCAL_EDIT_MS = 15000;   // on ne ré-hydrate pas si l'utilisateur a saisi dans cette fenêtre
     var lastLocalEditAt = 0;    // horodatage de la dernière écriture locale (saisie)
@@ -143,12 +146,21 @@
     function hydrate() {
       if (hydrating) return Promise.resolve();
       hydrating = true;
+      // Qui charge quoi ? Le PUBLIC ne télécharge QUE les galeries publiques (portfolio) ;
+      // les milliers de photos privées + les clients + les messages ne partent QUE pour
+      // l'admin (tout) ou un client connecté (ses galeries). Économie d'egress majeure.
+      var admin = !!(window.NVAuth && window.NVAuth.isAdmin && window.NVAuth.isAdmin());
+      var clientOn = !!(window.NVAuth && window.NVAuth.currentClientId && window.NVAuth.currentClientId());
+      var privileged = admin || clientOn;
       return getClient().then(function (db) {
-        /* charge TOUTES les lignes photos par pages de 1000 (Supabase plafonne select('*') a 1000) */
-        function fetchAllPhotos() {
+        /* Photos par pages de 1000 (Supabase plafonne à 1000), colonnes STRICTES
+           (jamais la colonne "faces", lourde), éventuellement filtrées par galerie. */
+        function fetchPhotos(galleryIds) {
           var acc = [];
           function page(from) {
-            return db.from('photos').select('*').range(from, from + 999).then(function (r) {
+            var q = db.from('photos').select('id,gallery,file,src,alt,thumb').range(from, from + 999);
+            if (galleryIds) q = q.in('gallery', galleryIds);
+            return q.then(function (r) {
               if (r.error) throw r.error;
               var rows = r.data || [];
               acc = acc.concat(rows);
@@ -160,11 +172,23 @@
         }
         return Promise.all([
           db.from('site').select('*').limit(1),
-          db.from('galleries').select('*'),
-          fetchAllPhotos(),
-          db.from('clients').select('id,name,email,gallery_ids,like_limit,likes,invoices'),
-          db.from('messages').select('*').order('date', { ascending: false })
-        ]);
+          db.from('galleries').select('*')
+        ]).then(function (base) {
+          base.forEach(function (r) { if (r.error) throw r.error; });
+          var galleryRows = base[1].data || [];
+          var scope = null;   // null = toutes les photos (admin/client)
+          if (!privileged) {
+            scope = galleryRows.filter(function (r) { return !r.private; }).map(function (r) { return r.id; });
+            if (!scope.length) scope = ['__none__'];   // aucune galerie publique : ne rien télécharger
+          }
+          return Promise.all([
+            Promise.resolve(base[0]),
+            Promise.resolve(base[1]),
+            fetchPhotos(scope),
+            privileged ? db.from('clients').select('id,name,email,gallery_ids,like_limit,likes,invoices') : Promise.resolve({ data: [], error: null }),
+            admin ? db.from('messages').select('*').order('date', { ascending: false }) : Promise.resolve({ data: [], error: null })
+          ]);
+        });
       }).then(function (res) {
         res.forEach(function (r) { if (r.error) throw r.error; });
         var siteRow = res[0].data && res[0].data[0];
@@ -201,6 +225,7 @@
         };
         last = clone(state);
         hydrating = false;
+        try { localStorage.setItem('nv_hydrated_at', String(Date.now())); } catch (e) {}
         if (pushing || dirty || Date.now() - lastLocalEditAt < LOCAL_EDIT_MS) { console.warn('NVBackend: hydratation ignoree (edition locale en cours).'); return; }
         ingest(state);
         onStatus('saved');
@@ -339,8 +364,17 @@
     return {
       start: function () {
         if (typeof window !== 'undefined' && window.addEventListener) window.addEventListener('online', onOnline);
+        var admin = !!(window.NVAuth && window.NVAuth.isAdmin && window.NVAuth.isAdmin());
+        // Cache-first : visiteur public avec cache récent -> AUCUNE lecture réseau.
+        if (!admin && cacheFresh() && window.NVStore && window.NVStore.hydrated && window.NVStore.hydrated()) {
+          onStatus('saved');
+          startRealtime();
+          return;
+        }
         hydrate().then(startRealtime);
       },
+      // Force une ré-hydratation immédiate (après connexion : charge les données privées).
+      refresh: function () { try { localStorage.removeItem('nv_hydrated_at'); } catch (e) {} return hydrate(); },
       push: function (state) { return push(state); },
       stop: function () {
         if (typeof window !== 'undefined' && window.removeEventListener) window.removeEventListener('online', onOnline);

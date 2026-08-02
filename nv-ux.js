@@ -169,7 +169,23 @@
     } catch (e) {}
   }
 
-  function init() { startImgFade(); startPageTransitions(); startImgGuard(); }
+  /* ---- 4. Images introuvables : masquées complètement --------------------- */
+  // Une photo dont le fichier est absent (404, lien mort) ne doit JAMAIS afficher
+  // son nom de fichier (texte alt) ni un lien de téléchargement vide : on la masque.
+  // Écoute en phase de capture -> attrape l'évènement `error` de TOUTE image, même
+  // celles rendues par React ou ignorées par le fondu.
+  function startImgErrorHide() {
+    document.addEventListener('error', function (e) {
+      var t = e.target;
+      if (!t || t.tagName !== 'IMG') return;
+      t.style.visibility = 'hidden';
+      // Dans une grille de galerie client, on efface la cellule entière (pas de trou gris).
+      var cell = t.closest && t.closest('.nv-ph');
+      if (cell) cell.style.display = 'none';
+    }, true);
+  }
+
+  function init() { startImgFade(); startPageTransitions(); startImgGuard(); startImgErrorHide(); }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();
 })();

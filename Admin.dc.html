@@ -19,7 +19,6 @@
 <script src="nv-backend.js"></script>
 <script src="nv-auth.js"></script>
 <script src="store.js"></script>
-<script src="face.js"></script>
 <style>
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -46,6 +45,7 @@
                 <input type="email" value="{{ emailInput }}" onInput="{{ setEmail }}" placeholder="courriel" class="nvfield" style="margin-bottom:10px;" />
                <input type="password" value="{{ pinInput }}" onInput="{{ setPin }}" placeholder="mot de passe" class="nvfield" />
       <sc-if value="{{ pinError }}"><div style="margin-top:10px;font-size:13px;color:#C0392B;">Code incorrect.</div></sc-if>
+      <sc-if value="{{ serviceDown }}"><div style="margin-top:10px;font-size:13px;color:#C0392B;line-height:1.5;">Service indisponible pour le moment — réessayez dans quelques minutes.</div></sc-if>
       <button type="submit" style="width:100%;margin-top:18px;padding:14px;border:none;border-radius:2px;background:#111;color:#fff;font-size:14px;cursor:pointer;">Déverrouiller →</button>
     </form>
   </div>
@@ -82,10 +82,6 @@
           <h1 style="margin:0;font-size:clamp(28px,6vw,40px);font-weight:400;letter-spacing:-.035em;line-height:1;">{{ tabTitle }}</h1>
           <p style="margin:6px 0 0;font-size:13px;color:#9A9A9A;">{{ tabHint }}</p>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
-<sc-if value="{{ bgScanActive }}"><div style="{{ bgScanPillStyle }}"><span style="{{ bgScanDotStyle }}"></span>{{ bgScanLabel }}</div></sc-if>
-<div style="{{ enginePill }}"><span style="{{ engineDot }}"></span>{{ engineLabel }}</div>
-</div>
       </div>
 
       <!-- ===== APERÇU (statistiques) ===== -->
@@ -245,7 +241,6 @@
       <sc-if value="{{ isGalleries }}">
         <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;">
           <button onClick="{{ addGallery }}" style="{{ primaryBtn }}">+ Nouvelle galerie publique</button>
-          <button onClick="{{ scanAll }}" style="{{ ghostBtn }}">⟳ Scanner les visages manquants</button>
         </div>
         <sc-for list="{{ galleryList }}" as="g" hint-placeholder-count="4">
           <section style="{{ card }};margin-bottom:16px;">
@@ -255,14 +250,11 @@
                   <input class="nvfield" value="{{ g.name }}" onInput="{{ g.rename }}" style="max-width:240px;font-size:16px;" />
                   <input class="nvfield" value="{{ g.nameEn }}" onInput="{{ g.renameEn }}" placeholder="Name — English" style="max-width:240px;font-size:14px;margin-top:6px;color:#5A5A5A;" />
                   <span style="{{ g.tagStyle }}">{{ g.tag }}</span>
-                  <sc-if value="{{ g.faceSearch }}"><span style="font-size:11px;color:#111;background:#F2C13C;padding:3px 8px;border-radius:2px;">recherche faciale</span></sc-if>
                 </div>
                 <input class="nvfield" value="{{ g.desc }}" onInput="{{ g.setDesc }}" style="margin-top:8px;font-size:13px;color:#5A5A5A;" />
                 <input class="nvfield" value="{{ g.descEn }}" onInput="{{ g.setDescEn }}" placeholder="Description — English" style="margin-top:6px;font-size:13px;color:#9A9A9A;" />
               </div>
               <div style="display:flex;gap:6px;flex:none;align-items:center;">
-                <span style="font-size:12px;color:#9A9A9A;">{{ g.scanLabel }}</span>
-                <button onClick="{{ g.toggleFace }}" style="{{ g.faceBtn }}">{{ g.faceBtnLabel }}</button>
                 <button onClick="{{ g.remove }}" style="{{ dangerBtn }}">supprimer</button>
               </div>
             </div>
@@ -270,7 +262,6 @@
               <sc-for list="{{ g.photos }}" as="p" hint-placeholder-count="6">
                 <div draggable="true" onDragStart="{{ p.dragStart }}" onDragOver="{{ p.dragOver }}" onDrop="{{ p.drop }}" title="Glisser pour réordonner" style="position:relative;aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;cursor:grab;{{ p.ring }}">
                   {{ p.img }}
-                  <span style="{{ p.scanBadge }}" title="{{ p.scanTitle }}">{{ p.scanIcon }}</span>
                   <div style="position:absolute;left:0;right:0;bottom:0;display:flex;background:rgba(17,17,17,.55);">
                     <button onClick="{{ p.makeCover }}" title="Couverture" style="flex:1;border:none;background:none;color:#fff;font-size:11px;padding:5px 0;cursor:pointer;">{{ p.coverIcon }}</button>
                     <button onClick="{{ p.editAlt }}" title="Description (SEO / accessibilité)" style="flex:1;border:none;background:none;color:#fff;font-size:11px;padding:5px 0;cursor:pointer;border-left:1px solid rgba(255,255,255,.25);">{{ p.altIcon }}</button>
@@ -362,11 +353,8 @@
                   <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;flex:1;min-width:180px;">
                     <input class="nvfield" value="{{ g.name }}" onInput="{{ g.rename }}" style="max-width:220px;font-size:15px;" />
                     <input class="nvfield" value="{{ g.nameEn }}" onInput="{{ g.renameEn }}" placeholder="Name — English" style="max-width:220px;font-size:13px;margin-top:6px;color:#5A5A5A;" />
-                    <sc-if value="{{ g.faceSearch }}"><span style="font-size:11px;color:#111;background:#F2C13C;padding:3px 8px;border-radius:2px;">recherche faciale</span></sc-if>
                   </div>
                   <div style="display:flex;gap:6px;flex:none;align-items:center;">
-                    <span style="font-size:12px;color:#9A9A9A;">{{ g.scanLabel }}</span>
-                    <button onClick="{{ g.toggleFace }}" style="{{ g.faceBtn }}">{{ g.faceBtnLabel }}</button>
                     <button onClick="{{ g.remove }}" style="{{ dangerBtnSm }}">✕</button>
                   </div>
                 </div>
@@ -381,7 +369,6 @@
                   <sc-for list="{{ g.photos }}" as="p" hint-placeholder-count="4">
                     <div draggable="true" onDragStart="{{ p.dragStart }}" onDragOver="{{ p.dragOver }}" onDrop="{{ p.drop }}" title="Glisser pour réordonner" style="position:relative;aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;cursor:grab;{{ p.ring }}">
                       {{ p.img }}
-                      <span style="{{ p.scanBadge }}" title="{{ p.scanTitle }}">{{ p.scanIcon }}</span>
                       <span style="{{ p.likeBadge }}" title="Aimée par le client">♥</span>
                       <div style="position:absolute;left:0;right:0;bottom:0;display:flex;background:rgba(17,17,17,.55);">
                         <button onClick="{{ p.makeCover }}" title="Couverture" style="flex:1;border:none;background:none;color:#fff;font-size:10px;padding:4px 0;cursor:pointer;">{{ p.coverIcon }}</button>
@@ -446,11 +433,9 @@
       <!-- ===== RÉGLAGES ===== -->
       <sc-if value="{{ isSettings }}">
         <section style="{{ card }};max-width:520px;">
-          <div style="{{ cardTitle }}">Sélection & reconnaissance faciale</div>
+          <div style="{{ cardTitle }}">Sélection</div>
           <label class="nvlabel">Limite de likes par défaut (20 conseillé — ajustable client par client dans l'onglet Clients)</label>
           <input class="nvfield" type="number" value="{{ f_likeLimit }}" onInput="{{ s_likeLimit }}" />
-          <label class="nvlabel" style="margin-top:14px;">Seuil de correspondance faciale — {{ f_threshold }} <span style="color:#B5B5B5;">(plus bas = plus strict)</span></label>
-          <input type="range" min="0.40" max="0.65" step="0.01" value="{{ f_threshold }}" onInput="{{ s_threshold }}" style="width:100%;accent-color:#F2C13C;" />
           <label class="nvlabel" style="margin-top:14px;">Code administrateur — stocké chiffré, jamais en clair</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
             <input class="nvfield" type="password" placeholder="nouveau code" value="{{ f_newPin }}" onInput="{{ s_newPin }}" style="max-width:180px;" />
@@ -460,13 +445,10 @@
           <label class="nvlabel" style="margin-top:14px;">Filigrane sur les galeries clients</label>
           <button onClick="{{ toggleWm }}" style="{{ wmBtn }}">{{ wmLabel }}</button>
           <p style="font-size:12px;color:#9A9A9A;line-height:1.5;margin:8px 0 0;">Affiche votre nom en surimpression sur les photos pendant le visionnage. Les fichiers finaux livrés ne sont pas modifiés.</p>
-<label class="nvlabel" style="margin-top:14px;">Analyse faciale automatique à l'ajout de photos</label>
-<button onClick="{{ toggleAutoScan }}" style="{{ autoScanBtn }}">{{ autoScanLabel }}</button>
-<p style="font-size:12px;color:#9A9A9A;line-height:1.5;margin:8px 0 0;">Si désactivée, l'ajout de photos est plus rapide (import sans analyse). Lancez ensuite « ⟳ Scanner les visages manquants » dans l'onglet Galeries : l'analyse tourne en arrière-plan, vous pouvez changer d'onglet ou continuer à travailler pendant ce temps (gardez simplement cette page ouverte).</p>
         </section>
         <section style="{{ card }};max-width:520px;margin-top:16px;">
           <div style="{{ cardTitle }}">Données</div>
-          <p style="font-size:13px;color:#5A5A5A;line-height:1.5;margin:0 0 12px;">Le site enregistre tout le contenu, les galeries, les clients et les empreintes faciales dans ce navigateur. Réinitialiser restaure le contenu de démonstration.</p>
+          <p style="font-size:13px;color:#5A5A5A;line-height:1.5;margin:0 0 12px;">Le site enregistre tout le contenu, les galeries et les clients dans ce navigateur. Réinitialiser restaure le contenu de démonstration.</p>
           <button onClick="{{ resetSite }}" style="{{ dangerBtn }}">Réinitialiser le site</button>
         </section>
       </sc-if>
@@ -492,10 +474,9 @@
 class Component extends DCLogic {
   state = {
     ready: false, tick: 0, mobile: typeof window !== 'undefined' && window.innerWidth < 900,
-    locked: true, pinInput: '', emailInput: '', pinError: false,
+    locked: true, pinInput: '', emailInput: '', pinError: false, serviceDown: false,
     tab: 'stats', clientTab: null, showArchived: false, copiedLinkId: null, newPin: '', pinSaved: false,
-    scanning: false, scanMsg: '', scanPct: '0%', bgScanning: false, bgScanMsg: '', bgScanPct: '0%',
-    engine: 'idle',
+    scanning: false, scanMsg: '', scanPct: '0%',
     syncStatus: (typeof window !== 'undefined' && window.NVStore && window.NVStore.syncStatus) ? window.NVStore.syncStatus() : 'local'
   };
 
@@ -514,7 +495,6 @@ class Component extends DCLogic {
     }, 30);
     this._r = () => this.setState({ mobile: window.innerWidth < 900 });
     window.addEventListener('resize', this._r);
-    if (window.NVFace) { this._ueng = window.NVFace.progress((p) => this.setState({ engine: p.ready ? 'ready' : p.stage })); }
   }
   // Télécharge toutes les photos sélectionnées d'un client dans un dossier .zip.
   downloadSelectionZip(c, ids) {
@@ -568,14 +548,6 @@ class Component extends DCLogic {
     });
   }
   loadImg(src) { return new Promise((res, rej) => { const i = new Image(); i.crossOrigin = 'anonymous'; const to = setTimeout(() => rej(new Error('img timeout')), 15000); i.onload = () => { clearTimeout(to); res(i); }; i.onerror = () => { clearTimeout(to); rej(new Error('img error')); }; i.src = src; }); }
-  scanCanvas(img, max) {
-    const sc = Math.min(1, (max || 640) / Math.max(img.naturalWidth || img.width, img.naturalHeight || img.height));
-    if (sc >= 1) return img;
-    const w = Math.round((img.naturalWidth || img.width) * sc), h = Math.round((img.naturalHeight || img.height) * sc);
-    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
-    cv.getContext('2d').drawImage(img, 0, 0, w, h);
-    return cv;
-  }
 
   async setImageField(file, apply) {
     // 2560 px (agréable sur écran 4K) quand le stockage externe est branché ; 1600 px en local (quota navigateur).
@@ -590,11 +562,6 @@ class Component extends DCLogic {
   async addPhotosTo(galleryId, fileList) {
     const files = Array.from(fileList || []).filter((f) => f && f.type && f.type.indexOf('image/') === 0);
     if (!files.length) return;
-    const autoScan = window.NVStore.get().settings.autoFaceScan !== false;
-    // Pour les gros imports : on téléverse d'abord (rapide), l'analyse des visages
-    // se fait ensuite en arrière-plan (scanMissing). Évite les blocages sur ~500 photos.
-    const BULK_THRESHOLD = 60;
-    const inlineScan = autoScan && files.length <= BULK_THRESHOLD;
     const withTimeout = (p, ms, label) => Promise.race([
       Promise.resolve(p),
       new Promise((_, rej) => setTimeout(() => rej(new Error('timeout ' + label)), ms))
@@ -604,19 +571,12 @@ class Component extends DCLogic {
     try {
       for (let i = 0; i < files.length; i++) {
         const label = 'Image ' + (i + 1) + ' / ' + files.length;
-        this.setState({ scanMsg: label + (inlineScan ? ' — analyse des visages…' : ' — import…'), scanPct: Math.round(i / files.length * 100) + '%' });
+        this.setState({ scanMsg: label + ' — import…', scanPct: Math.round(i / files.length * 100) + '%' });
         // 2560 px (écran 4K) avec stockage externe ; 1200 px en local pour ne pas saturer le navigateur.
         const maxSide = (window.NVStorage && window.NVStorage.enabled && window.NVStorage.enabled()) ? 2560 : 1200;
         let url;
         try { url = (await withTimeout(this.downscale(files[i], maxSide, 0.85), 30000, 'downscale')).url; }
         catch (e) { console.warn('Redimensionnement échoué, photo ignorée.', files[i] && files[i].name, e); failed++; continue; }
-        let faces = [], scanned = false;
-        if (inlineScan) {
-          try {
-            const img = await withTimeout(this.loadImg(url), 15000, 'loadImg');
-            faces = await withTimeout(window.NVFace.scanImage(this.scanCanvas(img, 640)), 20000, 'scan'); scanned = true;
-          } catch (e) { faces = []; scanned = false; }
-        }
         let src = url, thumb = '';
         if (window.NVStorage && window.NVStorage.enabled()) {
           this.setState({ scanMsg: label + ' — téléversement…' });
@@ -625,7 +585,7 @@ class Component extends DCLogic {
         }
         window.NVStore.update((s) => {
           const id = window.NVStore.uid('ph');
-          s.photos[id] = { id, gallery: galleryId, file: null, src, thumb, faces, scanned, uploadedAt: '2026' };
+          s.photos[id] = { id, gallery: galleryId, file: null, src, thumb, uploadedAt: '2026' };
           const g = s.galleries.find(x => x.id === galleryId);
           g.photoIds.push(id); if (!g.coverId) g.coverId = id;
         });
@@ -634,8 +594,6 @@ class Component extends DCLogic {
       if (failed) this.setState({ scanMsg: failed + ' photo(s) ignorée(s) sur ' + files.length + '.' });
     } finally {
       setTimeout(() => this.setState({ scanning: false }), failed ? 2500 : 300);
-      // Analyse des visages en arrière-plan pour tout ce qui n'a pas été scanné en ligne.
-      if (!inlineScan) this.scanMissing();
     }
   }
 
@@ -665,26 +623,6 @@ class Component extends DCLogic {
       return Promise.resolve();
     };
     return entries.reduce((p, e) => p.then(() => walk(e)), Promise.resolve()).then(() => out);
-  }
-
-  async scanMissing() {
-if (this._bgScanRunning) return;
-    const s = window.NVStore.get();
-    const todo = Object.values(s.photos).filter(p => !p.scanned);
-    if (!todo.length) return;
-    this._bgScanRunning = true; this.setState({ bgScanning: true, bgScanMsg: 'Initialisation du moteur facial…', bgScanPct: '0%' });
-    await window.NVFace.ready();
-    for (let i = 0; i < todo.length; i++) {
-      this.setState({ bgScanMsg: 'Analyse des visages ' + (i + 1) + ' / ' + todo.length + '…', bgScanPct: Math.round(i / todo.length * 100) + '%' });
-      const p = todo[i];
-      try { const img = await this.loadImg(window.NVStore.resolveSrc(p)); const faces = await window.NVFace.scanImage(this.scanCanvas(img, 640));
-        window.NVStore.update((st) => { if (st.photos[p.id]) { st.photos[p.id].faces = faces; st.photos[p.id].scanned = true; } });
-      } catch (e) {}
-    }
-    this.setState({ scanPct: '100%' });
-    this._bgScanRunning = false;
-this.setState({ bgScanMsg: 'Analyse terminée ✓', bgScanPct: '100%' });
-setTimeout(() => this.setState({ bgScanning: false }), 1500);
   }
 
   upd(fn) { window.NVStore.update(fn); }
@@ -731,16 +669,8 @@ setTimeout(() => this.setState({ bgScanning: false }), 1500);
       galleries: ['Galeries publiques', 'Vos galeries de portfolio — portrait, paysage, sport… (les galeries clients sont dans l’onglet Clients).'],
       clients: ['Espaces clients', 'Accès, galeries privées, sélections et factures — tout par client.'],
       messages: ['Messages reçus', 'Demandes envoyées depuis la page contact.'],
-      settings: ['Réglages', 'Limites, reconnaissance faciale et données.']
+      settings: ['Réglages', 'Limites, filigrane et données.']
     };
-
-    // ---- engine pill ----
-    const eng = this.state.engine;
-    const engineMap = { idle: ['Moteur facial prêt à charger', '#9A9A9A'], 'loading-engine': ['Chargement du moteur…', '#E0A100'], 'loading-models': ['Chargement des modèles…', '#E0A100'], ready: ['Moteur facial actif', '#1F8A5B'], error: ['Moteur indisponible', '#C0392B'] };
-    const em = engineMap[eng] || engineMap.idle;
-const bgScanPillStyle = 'display:flex;align-items:center;gap:7px;font-size:12px;color:#7A610F;border:1px solid #F2C13C;background:#FFFBEF;border-radius:99px;padding:6px 12px;flex:none;';
-const bgScanDotStyle = 'width:8px;height:8px;border-radius:99px;background:#F2C13C;';
-const autoFaceScan = s.settings.autoFaceScan !== false;
 
     // ---- styles ----
     const card = 'background:#fff;border:1px solid #E6E6E6;border-radius:3px;padding:18px;';
@@ -818,11 +748,9 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
       const owner = g.private ? s.clients.find(x => x.id === g.clientId) : null;
       const photos = g.photoIds.filter(pid => s.photos[pid]).map(pid => {
         const p = s.photos[pid];
-        const scanned = p && p.scanned;
-        const hasFace = p && p.faces && p.faces.length > 0;
         const liked = !!(owner && owner.likes && owner.likes[pid]);
         return {
-          img: React.createElement('img', { src: window.NVStore.resolveSrc(p), alt: '', loading: 'lazy', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }),
+          img: React.createElement('img', { src: window.NVStore.resolveSrc(p), alt: '', loading: 'lazy', onError: (e) => { e.target.style.display = 'none'; }, style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }),
           // Réorganisation par glisser-déposer.
           dragStart: (e) => { this._drag = { gid: g.id, pid }; try { e.dataTransfer.effectAllowed = 'move'; } catch (x) {} },
           dragOver: (e) => { e.preventDefault(); try { e.dataTransfer.dropEffect = 'move'; } catch (x) {} },
@@ -843,9 +771,6 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
             : 'display:none;',
           src: window.NVStore.resolveSrc(p),
           ring: g.coverId === pid ? 'box-shadow:0 0 0 2px #F2C13C inset;' : '',
-          scanIcon: !scanned ? '○' : (hasFace ? '☺' : '–'),
-          scanTitle: !scanned ? 'Non analysé' : (hasFace ? (p.faces.length + ' visage(s)') : 'Aucun visage'),
-          scanBadge: 'position:absolute;top:4px;left:4px;width:20px;height:20px;border-radius:99px;display:flex;align-items:center;justify-content:center;font-size:12px;background:' + (!scanned ? 'rgba(17,17,17,.5)' : (hasFace ? '#F2C13C' : 'rgba(17,17,17,.5)')) + ';color:' + (hasFace ? '#111' : '#fff') + ';',
           coverIcon: g.coverId === pid ? '★ couv.' : '☆ couv.',
           altIcon: p.alt ? 'alt ✓' : 'alt',
           editAlt: () => {
@@ -858,7 +783,6 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
         };
       });
       const total = g.photoIds.filter(pid => s.photos[pid]).length;
-      const scannedN = g.photoIds.filter(pid => s.photos[pid] && s.photos[pid].scanned).length;
       return {
         name: g.name, rename: onInput((st, v) => st.galleries.find(x => x.id === g.id).name = v),
         nameEn: g.nameEn || '', renameEn: onInput((st, v) => st.galleries.find(x => x.id === g.id).nameEn = v),
@@ -866,11 +790,6 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
         descEn: g.descEn || '', setDescEn: onInput((st, v) => st.galleries.find(x => x.id === g.id).descEn = v),
         tag: g.private ? 'privée' : 'publique',
         tagStyle: 'font-size:11px;padding:3px 8px;border-radius:2px;background:' + (g.private ? '#EFEAFB' : '#E8F0EA') + ';color:' + (g.private ? '#5B3FA8' : '#2F6B3F') + ';',
-        faceSearch: g.faceSearch,
-        faceBtn: 'border:1px solid #E0E0E0;background:' + (g.faceSearch ? '#111' : '#fff') + ';color:' + (g.faceSearch ? '#fff' : '#333') + ';border-radius:2px;padding:7px 11px;font-size:12px;cursor:pointer;font-family:inherit;',
-        faceBtnLabel: g.faceSearch ? 'recherche ✓' : 'activer recherche',
-        toggleFace: U((st) => { const gg = st.galleries.find(x => x.id === g.id); gg.faceSearch = !gg.faceSearch; }),
-        scanLabel: scannedN + '/' + total + ' analysées',
         likedCount: owner ? g.photoIds.filter(pid => owner.likes && owner.likes[pid]).length : 0,
         isPrivate: !!g.private,
         expiresAt: g.expiresAt || '',
@@ -1115,9 +1034,9 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
     return {
       // gate
       locked: this.state.locked, unlocked: !this.state.locked,
-      pinInput: this.state.pinInput, emailInput: this.state.emailInput, pinError: this.state.pinError,
-      setPin: (e) => this.setState({ pinInput: e.target.value, pinError: false }), setEmail: (e) => this.setState({ emailInput: e.target.value, pinError: false }),
-      onUnlock: (e) => { e.preventDefault(); window.NVAuth.loginAdmin(this.state.emailInput, this.state.pinInput).then((ok) => { if (ok) this.setState({ locked: false }); else this.setState({ pinError: true }); }); },
+      pinInput: this.state.pinInput, emailInput: this.state.emailInput, pinError: this.state.pinError, serviceDown: this.state.serviceDown,
+      setPin: (e) => this.setState({ pinInput: e.target.value, pinError: false, serviceDown: false }), setEmail: (e) => this.setState({ emailInput: e.target.value, pinError: false, serviceDown: false }),
+      onUnlock: (e) => { e.preventDefault(); this.setState({ serviceDown: false }); window.NVAuth.loginAdmin(this.state.emailInput, this.state.pinInput).then((ok) => { if (ok) { this.setState({ locked: false, pinError: false }); if (window.NVStore.refresh) window.NVStore.refresh(); } else this.setState({ pinError: true }); }).catch(() => this.setState({ serviceDown: true })); },
       lock: () => { window.NVAuth.lockAdmin(); this.setState({ locked: true, pinInput: '' }); },
 
       // layout
@@ -1136,13 +1055,6 @@ const autoFaceScan = s.settings.autoFaceScan !== false;
       syncStyle: 'display:flex;align-items:center;gap:7px;font-size:11px;color:#9A9A9A;',
       syncDotStyle: 'width:7px;height:7px;border-radius:50%;flex:none;background:' + syncMeta.color + ';',
       tabTitle: titles[tab][0], tabHint: titles[tab][1],
-      enginePill: 'display:flex;align-items:center;gap:7px;font-size:12px;color:#666;border:1px solid #E6E6E6;background:#fff;border-radius:99px;padding:6px 12px;flex:none;',
-      engineDot: 'width:8px;height:8px;border-radius:99px;background:' + em[1] + ';',
-      engineLabel: em[0],
-bgScanActive: this.state.bgScanning, bgScanPillStyle, bgScanDotStyle, bgScanLabel: this.state.bgScanMsg,
-toggleAutoScan: U((st) => { st.settings.autoFaceScan = !(st.settings.autoFaceScan !== false); }),
-autoScanLabel: autoFaceScan ? 'Activée ✓' : 'Désactivée',
-autoScanBtn: 'border:1px solid #E0E0E0;border-radius:2px;padding:9px 16px;font-size:13px;cursor:pointer;font-family:inherit;' + (autoFaceScan ? 'background:#111;color:#fff;' : 'background:#fff;color:#333;'),
 
       isStats: tab === 'stats', isContent: tab === 'content', isGalleries: tab === 'galleries', isClients: tab === 'clients', isMessages: tab === 'messages', isSettings: tab === 'settings',
       statCols: mobile ? '1fr 1fr' : 'repeat(4,1fr)',
@@ -1156,8 +1068,7 @@ autoScanBtn: 'border:1px solid #E0E0E0;border-radius:2px;padding:9px 16px;font-s
       ...content,
 
       galleryList,
-      addGallery: U((st) => { const id = window.NVStore.uid('g'); st.galleries.push({ id, slug: 'galerie-' + id.slice(-4), name: 'nouvelle galerie', desc: 'Description…', photoIds: [], coverId: null, private: false, clientId: null, faceSearch: false }); }),
-      scanAll: () => this.scanMissing(),
+      addGallery: U((st) => { const id = window.NVStore.uid('g'); st.galleries.push({ id, slug: 'galerie-' + id.slice(-4), name: 'nouvelle galerie', desc: 'Description…', photoIds: [], coverId: null, private: false }); }),
 
       clientList, clientTabs, noClients: visibleClients.length === 0,
       hasArchived: archivedList.length > 0,
@@ -1173,7 +1084,6 @@ autoScanBtn: 'border:1px solid #E0E0E0;border-radius:2px;padding:9px 16px;font-s
       hasMessages: messageList.length > 0, noMessages: messageList.length === 0, messageList,
 
       f_likeLimit: s.settings.likeLimit, s_likeLimit: onInput((st, v) => st.settings.likeLimit = parseInt(v) || 0),
-      f_threshold: s.settings.faceThreshold, s_threshold: onInput((st, v) => st.settings.faceThreshold = parseFloat(v)),
       // Nouveau code admin : stocké haché (SHA-256 salé), jamais en clair.
       f_newPin: this.state.newPin,
       s_newPin: (e) => this.setState({ newPin: e.target.value, pinSaved: false }),
