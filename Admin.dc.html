@@ -657,8 +657,14 @@ class Component extends DCLogic {
     }).then((r) => {
       let msg;
       if (!r.found) msg = 'Toutes les photos ont déjà leur vignette ✓';
-      else if (r.failed && !r.done) msg = 'Échec : le stockage refuse la lecture des images depuis le site. Ajoutez une règle CORS sur le bucket R2 autorisant https://www.nicolasvivaudou.com, puis relancez.';
-      else msg = r.done + ' vignette(s) générée(s)' + (r.failed ? ' · ' + r.failed + ' échec(s)' : '') + ' ✓';
+      else if (r.failed && !r.done) {
+        const host = (function () { try { return new URL(r.lastUrl || '').host; } catch (e) { return '(inconnu)'; } })();
+        msg = 'Échec sur les ' + r.failed + ' photos. Détail technique : « ' + (r.lastError || 'inconnu')
+            + ' » · domaine des images : ' + host + ' · page ouverte depuis : ' + location.origin
+            + '. Si le détail mentionne « Failed to fetch », le domaine des images refuse la lecture depuis '
+            + location.origin + ' (règle CORS à ajouter sur ce domaine, puis purger le cache Cloudflare).';
+      }
+      else msg = r.done + ' vignette(s) générée(s)' + (r.failed ? ' · ' + r.failed + ' échec(s) — dernier détail : ' + r.lastError : '') + ' ✓';
       this.setState({ thumbBusy: false, thumbPct: '100%', thumbMsg: msg });
     }).catch((e) => {
       this.setState({ thumbBusy: false, thumbMsg: 'Erreur : ' + (e && e.message ? e.message : e) });
