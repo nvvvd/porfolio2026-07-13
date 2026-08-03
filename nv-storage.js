@@ -149,14 +149,17 @@
       var report = function () { if (typeof opts.onProgress === 'function') { try { opts.onProgress(result.done, result.found, result.failed); } catch (e) {} } };
       if (opts.dryRun) { console.log('NVStorage.buildThumbs (simulation) :', result.found, 'photo(s) sans vignette.'); return Promise.resolve(result); }
       report();
-      /* L'URL publique pub-*.r2.dev n'envoie aucun en-tête CORS : la lecture directe
-         est refusée par le navigateur. On passe alors par le relais /read du worker
-         (même bucket, en-têtes corrects). Sans worker configuré, on tente l'URL brute. */
+      /* Les URLs publiques (pub-*.r2.dev notamment) n'envoient aucun en-tête CORS :
+         la lecture directe est refusée par le navigateur. On passe donc par le relais
+         /read du worker pour TOUTE image distante, la clé étant le chemin de l'URL.
+         Sans worker configuré, on tente l'URL brute. */
       function readableUrl(src) {
         var ep = String(cfg().uploadEndpoint || '').replace(/\/+$/, '');
-        var m = String(src || '').match(/^https?:\/\/[^/]*\.r2\.dev\/(.+)$/i);
-        if (!ep || !m) return src;
-        var key; try { key = decodeURIComponent(m[1]); } catch (e) { key = m[1]; }
+        if (!ep || !/^https?:\/\//i.test(String(src || ''))) return src;
+        var key;
+        try { key = decodeURIComponent(new URL(src).pathname.replace(/^\/+/, '')); }
+        catch (e) { return src; }
+        if (!key) return src;
         return ep + '/read?key=' + encodeURIComponent(key);
       }
       var i = 0;

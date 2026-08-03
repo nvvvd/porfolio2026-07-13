@@ -37,28 +37,30 @@ export default {
       new Response(JSON.stringify(obj), { status, headers: { 'Content-Type': 'application/json', ...cors } });
 
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
-    if (!originOk) return json({ error: 'Origine non autorisée' }, 403);
 
     /* Lecture d'un objet du bucket AVEC en-têtes CORS.
        L'URL publique pub-*.r2.dev ignore la politique CORS du bucket : le site ne
        peut donc pas relire ses propres images pour en fabriquer les vignettes.
        Ce relais sert l'objet depuis la liaison R2, avec les en-têtes nécessaires.
-       Restreint aux origines autorisées ci-dessus ; requête GET simple (pas de
-       pré-vérification), donc utilisable directement par l'admin. */
+       Ouvert à toutes les origines : il ne fait que relire des images DÉJÀ publiques,
+       en lecture seule (aucune écriture, aucune suppression possible ici). */
     if (request.method === 'GET') {
       const u = new URL(request.url);
       if (u.pathname === '/read') {
         const key = u.searchParams.get('key') || '';
-        if (!key) return json({ error: 'Paramètre "key" manquant' }, 400);
+        if (!key) return new Response('Paramètre "key" manquant', { status: 400, headers: { 'Access-Control-Allow-Origin': '*' } });
         const obj = await env.BUCKET.get(key);
-        if (!obj) return json({ error: 'Objet introuvable' }, 404);
-        const h = new Headers(cors);
-        h.set('Content-Type', (obj.httpMetadata && obj.httpMetadata.contentType) || 'application/octet-stream');
-        h.set('Cache-Control', 'no-store');
-        return new Response(obj.body, { headers: h });
+        if (!obj) return new Response('Objet introuvable : ' + key, { status: 404, headers: { 'Access-Control-Allow-Origin': '*' } });
+        return new Response(obj.body, { headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Content-Type': (obj.httpMetadata && obj.httpMetadata.contentType) || 'application/octet-stream',
+          'Cache-Control': 'no-store'
+        } });
       }
-      return json({ error: 'POST attendu' }, 405);
+      return new Response('POST attendu', { status: 405, headers: { 'Access-Control-Allow-Origin': '*' } });
     }
+
+    if (!originOk) return json({ error: 'Origine non autorisée' }, 403);
     if (request.method !== 'POST') return json({ error: 'POST attendu' }, 405);
 
     if (!env.UPLOAD_TOKEN || request.headers.get('X-Upload-Token') !== env.UPLOAD_TOKEN) {

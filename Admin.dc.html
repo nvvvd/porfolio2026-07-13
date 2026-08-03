@@ -648,15 +648,14 @@ class Component extends DCLogic {
     const c = (window.NV_CONFIG && window.NV_CONFIG.storage) || {};
     const ep = String(c.uploadEndpoint || '').replace(/\/+$/, '');
     const s = window.NVStore.get();
-    const p = Object.values(s.photos || {}).find(x => x && !x.thumb && /^https?:\/\/[^/]*\.r2\.dev\//i.test(x.src || ''));
+    const p = Object.values(s.photos || {}).find(x => x && !x.thumb && /^https?:\/\//i.test(x.src || ''));
     if (!ep || !p) return Promise.resolve(null);
-    const m = String(p.src).match(/^https?:\/\/[^/]*\.r2\.dev\/(.+)$/i);
-    let key; try { key = decodeURIComponent(m[1]); } catch (e) { key = m[1]; }
+    let key;
+    try { key = decodeURIComponent(new URL(p.src).pathname.replace(/^\/+/, '')); } catch (e) { return Promise.resolve(null); }
     return fetch(ep + '/read?key=' + encodeURIComponent(key), { cache: 'reload' })
-      .then((r) => r.ok ? null : r.text().then((t) => 'Le relais du worker répond ' + r.status + ' « ' + t.slice(0, 140) + ' ». Origine de cette page : ' + location.origin + '.'))
+      .then((r) => r.ok ? null : r.text().then((t) => 'Le relais du worker répond ' + r.status + ' « ' + t.slice(0, 140) + ' ». Clé demandée : ' + key + '.'))
       .catch((e) => 'Relais du worker injoignable : ' + (e && e.message ? e.message : e)
-        + '. Vérifiez que le worker est redéployé avec la route /read, et que ' + location.origin
-        + ' fait partie de ses origines autorisées (variable ALLOWED_ORIGINS).');
+        + '. Le worker est-il redéployé avec la route /read ? (adresse testée : ' + ep + '/read)');
   }
 
   // Génère les vignettes 640px manquantes (photos mises en ligne avant la fonction).
