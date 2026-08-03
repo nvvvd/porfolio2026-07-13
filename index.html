@@ -282,19 +282,23 @@ class Component extends DCLogic {
     // Retire la flèche décorative (s'affiche en emoji bleu sur iPhone).
     const stripArrow = (t) => String(t || '').replace(/[↗→]/g, '').trim();
     const heroSeen = {}; const heroSrcs = [];
-    const heroPush = (src, thumb) => { if (src && !heroSeen[src] && heroSrcs.length < 30) { heroSeen[src] = 1; heroSrcs.push({ src: src, thumb: thumb || src }); } };
+    const heroPush = (src, thumb) => { if (src && !heroSeen[src] && heroSrcs.length < 12) { heroSeen[src] = 1; heroSrcs.push({ src: src, thumb: thumb || src }); } };
     // Sélection manuelle depuis l'admin (hero.slideshowIds), sinon toutes les photos publiques.
     const heroSel = (s.hero.slideshowIds || []).map(id => s.photos[id]).filter(Boolean);
     if (s.hero.slideshow === 'manual' && heroSel.length) heroSel.forEach(p => heroPush(window.NVStore.resolveSrc(p), window.NVStore.resolveThumb(p)));
     else { tiles.forEach(t => heroPush(t.src, t.thumb)); const hs = window.NVStore.resolveSrc(s.hero.src); heroPush(hs, hs); }
     const heroCur = heroSrcs.length ? this._heroFrame % heroSrcs.length : 0;
-    /* Préchargement intelligent : seules les 3 premières sont chargées ; la suite via data-full.
+    /* Diaporama plafonné à 12 vues : au-delà, un visiteur resté sur l'accueil finissait
+       par télécharger 30 photos pleine résolution (bande passante).
        Images responsives : sur petit écran le navigateur prend la vignette 640 px au lieu
-       du fichier 2000 px (le poids de la page d'accueil est divisé par ~10). Le descripteur
+       du fichier original (le poids de la page d'accueil est divisé par ~10). Le descripteur
        70vw sous 640 px pousse ce choix malgré les écrans à haute densité ; au-dessus, pleine
-       résolution. Sans vignette générée, thumb === src : aucun srcset, aucun gain. */
+       résolution. 2560w = borne haute des fichiers d'origine (les imports récents font 2000 px ;
+       surestimer ne fait que favoriser la vignette sur mobile).
+       ⚠ Sans vignette générée, thumb === src : aucun srcset n'est émis, donc aucun gain —
+       il faut lancer « Générer les vignettes manquantes » dans l'admin. */
     const HERO_PH = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-    const heroSet = (h) => (h.thumb && h.thumb !== h.src) ? (h.thumb + ' 640w, ' + h.src + ' 2000w') : '';
+    const heroSet = (h) => (h.thumb && h.thumb !== h.src) ? (h.thumb + ' 640w, ' + h.src + ' 2560w') : '';
     const heroImgs = heroSrcs.map((h, i) => React.createElement('img', { key: 'h' + i, src: (i < 3 ? h.src : HERO_PH), srcSet: (i < 3 && heroSet(h)) ? heroSet(h) : undefined, sizes: '(max-width: 640px) 70vw, 100vw', 'data-full': h.src, 'data-srcset': heroSet(h), alt: '', fetchPriority: (i === heroCur ? 'high' : 'low'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'opacity .14s linear', opacity: i === heroCur ? 1 : 0 } }));
     return {
       ...base,
