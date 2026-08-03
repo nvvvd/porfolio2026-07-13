@@ -641,28 +641,50 @@ class Component extends DCLogic {
 
   upd(fn) { window.NVStore.update(fn); }
 
+  /* Vérifie le relais /read du worker AVANT de lancer les 800 téléchargements :
+     un échec ici a toujours une cause précise (worker pas redéployé, origine non
+     autorisée, clé introuvable) et le message doit la nommer. */
+  probeRelay() {
+    const c = (window.NV_CONFIG && window.NV_CONFIG.storage) || {};
+    const ep = String(c.uploadEndpoint || '').replace(/\/+$/, '');
+    const s = window.NVStore.get();
+    const p = Object.values(s.photos || {}).find(x => x && !x.thumb && /^https?:\/\/[^/]*\.r2\.dev\//i.test(x.src || ''));
+    if (!ep || !p) return Promise.resolve(null);
+    const m = String(p.src).match(/^https?:\/\/[^/]*\.r2\.dev\/(.+)$/i);
+    let key; try { key = decodeURIComponent(m[1]); } catch (e) { key = m[1]; }
+    return fetch(ep + '/read?key=' + encodeURIComponent(key), { cache: 'reload' })
+      .then((r) => r.ok ? null : r.text().then((t) => 'Le relais du worker répond ' + r.status + ' « ' + t.slice(0, 140) + ' ». Origine de cette page : ' + location.origin + '.'))
+      .catch((e) => 'Relais du worker injoignable : ' + (e && e.message ? e.message : e)
+        + '. Vérifiez que le worker est redéployé avec la route /read, et que ' + location.origin
+        + ' fait partie de ses origines autorisées (variable ALLOWED_ORIGINS).');
+  }
+
   // Génère les vignettes 640px manquantes (photos mises en ligne avant la fonction).
   runBuildThumbs() {
     if (this.state.thumbBusy) return;
     const S = window.NVStorage;
     if (!S || !S.enabled()) { this.setState({ thumbMsg: 'Aucun service de stockage configuré — impossible de générer les vignettes.' }); return; }
-    this.setState({ thumbBusy: true, thumbPct: '0%', thumbMsg: 'Préparation…' });
-    S.buildThumbs({
-      onProgress: (done, total, failed) => {
-        this.setState({
-          thumbPct: total ? Math.round(done / total * 100) + '%' : '0%',
-          thumbMsg: done + ' / ' + total + ' traitée(s)' + (failed ? ' — ' + failed + ' échec(s)' : '')
-        });
-      }
+    this.setState({ thumbBusy: true, thumbPct: '0%', thumbMsg: 'Vérification de l’accès aux images…' });
+    this.probeRelay().then((relayErr) => {
+      if (relayErr) { this.setState({ thumbBusy: false, thumbMsg: relayErr }); return null; }
+      this.setState({ thumbMsg: 'Préparation…' });
+      return S.buildThumbs({
+        onProgress: (done, total, failed) => {
+          this.setState({
+            thumbPct: total ? Math.round(done / total * 100) + '%' : '0%',
+            thumbMsg: done + ' / ' + total + ' traitée(s)' + (failed ? ' — ' + failed + ' échec(s)' : '')
+          });
+        }
+      });
     }).then((r) => {
+      if (!r) return;
       let msg;
       if (!r.found) msg = 'Toutes les photos ont déjà leur vignette ✓';
       else if (r.failed && !r.done) {
-        const host = (function () { try { return new URL(r.lastUrl || '').host; } catch (e) { return '(inconnu)'; } })();
-        msg = 'Échec sur les ' + r.failed + ' photos. Détail technique : « ' + (r.lastError || 'inconnu')
-            + ' » · domaine des images : ' + host + ' · page ouverte depuis : ' + location.origin
-            + '. Si le détail mentionne « Failed to fetch », le domaine des images refuse la lecture depuis '
-            + location.origin + ' (règle CORS à ajouter sur ce domaine, puis purger le cache Cloudflare).';
+        const host = (function () { try { return new URL(r.lastUrl || '').host; } catch (e) { return '(inconnu)'; } })();        msg = 'Échec sur les ' + r.failed + ' photos. Détail technique : « ' + (r.lastError || 'inconnu')
+            + ' » · adresse lue : ' + host + ' · page ouverte depuis : ' + location.origin
+            + '. Si l’adresse lue est en pub-…r2.dev, le fichier nv-storage.js n’est pas à jour en ligne'
+            + ' (le relais du worker n’est pas utilisé) : redéployez-le puis rechargez cette page.';
       }
       else msg = r.done + ' vignette(s) générée(s)' + (r.failed ? ' · ' + r.failed + ' échec(s) — dernier détail : ' + r.lastError : '') + ' ✓';
       this.setState({ thumbBusy: false, thumbPct: '100%', thumbMsg: msg });

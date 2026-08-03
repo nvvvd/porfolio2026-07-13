@@ -173,7 +173,7 @@
               result.done++;
             });
           })
-          .catch(function (e) { result.failed++; if (!result.lastError) { result.lastError = (e && e.message ? e.message : String(e)); result.lastUrl = String(p.src || ''); } console.warn('buildThumbs : échec sur', id, e.message || e); })
+          .catch(function (e) { result.failed++; if (!result.lastError) { result.lastError = (e && e.message ? e.message : String(e)); result.lastUrl = readableUrl(p.src); } console.warn('buildThumbs : échec sur', id, e.message || e); })
           .then(function () { report(); return next(); });
       }
       return Promise.resolve().then(next);
