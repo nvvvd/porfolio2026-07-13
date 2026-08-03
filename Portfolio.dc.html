@@ -6,14 +6,14 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>Galeries — Nicolas Vivaudou, photographe & vidéaste</title>
 <meta name="description" content="Les séries de Nicolas Vivaudou, photographe et vidéaste par drone : portrait, mariage, paysage aérien, évènementiel, sport et carnet personnel.">
-<link rel="canonical" href="https://www.nicolasvivaudou.com/Portfolio.dc.html">
+<link rel="canonical" href="https://www.nicolasvivaudou.com/portfolio">
 <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#100F0D" media="(prefers-color-scheme: dark)">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Nicolas Vivaudou">
 <meta property="og:title" content="Galeries — Nicolas Vivaudou, photographe & vidéaste">
 <meta property="og:description" content="Les séries de Nicolas Vivaudou : portrait, paysage, évènements, sport et carnet personnel.">
-<meta property="og:url" content="https://www.nicolasvivaudou.com/Portfolio.dc.html">
+<meta property="og:url" content="https://www.nicolasvivaudou.com/portfolio">
 <meta property="og:image" content="https://www.nicolasvivaudou.com/images/L1190335.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Galeries — Nicolas Vivaudou, photographe & vidéaste">
@@ -54,9 +54,9 @@
 <div class="nv-page" role="main" style="background:var(--bg);min-height:100vh;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:var(--ink);{{ pageFit }}">
 
   <header style="display:flex;justify-content:space-between;align-items:baseline;padding:18px 20px 0;gap:10px;">
-    <a href="Accueil.dc.html" style="text-decoration:none;font-size:14px;color:var(--ink);letter-spacing:-.01em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ brandName }}<span style="color:var(--muted);"> — {{ brandRole }}</span></a>
+    <a href="/accueil" style="text-decoration:none;font-size:14px;color:var(--ink);letter-spacing:-.01em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ brandName }}<span style="color:var(--muted);"> — {{ brandRole }}</span></a>
     <div style="display:flex;align-items:baseline;gap:16px;flex:none;">
-      <nav style="{{ deskNav }}"><a href="Accueil.dc.html" style="{{ navHomeStyle }}">{{ navHome }}</a><span style="color:var(--muted);">, </span><a href="Portfolio.dc.html" style="{{ navGalleriesStyle }}">{{ navGalleries }}</a><span style="color:var(--muted);">, </span><a href="Client.dc.html" style="{{ navClientStyle }}">{{ navClient }}</a><span style="color:var(--muted);">, </span><a href="Contact.dc.html" style="{{ navContactStyle }}">{{ navContact }}</a></nav>
+      <nav style="{{ deskNav }}"><a href="/accueil" style="{{ navHomeStyle }}">{{ navHome }}</a><span style="color:var(--muted);">, </span><a href="/portfolio" style="{{ navGalleriesStyle }}">{{ navGalleries }}</a><span style="color:var(--muted);">, </span><a href="/client" style="{{ navClientStyle }}">{{ navClient }}</a><span style="color:var(--muted);">, </span><a href="/contact" style="{{ navContactStyle }}">{{ navContact }}</a></nav>
       <div style="{{ langWrap }}"><button onClick="{{ setFr }}" style="{{ frBtn }}">FR</button><span style="color:var(--faint);font-size:13px;">/</span><button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button></div>
       <button onClick="{{ toggleTheme }}" aria-label="{{ themeLabel }}" title="{{ themeLabel }}" style="{{ themeBtn }}">{{ themeIcon }}</button>
       <button onClick="{{ toggleMenu }}" style="{{ menuBtn }}">{{ menuLabel }}</button>
@@ -67,10 +67,10 @@
   <div role="dialog" aria-modal="true" style="position:fixed;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;padding:18px 20px 40px;">
     <div style="display:flex;justify-content:space-between;align-items:center;"><span style="font-size:14px;color:var(--muted);">{{ menuLabel }}</span><button onClick="{{ toggleMenu }}" aria-label="Fermer" style="border:none;background:none;font-size:30px;line-height:1;color:var(--ink);cursor:pointer;padding:0 4px;">×</button></div>
     <nav style="display:flex;flex-direction:column;margin-top:24px;">
-      <a href="Accueil.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navHome }}</a>
-      <a href="Portfolio.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navGalleries }}</a>
-      <a href="Client.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navClient }}</a>
-      <a href="Contact.dc.html" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navContact }}</a>
+      <a href="/accueil" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navHome }}</a>
+      <a href="/portfolio" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navGalleries }}</a>
+      <a href="/client" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navClient }}</a>
+      <a href="/contact" style="font-size:clamp(34px,9vw,46px);text-decoration:none;color:var(--ink);padding:14px 0;border-bottom:1px solid var(--line);letter-spacing:-.03em;">{{ navContact }}</a>
     </nav>
     <div style="margin-top:22px;display:flex;align-items:center;gap:8px;"><button onClick="{{ setFr }}" style="{{ frBtn }}">FR</button><span style="color:var(--faint);">/</span><button onClick="{{ setEn }}" style="{{ enBtn }}">EN</button></div>
     <span style="margin-top:auto;font-size:13px;color:var(--muted);">{{ brandLoc }} — 2026</span>
@@ -94,7 +94,7 @@
 
     <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end;margin-top:56px;padding:18px 0 28px;border-top:1px solid var(--line);{{ footFit }}">
       <span style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted);">{{ aSession }}<a href="{{ emailHref }}" style="text-decoration:none;color:var(--muted);">{{ email }}</a><a href="{{ instagramHref }}" target="_blank" rel="noopener" aria-label="Instagram" style="display:flex;align-items:center;color:var(--muted);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="2.5" width="19" height="19" rx="5.5"></rect><circle cx="12" cy="12" r="4.5"></circle><circle cx="17.6" cy="6.4" r="1.3" fill="currentColor" stroke="none"></circle></svg></a></span>
-      <a href="Contact.dc.html" style="font-size:clamp(32px,8vw,56px);color:var(--ink);text-decoration:none;letter-spacing:-.03em;line-height:1.05;transition:opacity .15s;" style-hover="opacity:.7;">{{ getInTouch }}</a>
+      <a href="/contact" style="font-size:clamp(32px,8vw,56px);color:var(--ink);text-decoration:none;letter-spacing:-.03em;line-height:1.05;transition:opacity .15s;" style-hover="opacity:.7;">{{ getInTouch }}</a>
     </div>
   </div>
 </div>
@@ -173,7 +173,7 @@ class Component extends DCLogic {
       colSpan: (i >= _full && (_n - _full)) ? _lastSpan : _normalSpan,
       spanStyle: mobile ? '' : ('grid-column:span ' + ((i >= _full && (_n - _full)) ? _lastSpan : _normalSpan) + ';'),
       name: L(g.name, g.nameEn), desc: L(g.desc, g.descEn), num: ('0' + (i + 1)).slice(-2), count: g.photoIds.length,
-      cover: window.NVStore.resolveThumb(s.photos[g.coverId || g.photoIds[0]]), href: 'Galerie.dc.html#' + g.slug
+      cover: window.NVStore.resolveThumb(s.photos[g.coverId || g.photoIds[0]]), href: '/galerie#' + g.slug
     }));
     if (sort === 'az') galleries.sort((a, b) => a.name.localeCompare(b.name, ui.lang === 'en' ? 'en' : 'fr'));
     else if (sort === 'count') galleries.sort((a, b) => b.count - a.count);

@@ -134,7 +134,7 @@
     var dirty = false;        // l'état local diffère de `last`, à pousser
     var retryDelay = 0;       // backoff courant
     var lastPushAt = 0;       // horodatage du dernier push réussi (anti-écho)
-    var HYDRATE_TTL = 10 * 60 * 1000;  // cache-first : un visiteur public avec un cache < 10 min ne relit pas la base (egress)
+    var HYDRATE_TTL = 30 * 60 * 1000;  // cache-first : un visiteur public avec un cache < 30 min ne relit pas la base (egress)
     function cacheFresh() {
       try { var t = +localStorage.getItem('nv_hydrated_at') || 0; return t && (Date.now() - t) < HYDRATE_TTL; } catch (e) { return false; }
     }

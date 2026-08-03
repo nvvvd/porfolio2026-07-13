@@ -1,6 +1,6 @@
-# URLs propres pour Cloudflare Pages (pages.dev)
-# Chaque règle « 200 » sert le fichier .dc.html SANS changer l'adresse affichée.
-# Les anciens liens *.dc.html continuent de fonctionner.
+# URLs propres — Cloudflare Pages
+# « 200 » = le fichier est servi SANS que l'adresse change.
+/            /Accueil.dc.html     200
 /accueil     /Accueil.dc.html     200
 /portfolio   /Portfolio.dc.html   200
 /galerie     /Galerie.dc.html     200
@@ -8,4 +8,15 @@
 /admin       /Admin.dc.html       200
 /contact     /Contact.dc.html     200
 /mentions    /Mentions.dc.html    200
+/shot        /Shot.dc.html        200
 /guide       /Guide%20client.dc.html   200
+
+# Anciennes adresses laissées par l'hébergeur (.dc) -> redirection définitive
+/Accueil.dc     /accueil     301
+/Portfolio.dc   /portfolio   301
+/Galerie.dc     /galerie     301
+/Client.dc      /client      301
+/Admin.dc       /admin       301
+/Contact.dc     /contact     301
+/Mentions.dc    /mentions    301
+/Shot.dc        /shot        301

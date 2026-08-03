@@ -11,10 +11,10 @@
 // Redirections des URL « devinées » : /fr, /en, /contact… → vraie page.
 (function () {
   var p = location.pathname.replace(/\/+$/, '').split('/').pop().toLowerCase();
-  var map = { 'fr': 'Accueil.dc.html', 'en': 'Accueil.dc.html', 'home': 'Accueil.dc.html', 'accueil': 'Accueil.dc.html',
-    'contact': 'Contact.dc.html', 'about': 'Contact.dc.html?view=apropos', 'a-propos': 'Contact.dc.html?view=apropos',
-    'portfolio': 'Portfolio.dc.html', 'galeries': 'Portfolio.dc.html', 'galerie': 'Galerie.dc.html', 'gallery': 'Galerie.dc.html',
-    'client': 'Client.dc.html', 'admin': 'Admin.dc.html', 'mentions': 'Mentions.dc.html', 'mentions-legales': 'Mentions.dc.html' };
+  var map = { 'fr': '/accueil', 'en': '/accueil', 'home': '/accueil', 'accueil': '/accueil',
+    'contact': '/contact', 'about': '/contact?view=apropos', 'a-propos': '/contact?view=apropos',
+    'portfolio': '/portfolio', 'galeries': '/portfolio', 'galerie': '/galerie', 'gallery': '/galerie',
+    'client': '/client', 'admin': '/admin', 'mentions': '/mentions', 'mentions-legales': '/mentions' };
   if (map[p]) {
     try { if (p === 'en') localStorage.setItem('nv_lang', 'en'); if (p === 'fr') localStorage.setItem('nv_lang', 'fr'); } catch (e) {}
     location.replace('/' + map[p]);
@@ -34,7 +34,7 @@
     <div style="font-size:13px;color:var(--muted);">erreur 404 · page not found</div>
     <h1 style="margin:10px 0 0;font-size:clamp(44px,10vw,88px);font-weight:400;letter-spacing:-.035em;line-height:1;">page introuvable.</h1>
     <p style="margin:18px 0 28px;font-size:15px;color:var(--ink-2);line-height:1.55;">Cette page n'existe pas ou a été déplacée.<br>This page doesn't exist or has moved.</p>
-    <a href="Accueil.dc.html" style="display:inline-block;background:var(--accent);color:var(--on-accent);text-decoration:none;font-size:14px;padding:14px 22px;border-radius:2px;">← retour à l'accueil</a>
+    <a href="/accueil" style="display:inline-block;background:var(--accent);color:var(--on-accent);text-decoration:none;font-size:14px;padding:14px 22px;border-radius:2px;">← retour à l'accueil</a>
   </main>
 </body>
 </html>

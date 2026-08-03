@@ -68,7 +68,7 @@
       </nav>
       <div style="{{ sideFoot }}">
         <div style="{{ syncStyle }}"><span style="{{ syncDotStyle }}"></span><span>{{ syncLabel }}</span></div>
-        <a href="Accueil.dc.html" target="_blank" style="font-size:12px;color:#9A9A9A;text-decoration:none;">↗ voir le site</a>
+        <a href="/accueil" target="_blank" style="font-size:12px;color:#9A9A9A;text-decoration:none;">↗ voir le site</a>
         <button onClick="{{ lock }}" style="border:none;background:none;font-size:12px;color:#9A9A9A;cursor:pointer;padding:0;font-family:inherit;">verrouiller</button>
       </div>
     </aside>
@@ -966,7 +966,7 @@ class Component extends DCLogic {
             const pw = c.password || (function () { try { return localStorage.getItem('nv_code_' + c.id) || ''; } catch (e) { return ''; } })();
             if (!pw) { alert('Renseigne d\'abord un code d\'accès pour ce client, puis clique OK pour l\'enregistrer.'); return; }
             const tok = btoa(unescape(encodeURIComponent(c.email + ':' + pw))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-            const url = new URL('Client.dc.html', location.href).href + '?acces=' + tok;
+            const url = new URL('/client', location.href).href + '?acces=' + tok;
             if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url);
             this.setState({ copiedLinkId: c.id });
             clearTimeout(this._linkT); this._linkT = setTimeout(() => this.setState({ copiedLinkId: null }), 2200);
