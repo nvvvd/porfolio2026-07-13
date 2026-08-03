@@ -1,6 +1,10 @@
-# Anciennes adresses -> nouvelles (SEO). Aucune réécriture "200" :
-# les pages sont de vrais fichiers, Cloudflare Pages les sert nativement
-# (portfolio.html est servi à l'adresse /portfolio).
+# URLs en chemin pour les galeries et les photos.
+# Destination SANS « .html » (/galerie, /client) : c'est la forme déjà normalisée
+# par Cloudflare Pages, donc aucune redirection en chaîne n'est possible.
+/galerie/*   /galerie   200
+/client/*    /client    200
+
+# Anciennes adresses -> nouvelles (SEO). Aucune réécriture vers un fichier .dc.html.
 /accueil        /            301
 /Accueil.dc     /            301
 /Portfolio.dc   /portfolio   301

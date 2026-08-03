@@ -385,19 +385,28 @@ class Component extends DCLogic {
     } catch (e) {}
   }
   openLb(list, i) { this.setState({ lbList: list, lb: i }); setTimeout(() => this.preloadLb(i), 0); }
-  /* URL propre : #mariage-camille-theo/3 — la galerie et la photo ouvertes sont
-     dans l'adresse, et le bouton « retour » du navigateur revient en arrière. */
+  /* URL propre : /client/mariage-camille-theo/3 — la galerie et la photo ouvertes
+     sont dans l'adresse, et le bouton « retour » du navigateur revient en arrière.
+     Repli sur l'ancre hors du chemin /client (fichier local, prévisualisation). */
+  cliRouteBase() { return /^\/client(\/|$)/i.test(decodeURIComponent(location.pathname || '')) ? '/client' : null; }
   cliParseHash() {
-    const raw = (location.hash || '').replace(/^#/, '');
-    const parts = raw.split('/');
+    const base = this.cliRouteBase();
+    const raw = base
+      ? decodeURIComponent(location.pathname).replace(/^\/client\/?/i, '')
+      : (location.hash || '').replace(/^#/, '');
+    const parts = raw.replace(/\/+$/, '').split('/');
     const num = parts[1];
     return { slug: decodeURIComponent(parts[0] || ''), idx: (num && /^[0-9]+$/.test(num)) ? parseInt(num, 10) - 1 : -1 };
   }
   cliWriteHash(slug, i, push) {
-    const h = slug ? ('#' + slug + (i >= 0 ? '/' + (i + 1) : '')) : location.pathname;
-    if (slug && location.hash === h) return;
-    try { if (push) history.pushState(null, '', h); else history.replaceState(null, '', h); }
-    catch (e) { if (slug) location.hash = h; }
+    const base = this.cliRouteBase();
+    const tail = slug ? (slug + (i >= 0 ? '/' + (i + 1) : '')) : '';
+    const url = base ? (base + (tail ? '/' + tail : '')) : (tail ? '#' + tail : location.pathname);
+    const cur = base ? (decodeURIComponent(location.pathname).replace(/\/+$/, '') || '/') : location.hash;
+    if (cur === decodeURIComponent(url)) return;
+    try { if (push) history.pushState(null, '', url); else history.replaceState(null, '', url); }
+    catch (e) { if (!base && tail) location.hash = tail; }
+  }
   }
   cliSlug() { const g = this.curGallery(); return g ? (g.slug || g.id) : ''; }
   openClientGallery(g) { this.setState({ view: 'gallery', galleryId: g.id, lb: -1 }); this.cliWriteHash(g.slug || g.id, -1, true); }

@@ -151,7 +151,7 @@ class Component extends DCLogic {
     // Préchargement intelligent : la photo courante + les 2 suivantes seulement.
     for (let k = 0; k < 3; k++) {
       const im = imgs[(this._heroFrame + k) % imgs.length];
-      if (im && im.dataset.full && im.getAttribute('src') !== im.dataset.full) im.setAttribute('src', im.dataset.full);
+      if (im && im.dataset.full && im.getAttribute('src') !== im.dataset.full) { im.setAttribute('src', im.dataset.full); if (im.dataset.srcset) im.setAttribute('srcset', im.dataset.srcset); }
     }
     imgs.forEach((im, k) => { im.style.opacity = (k === this._heroFrame ? '1' : '0'); });
   }
@@ -276,21 +276,26 @@ class Component extends DCLogic {
       };
     });
     const tiles = [];
-    pub.forEach(g => g.photoIds.forEach(pid => tiles.push({ src: window.NVStore.resolveSrc(s.photos[pid]), href: '/galerie/' + g.slug, alt: L(g.name, g.nameEn) })));
+    pub.forEach(g => g.photoIds.forEach(pid => tiles.push({ src: window.NVStore.resolveSrc(s.photos[pid]), thumb: window.NVStore.resolveThumb(s.photos[pid]), href: '/galerie/' + g.slug, alt: L(g.name, g.nameEn) })));
     const total = tiles.length;
     // Diaporama d'accueil : photo vedette + toutes les photos publiques (max 30, sans doublon).
     // Retire la flèche décorative (s'affiche en emoji bleu sur iPhone).
     const stripArrow = (t) => String(t || '').replace(/[↗→]/g, '').trim();
     const heroSeen = {}; const heroSrcs = [];
-    const heroPush = (src) => { if (src && !heroSeen[src] && heroSrcs.length < 30) { heroSeen[src] = 1; heroSrcs.push(src); } };
+    const heroPush = (src, thumb) => { if (src && !heroSeen[src] && heroSrcs.length < 30) { heroSeen[src] = 1; heroSrcs.push({ src: src, thumb: thumb || src }); } };
     // Sélection manuelle depuis l'admin (hero.slideshowIds), sinon toutes les photos publiques.
     const heroSel = (s.hero.slideshowIds || []).map(id => s.photos[id]).filter(Boolean);
-    if (s.hero.slideshow === 'manual' && heroSel.length) heroSel.forEach(p => heroPush(window.NVStore.resolveSrc(p)));
-    else { tiles.forEach(t => heroPush(t.src)); heroPush(window.NVStore.resolveSrc(s.hero.src)); }
+    if (s.hero.slideshow === 'manual' && heroSel.length) heroSel.forEach(p => heroPush(window.NVStore.resolveSrc(p), window.NVStore.resolveThumb(p)));
+    else { tiles.forEach(t => heroPush(t.src, t.thumb)); const hs = window.NVStore.resolveSrc(s.hero.src); heroPush(hs, hs); }
     const heroCur = heroSrcs.length ? this._heroFrame % heroSrcs.length : 0;
-    // Préchargement intelligent : seules les 3 premières sont chargées ; la suite via data-full.
+    /* Préchargement intelligent : seules les 3 premières sont chargées ; la suite via data-full.
+       Images responsives : sur petit écran le navigateur prend la vignette 640 px au lieu
+       du fichier 2000 px (le poids de la page d'accueil est divisé par ~10). Le descripteur
+       70vw sous 640 px pousse ce choix malgré les écrans à haute densité ; au-dessus, pleine
+       résolution. Sans vignette générée, thumb === src : aucun srcset, aucun gain. */
     const HERO_PH = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-    const heroImgs = heroSrcs.map((src, i) => React.createElement('img', { key: 'h' + i, src: (i < 3 ? src : HERO_PH), 'data-full': src, alt: '', fetchPriority: (i === heroCur ? 'high' : 'low'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'opacity .14s linear', opacity: i === heroCur ? 1 : 0 } }));
+    const heroSet = (h) => (h.thumb && h.thumb !== h.src) ? (h.thumb + ' 640w, ' + h.src + ' 2000w') : '';
+    const heroImgs = heroSrcs.map((h, i) => React.createElement('img', { key: 'h' + i, src: (i < 3 ? h.src : HERO_PH), srcSet: (i < 3 && heroSet(h)) ? heroSet(h) : undefined, sizes: '(max-width: 640px) 70vw, 100vw', 'data-full': h.src, 'data-srcset': heroSet(h), alt: '', fetchPriority: (i === heroCur ? 'high' : 'low'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'opacity .14s linear', opacity: i === heroCur ? 1 : 0 } }));
     return {
       ...base,
       brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn), brandLoc: s.brand.location,
