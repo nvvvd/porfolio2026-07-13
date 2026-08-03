@@ -11,13 +11,13 @@ requise. Tout hébergeur capable de servir des fichiers HTML convient.
 | Fichier / dossier | Rôle |
 |---|---|
 | `index.html` | Page d'entrée (SEO + redirection vers l'accueil) |
-| `Accueil.dc.html`, `Portfolio.dc.html`, `Galerie.dc.html`, `Shot.dc.html` | Pages publiques |
+| `index.html`, `portfolio.html`, `galerie.html` | Pages publiques (`/`, `/portfolio`, `/galerie`) |
 | `Contact.dc.html` | Contact + page « à propos » |
 | `Client.dc.html` | Espace client (galeries privées, sélection) |
 | `Admin.dc.html` | Back-office (code par défaut : `1234` — à changer !) |
 | `Mentions.dc.html`, `404.html` | Mentions légales, page introuvable |
 | `nv-config.js` | **Le seul fichier à éditer** (email, backend, analytics) |
-| `nv-*.js`, `store.js`, `face.js`, `support.js` | Moteur du site (ne pas modifier) |
+| `nv-*.js`, `store.js`, `support.js` | Moteur du site (ne pas modifier) |
 | `images/` | Photos et logos |
 | `robots.txt`, `sitemap.xml`, `favicon.svg` | SEO / icône |
 | `docs/` | Guides détaillés (déploiement, migration Supabase, schéma) |

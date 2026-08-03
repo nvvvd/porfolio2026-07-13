@@ -6,7 +6,5 @@ Disallow: /client
 Disallow: /Client.dc.html
 Disallow: /admin
 Disallow: /Admin.dc.html
-Disallow: /shot
-Disallow: /Shot.dc.html
 
 Sitemap: https://www.nicolasvivaudou.com/sitemap.xml

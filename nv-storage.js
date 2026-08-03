@@ -146,7 +146,9 @@
         return p && !p.thumb && /^https?:\/\//i.test(p.src || '');
       });
       var result = { found: ids.length, done: 0, failed: 0 };
+      var report = function () { if (typeof opts.onProgress === 'function') { try { opts.onProgress(result.done, result.found, result.failed); } catch (e) {} } };
       if (opts.dryRun) { console.log('NVStorage.buildThumbs (simulation) :', result.found, 'photo(s) sans vignette.'); return Promise.resolve(result); }
+      report();
       var i = 0;
       function next() {
         if (i >= ids.length) { window.NVStore.save(); console.log('NVStorage.buildThumbs terminé :', result); return result; }
@@ -155,15 +157,14 @@
         return fetch(p.src).then(function (res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.blob(); })
           .then(function (blob) { return makeThumb(blob); })
           .then(function (tb) {
-            if (!tb) { result.done++; return; } // image déjà petite
+            if (!tb) { result.done++; return; }   // image déjà petite : rien à générer
             return self.upload(tb, 'thumb-' + id + '.jpg').then(function (turl) {
               window.NVStore.update(function (s2) { if (s2.photos[id]) s2.photos[id].thumb = turl; });
               result.done++;
-              if (result.done % 25 === 0) console.log('… ' + result.done + ' / ' + ids.length);
             });
           })
           .catch(function (e) { result.failed++; console.warn('buildThumbs : échec sur', id, e.message || e); })
-          .then(next);
+          .then(function () { report(); return next(); });
       }
       return Promise.resolve().then(next);
     },

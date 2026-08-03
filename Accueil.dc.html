@@ -57,7 +57,7 @@
 <script src="nv-backend.js"></script>
 <script src="nv-auth.js"></script>
 <script src="store.js"></script>
-<script src="nv-ux.js"></script>
+<script src="nv-ux.js" defer></script>
 <style>
   :root{--bg:#FFFFFF;--bg-2:#FAFAFA;--ink:#111111;--ink-2:#4A4A4A;--muted:#767171;--faint:#B0AAA2;--line:#E6E6E6;--ph:#EEEEEE;--accent:#F2C13C;--on-accent:#161310;--error:#C0392B;}
   [data-theme="dark"]{--bg:#100F0D;--bg-2:#1A1815;--ink:#F1EDE6;--ink-2:#B4AEA3;--muted:#86817A;--faint:#4C4840;--line:#2A2723;--ph:#1E1B17;--accent:#F2C13C;--on-accent:#161310;--error:#E8746A;color-scheme:dark;}
@@ -265,7 +265,7 @@ class Component extends DCLogic {
         ? g.photoIds.slice(0, 12).map((pid, j) => ({ src: window.NVStore.resolveThumb(s.photos[pid]), vis: 'opacity:' + (j === 0 ? '1' : '0') + ';' }))
         : [];
       return {
-        title: L(g.name, g.nameEn), href: '/galerie#' + g.slug, num: ('0' + (i + 1)).slice(-2), count: String(g.photoIds.length),
+        title: L(g.name, g.nameEn), href: '/galerie/' + g.slug, num: ('0' + (i + 1)).slice(-2), count: String(g.photoIds.length),
         enter: setHover(g.id), move: this.rowMove,
         // Ordinateur : la taille du titre suit la hauteur de ligne disponible (jamais coupé).
         titleFit: mobile ? 'font-size:clamp(30px,9vw,56px);line-height:1.05;' : 'font-size:clamp(26px,min(4.5vw,' + (Math.round(140 / Math.max(1, pub.length)) / 10) + 'vh),56px);',
@@ -276,7 +276,7 @@ class Component extends DCLogic {
       };
     });
     const tiles = [];
-    pub.forEach(g => g.photoIds.forEach(pid => tiles.push({ src: window.NVStore.resolveSrc(s.photos[pid]), href: '/galerie#' + g.slug, alt: L(g.name, g.nameEn) })));
+    pub.forEach(g => g.photoIds.forEach(pid => tiles.push({ src: window.NVStore.resolveSrc(s.photos[pid]), href: '/galerie/' + g.slug, alt: L(g.name, g.nameEn) })));
     const total = tiles.length;
     // Diaporama d'accueil : photo vedette + toutes les photos publiques (max 30, sans doublon).
     // Retire la flèche décorative (s'affiche en emoji bleu sur iPhone).

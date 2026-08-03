@@ -24,7 +24,7 @@
 <script src="nv-backend.js"></script>
 <script src="nv-auth.js"></script>
 <script src="store.js"></script>
-<script src="nv-ux.js"></script>
+<script src="nv-ux.js" defer></script>
 <style>
   :root{--bg:#FFFFFF;--bg-2:#FAFAFA;--card:#FFFFFF;--header-bg:rgba(255,255,255,.92);--ink:#111111;--ink-2:#4A4A4A;--muted:#767171;--faint:#B0AAA2;--line:#E6E6E6;--ph:#EEEEEE;--accent:#F2C13C;--on-accent:#161310;--error:#C0392B;--btn-bg:#111111;--btn-fg:#FFFFFF;--ok-bg:#E8F0EA;--ok-fg:#2F6B3F;--warn-bg:#FBF1D8;--warn-line:#F0DCA0;--warn-fg:#7A610F;}
   [data-theme="dark"]{--bg:#100F0D;--bg-2:#1A1815;--card:#1A1815;--header-bg:rgba(18,16,14,.86);--ink:#F1EDE6;--ink-2:#B4AEA3;--muted:#86817A;--faint:#4C4840;--line:#2A2723;--ph:#1E1B17;--accent:#F2C13C;--on-accent:#161310;--error:#E8746A;--btn-bg:#F1EDE6;--btn-fg:#100F0D;--ok-bg:#15241B;--ok-fg:#83C49B;--warn-bg:#2A2113;--warn-line:#4A3A1A;--warn-fg:#E2B85E;color-scheme:dark;}
@@ -340,13 +340,16 @@ class Component extends DCLogic {
     // Lightbox : navigation clavier.
     this._k = (e) => {
       if (this.state.lb < 0) return;
-      if (e.key === 'Escape') this.setState({ lb: -1 });
-      if (e.key === 'ArrowRight') this.moveLb(1);
-      if (e.key === 'ArrowLeft') this.moveLb(-1);
+      if (e.key === 'Escape') this.closeClientPhoto();
+      if (e.key === 'ArrowRight') this.stepLb(1);
+      if (e.key === 'ArrowLeft') this.stepLb(-1);
     };
     window.addEventListener('keydown', this._k);
+    this._hh = () => this.cliSyncFromHash();
+    window.addEventListener('hashchange', this._hh);
+    window.addEventListener('popstate', this._hh);
   }
-  componentWillUnmount() { clearInterval(this._wait); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); window.removeEventListener('keydown', this._k); if (this._ro) this._ro.disconnect(); if (this._raf) cancelAnimationFrame(this._raf); }
+  componentWillUnmount() { clearInterval(this._wait); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); window.removeEventListener('keydown', this._k); window.removeEventListener('hashchange', this._hh); window.removeEventListener('popstate', this._hh); if (this._ro) this._ro.disconnect(); if (this._raf) cancelAnimationFrame(this._raf); }
 
   // Connexion automatique via lien d'accès direct (?acces=… copié depuis l'admin).
   tryLinkLogin() {
@@ -382,6 +385,46 @@ class Component extends DCLogic {
     } catch (e) {}
   }
   openLb(list, i) { this.setState({ lbList: list, lb: i }); setTimeout(() => this.preloadLb(i), 0); }
+  /* URL propre : #mariage-camille-theo/3 — la galerie et la photo ouvertes sont
+     dans l'adresse, et le bouton « retour » du navigateur revient en arrière. */
+  cliParseHash() {
+    const raw = (location.hash || '').replace(/^#/, '');
+    const parts = raw.split('/');
+    const num = parts[1];
+    return { slug: decodeURIComponent(parts[0] || ''), idx: (num && /^[0-9]+$/.test(num)) ? parseInt(num, 10) - 1 : -1 };
+  }
+  cliWriteHash(slug, i, push) {
+    const h = slug ? ('#' + slug + (i >= 0 ? '/' + (i + 1) : '')) : location.pathname;
+    if (slug && location.hash === h) return;
+    try { if (push) history.pushState(null, '', h); else history.replaceState(null, '', h); }
+    catch (e) { if (slug) location.hash = h; }
+  }
+  cliSlug() { const g = this.curGallery(); return g ? (g.slug || g.id) : ''; }
+  openClientGallery(g) { this.setState({ view: 'gallery', galleryId: g.id, lb: -1 }); this.cliWriteHash(g.slug || g.id, -1, true); }
+  openClientPhoto(list, i) { this.openLb(list, i); this.cliWriteHash(this.cliSlug(), i, true); }
+  closeClientPhoto() {
+    if (this.cliParseHash().idx >= 0) { try { history.back(); return; } catch (e) {} }
+    this.setState({ lb: -1 }); this.cliWriteHash(this.cliSlug(), -1, false);
+  }
+  stepLb(d) { this.moveLb(d); setTimeout(() => this.cliWriteHash(this.cliSlug(), this.state.lb, false), 0); }
+  cliSyncFromHash() {
+    try {
+      if (!window.NVStore || !this.state.clientId) return;
+      const p = this.cliParseHash();
+      const gals = window.NVStore.clientGalleries(this.state.clientId) || [];
+      const g = p.slug ? gals.find(x => (x.slug || x.id) === p.slug) : null;
+      const next = {};
+      if (!g) {
+        if (this.state.view === 'gallery') { next.view = 'galleries'; next.galleryId = null; next.lb = -1; }
+      } else {
+        if (this.state.galleryId !== g.id) { next.galleryId = g.id; next.view = 'gallery'; }
+        // On n'ouvre la visionneuse que si la liste d'images est déjà prête.
+        const want = (p.idx >= 0 && p.idx < (this.state.lbList || []).length) ? p.idx : -1;
+        if (want !== this.state.lb) next.lb = want;
+      }
+      if (Object.keys(next).length) this.setState(next);
+    } catch (e) {}
+  }
   // Image introuvable : on la masque complètement (jamais de nom de fichier ni de lien vide).
   onImgErr(e) { try { const cell = e.target.closest('.nv-ph'); if (cell) cell.style.display = 'none'; else e.target.style.display = 'none'; } catch (x) {} }
   // Grille justifiée (style Pixieset) : mesure la largeur du conteneur.
@@ -515,7 +558,7 @@ class Component extends DCLogic {
       total: g.total || g.photoIds.length,
       liked: g.photoIds.filter(pid => c.likes[pid]).length,
       cover: window.NVStore.resolveSrc(s.photos[g.coverId || g.photoIds[0]]),
-      open: () => this.setState({ view: 'gallery', galleryId: g.id, faceActive: null, faceTried: false })
+      open: () => this.openClientGallery(g)
     }));
 
     // single gallery
@@ -537,7 +580,7 @@ class Component extends DCLogic {
         const src = window.NVStore.resolveThumb(p);
         const full = window.NVStore.resolveSrc(p);
         return {
-          key: pid, src, full, zoom: () => this.openLb(srcList, srcList.indexOf(full)),
+          key: pid, src, full, zoom: () => this.openClientPhoto(srcList, srcList.indexOf(full)),
           onLoad: (e) => this.setRatio(pid, e.target.naturalWidth / e.target.naturalHeight),
           onErr: (e) => this.onImgErr(e),
           heart: liked ? '♥' : '♡', toggle: () => this.toggleLike(pid),
@@ -606,9 +649,9 @@ class Component extends DCLogic {
       noFaceTitle: T('cl.noFaceTitle'), noFaceHint: T('cl.noFaceHint'), retryLabel: T('cl.retry'), faceFoundWord: T('cl.faceFound'),
       brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn),
       clientName: c.name, appPad: mobile ? 'padding-bottom:72px;' : '',
-      logout: () => { window.NVAuth.logoutClient(); this.setState({ clientId: null, view: 'galleries', galleryId: null }); },
+      logout: () => { window.NVAuth.logoutClient(); this.cliWriteHash('', -1, false); this.setState({ clientId: null, view: 'galleries', galleryId: null, lb: -1 }); },
       inGallery: view === 'gallery',
-      backToGalleries: () => this.setState({ view: 'galleries', galleryId: null, faceActive: null }),
+      backToGalleries: () => { this.setState({ view: 'galleries', galleryId: null, lb: -1 }); this.cliWriteHash('', -1, false); },
       deskTabs: 'display:' + (mobile ? 'none' : 'block') + ';border-top:1px solid var(--ph);',
       bottomBar: 'display:' + (mobile ? 'flex' : 'none') + ';position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--header-bg);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);',
       navTabs,
@@ -684,14 +727,14 @@ class Component extends DCLogic {
       zoomSrc: this.state.lb >= 0 ? this.state.lbList[this.state.lb] : '',
       zoomImg: this.state.lb >= 0 ? React.createElement('img', { src: this.state.lbList[this.state.lb], alt: '', onClick: (e) => e.stopPropagation(), style: { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', borderRadius: 2 } }) : null,
       zoomIdx: this.state.lb + 1, zoomTotal: this.state.lbList.length,
-      closeZoom: () => this.setState({ lb: -1 }),
+      closeZoom: () => this.closeClientPhoto(),
       zoomCanLike: !!zoomPid,
       zoomHeart: zoomLiked ? '♥' : '♡',
       zoomHeartLbl: zoomLiked ? (ui.lang === 'en' ? 'Selected' : 'Sélectionnée') : (ui.lang === 'en' ? 'Select' : 'Sélectionner'),
       zoomToggle: (e) => { e.stopPropagation(); if (zoomPid) this.toggleLike(zoomPid); },
       zoomHeartStyle: 'border:none;cursor:pointer;font-family:inherit;font-size:13px;line-height:1;display:flex;align-items:center;gap:7px;border-radius:2px;padding:8px 13px;transition:background .15s,color .15s;' + (zoomLiked ? 'background:var(--accent);color:var(--on-accent);' : 'background:rgba(255,255,255,.14);color:#fff;'),
-      zoomNext: (e) => { e.stopPropagation(); this.moveLb(1); },
-      zoomPrev: (e) => { e.stopPropagation(); this.moveLb(-1); },
+      zoomNext: (e) => { e.stopPropagation(); this.stepLb(1); },
+      zoomPrev: (e) => { e.stopPropagation(); this.stepLb(-1); },
       zoomStop: (e) => e.stopPropagation(),
       tStart: (e) => { const t = e.touches[0]; this._tx = t.clientX; this._ty = t.clientY; this._ts = Date.now(); },
       tEnd: (e) => {
@@ -701,7 +744,7 @@ class Component extends DCLogic {
         this._tx = null;
         if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - this._ts < 800) {
           e.stopPropagation(); e.preventDefault();
-          this.moveLb(dx < 0 ? 1 : -1);
+          this.stepLb(dx < 0 ? 1 : -1);
         }
       },
       // Téléchargement HD (activé par Nicolas dans l'admin, ex. une fois la facture réglée).

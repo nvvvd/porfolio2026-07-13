@@ -446,6 +446,19 @@
           <button onClick="{{ toggleWm }}" style="{{ wmBtn }}">{{ wmLabel }}</button>
           <p style="font-size:12px;color:#9A9A9A;line-height:1.5;margin:8px 0 0;">Affiche votre nom en surimpression sur les photos pendant le visionnage. Les fichiers finaux livrés ne sont pas modifiés.</p>
         </section>
+
+        <section style="{{ card }};margin-top:16px;max-width:520px;">
+          <div style="{{ cardTitle }}">Performance des images</div>
+          <p style="font-size:13px;color:#5A5A5A;line-height:1.55;margin:0 0 14px;">Les grilles de galerie utilisent une vignette légère (640 px) au lieu de la photo entière. Les photos mises en ligne avant cette fonction n'en ont pas : leurs grilles chargent l'image complète, ce qui ralentit le site.</p>
+          <div style="font-size:13px;color:#111;margin-bottom:12px;">{{ thumbCountLabel }}</div>
+          <button onClick="{{ runThumbs }}" style="{{ thumbBtn }}">{{ thumbBtnLabel }}</button>
+          <sc-if value="{{ thumbBusy }}">
+            <div style="height:5px;background:#EFEFEF;border-radius:99px;overflow:hidden;margin-top:14px;"><div style="height:100%;width:{{ thumbPct }};background:#F2C13C;transition:width .25s;"></div></div>
+          </sc-if>
+          <sc-if value="{{ thumbMsg }}">
+            <div style="font-size:13px;color:#5A5A5A;margin-top:12px;line-height:1.5;">{{ thumbMsg }}</div>
+          </sc-if>
+        </section>
         <section style="{{ card }};max-width:520px;margin-top:16px;">
           <div style="{{ cardTitle }}">Données</div>
           <p style="font-size:13px;color:#5A5A5A;line-height:1.5;margin:0 0 12px;">Le site enregistre tout le contenu, les galeries et les clients dans ce navigateur. Réinitialiser restaure le contenu de démonstration.</p>
@@ -477,6 +490,7 @@ class Component extends DCLogic {
     locked: true, pinInput: '', emailInput: '', pinError: false, serviceDown: false,
     tab: 'stats', clientTab: null, showArchived: false, copiedLinkId: null, newPin: '', pinSaved: false,
     scanning: false, scanMsg: '', scanPct: '0%',
+    thumbBusy: false, thumbMsg: '', thumbPct: '0%',
     syncStatus: (typeof window !== 'undefined' && window.NVStore && window.NVStore.syncStatus) ? window.NVStore.syncStatus() : 'local'
   };
 
@@ -626,6 +640,30 @@ class Component extends DCLogic {
   }
 
   upd(fn) { window.NVStore.update(fn); }
+
+  // Génère les vignettes 640px manquantes (photos mises en ligne avant la fonction).
+  runBuildThumbs() {
+    if (this.state.thumbBusy) return;
+    const S = window.NVStorage;
+    if (!S || !S.enabled()) { this.setState({ thumbMsg: 'Aucun service de stockage configuré — impossible de générer les vignettes.' }); return; }
+    this.setState({ thumbBusy: true, thumbPct: '0%', thumbMsg: 'Préparation…' });
+    S.buildThumbs({
+      onProgress: (done, total, failed) => {
+        this.setState({
+          thumbPct: total ? Math.round(done / total * 100) + '%' : '0%',
+          thumbMsg: done + ' / ' + total + ' traitée(s)' + (failed ? ' — ' + failed + ' échec(s)' : '')
+        });
+      }
+    }).then((r) => {
+      let msg;
+      if (!r.found) msg = 'Toutes les photos ont déjà leur vignette ✓';
+      else if (r.failed && !r.done) msg = 'Échec : le stockage refuse la lecture des images depuis le site. Ajoutez une règle CORS sur le bucket R2 autorisant https://www.nicolasvivaudou.com, puis relancez.';
+      else msg = r.done + ' vignette(s) générée(s)' + (r.failed ? ' · ' + r.failed + ' échec(s)' : '') + ' ✓';
+      this.setState({ thumbBusy: false, thumbPct: '100%', thumbMsg: msg });
+    }).catch((e) => {
+      this.setState({ thumbBusy: false, thumbMsg: 'Erreur : ' + (e && e.message ? e.message : e) });
+    });
+  }
 
   renderVals() {
     const mobile = this.state.mobile;
@@ -1084,6 +1122,14 @@ class Component extends DCLogic {
       hasMessages: messageList.length > 0, noMessages: messageList.length === 0, messageList,
 
       f_likeLimit: s.settings.likeLimit, s_likeLimit: onInput((st, v) => st.settings.likeLimit = parseInt(v) || 0),
+      thumbCountLabel: (function () {
+        const miss = Object.values(s.photos || {}).filter(p => p && !p.thumb && /^https?:\/\//i.test(p.src || '')).length;
+        return miss ? (miss + ' photo(s) sans vignette') : 'Toutes les photos ont leur vignette ✓';
+      })(),
+      thumbBusy: this.state.thumbBusy, thumbMsg: this.state.thumbMsg, thumbPct: this.state.thumbPct,
+      runThumbs: () => this.runBuildThumbs(),
+      thumbBtnLabel: this.state.thumbBusy ? 'Génération en cours…' : 'Générer les vignettes manquantes',
+      thumbBtn: 'border:1px solid #E0E0E0;border-radius:2px;padding:11px 18px;font-size:13px;font-family:inherit;' + (this.state.thumbBusy ? 'background:#F5F5F5;color:#9A9A9A;cursor:default;' : 'background:#111;color:#fff;cursor:pointer;'),
       // Nouveau code admin : stocké haché (SHA-256 salé), jamais en clair.
       f_newPin: this.state.newPin,
       s_newPin: (e) => this.setState({ newPin: e.target.value, pinSaved: false }),

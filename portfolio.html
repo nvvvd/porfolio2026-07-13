@@ -34,7 +34,7 @@
 <script src="nv-backend.js"></script>
 <script src="nv-auth.js"></script>
 <script src="store.js"></script>
-<script src="nv-ux.js"></script>
+<script src="nv-ux.js" defer></script>
 <style>
   :root{--bg:#FFFFFF;--bg-2:#FAFAFA;--ink:#111111;--ink-2:#4A4A4A;--muted:#767171;--faint:#B0AAA2;--line:#E6E6E6;--ph:#EEEEEE;--accent:#F2C13C;--on-accent:#161310;--error:#C0392B;}
   [data-theme="dark"]{--bg:#100F0D;--bg-2:#1A1815;--ink:#F1EDE6;--ink-2:#B4AEA3;--muted:#86817A;--faint:#4C4840;--line:#2A2723;--ph:#1E1B17;--accent:#F2C13C;--on-accent:#161310;--error:#E8746A;color-scheme:dark;}
@@ -173,7 +173,7 @@ class Component extends DCLogic {
       colSpan: (i >= _full && (_n - _full)) ? _lastSpan : _normalSpan,
       spanStyle: mobile ? '' : ('grid-column:span ' + ((i >= _full && (_n - _full)) ? _lastSpan : _normalSpan) + ';'),
       name: L(g.name, g.nameEn), desc: L(g.desc, g.descEn), num: ('0' + (i + 1)).slice(-2), count: g.photoIds.length,
-      cover: window.NVStore.resolveThumb(s.photos[g.coverId || g.photoIds[0]]), href: '/galerie#' + g.slug
+      cover: window.NVStore.resolveThumb(s.photos[g.coverId || g.photoIds[0]]), href: '/galerie/' + g.slug
     }));
     if (sort === 'az') galleries.sort((a, b) => a.name.localeCompare(b.name, ui.lang === 'en' ? 'en' : 'fr'));
     else if (sort === 'count') galleries.sort((a, b) => b.count - a.count);
