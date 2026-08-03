@@ -149,12 +149,22 @@
       var report = function () { if (typeof opts.onProgress === 'function') { try { opts.onProgress(result.done, result.found, result.failed); } catch (e) {} } };
       if (opts.dryRun) { console.log('NVStorage.buildThumbs (simulation) :', result.found, 'photo(s) sans vignette.'); return Promise.resolve(result); }
       report();
+      /* L'URL publique pub-*.r2.dev n'envoie aucun en-tête CORS : la lecture directe
+         est refusée par le navigateur. On passe alors par le relais /read du worker
+         (même bucket, en-têtes corrects). Sans worker configuré, on tente l'URL brute. */
+      function readableUrl(src) {
+        var ep = String(cfg().uploadEndpoint || '').replace(/\/+$/, '');
+        var m = String(src || '').match(/^https?:\/\/[^/]*\.r2\.dev\/(.+)$/i);
+        if (!ep || !m) return src;
+        var key; try { key = decodeURIComponent(m[1]); } catch (e) { key = m[1]; }
+        return ep + '/read?key=' + encodeURIComponent(key);
+      }
       var i = 0;
       function next() {
         if (i >= ids.length) { window.NVStore.save(); console.log('NVStorage.buildThumbs terminé :', result); return result; }
         var id = ids[i++];
         var p = window.NVStore.get().photos[id];
-        return fetch(p.src, { mode: 'cors', cache: 'reload' }).then(function (res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.blob(); })
+        return fetch(readableUrl(p.src), { cache: 'reload' }).then(function (res) { if (!res.ok) throw new Error('HTTP ' + res.status); return res.blob(); })
           .then(function (blob) { return makeThumb(blob); })
           .then(function (tb) {
             if (!tb) { result.done++; return; }   // image déjà petite : rien à générer
