@@ -70,6 +70,9 @@ create table if not exists app_secrets (
   value_hash text not null
 );
 
+alter table photos add column if not exists alt text;
+alter table photos add column if not exists thumb text; -- vignette 640px pour les grilles -- description SEO/accessibilité (relance sans risque)
+
 create index if not exists idx_photos_gallery on photos(gallery);
 create index if not exists idx_galleries_client on galleries(client_id);
 

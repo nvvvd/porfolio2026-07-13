@@ -1,18 +1,8 @@
-# URLs propres — Cloudflare Pages
-# « 200 » = le fichier est servi SANS que l'adresse change.
-/            /Accueil.dc.html     200
-/accueil     /Accueil.dc.html     200
-/portfolio   /Portfolio.dc.html   200
-/galerie     /Galerie.dc.html     200
-/client      /Client.dc.html      200
-/admin       /Admin.dc.html       200
-/contact     /Contact.dc.html     200
-/mentions    /Mentions.dc.html    200
-/shot        /Shot.dc.html        200
-/guide       /Guide%20client.dc.html   200
-
-# Anciennes adresses laissées par l'hébergeur (.dc) -> redirection définitive
-/Accueil.dc     /accueil     301
+# Anciennes adresses -> nouvelles (SEO). Aucune réécriture "200" :
+# les pages sont de vrais fichiers, Cloudflare Pages les sert nativement
+# (portfolio.html est servi à l'adresse /portfolio).
+/accueil        /            301
+/Accueil.dc     /            301
 /Portfolio.dc   /portfolio   301
 /Galerie.dc     /galerie     301
 /Client.dc      /client      301
