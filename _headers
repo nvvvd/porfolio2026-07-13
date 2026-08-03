@@ -1,4 +1,4 @@
-# En-têtes Cloudflare Pages — cache agressif (réduit la bande passante) + sécurité.
+# En-têtes Cloudflare Pages — cache + sécurité.
 
 /*
   X-Content-Type-Options: nosniff
@@ -7,17 +7,20 @@
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
 
-# Images : ne changent jamais de contenu à nom égal -> cache 1 an.
+# Images : contenu figé à nom égal -> cache 1 an.
 /images/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Scripts du site : cache 7 jours (revalidation rapide après un déploiement).
+# Scripts : cache 1 an SANS revalidation. Sûr parce que chaque page appelle ses
+# scripts avec un jeton de version (nv-storage.js?v=…) : l'adresse change à chaque
+# modification, donc aucune version périmée ne peut être resservie.
+# /! Toute modification d'un .js exige de changer ce jeton dans toutes les pages.
 /*.js
-  Cache-Control: public, max-age=604800
+  Cache-Control: public, max-age=31536000, immutable
 
 /favicon.svg
   Cache-Control: public, max-age=2592000
 
-# Pages : revalidées à chaque visite mais servies depuis le cache si inchangées.
+# Pages : revalidées à chaque visite (elles portent les jetons de version).
 /*.html
   Cache-Control: public, max-age=0, must-revalidate
