@@ -41,6 +41,16 @@ window.NV_CONFIG = {
     // Jeton envoyé en en-tête X-Upload-Token (doit correspondre au secret
     // UPLOAD_TOKEN du worker). Évite que des inconnus remplissent le bucket.
     uploadToken: '61d97d51-7ffb-495d-9972-348858660126-005d0cfe-c2ce-4c37-b57f-fa0ede74cc41',
+
+    /* Domaine personnalisé du bucket R2 (ex. 'https://images.nicolasvivaudou.com').
+       À RENSEIGNER après l'avoir branché : R2 → votre bucket → Settings →
+       Custom Domains → Connect Domain.
+       Pourquoi : l'URL publique pub-*.r2.dev n'accepte AUCUNE règle CORS (le site
+       ne peut donc pas relire ses images pour en fabriquer les vignettes) et n'est
+       pas servie par le cache Cloudflare. Un domaine à vous corrige les deux.
+       Les URLs déjà enregistrées en base restent valides : le domaine est substitué
+       à l'affichage. Laisser vide = comportement actuel (pub-*.r2.dev). */
+    publicBase: '',
   },
 
   /* Temps réel : DÉSACTIVÉ pour économiser la bande passante (chaque visiteur

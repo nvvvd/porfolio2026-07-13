@@ -17,6 +17,27 @@
 
   function cfg() { return (window.NV_CONFIG && window.NV_CONFIG.storage) || {}; }
 
+  /* Adresse utilisable pour RELIRE une image (fabrication des vignettes).
+     Les URLs publiques pub-*.r2.dev n'acceptent aucune règle CORS : la lecture
+     directe est refusée par le navigateur. Deux chemins, dans l'ordre :
+       1. domaine personnalisé du bucket (storage.publicBase) — respecte le CORS ;
+       2. relais /read du worker, tant qu'aucun domaine n'est branché. */
+  function readableUrl(src) {
+    var c = cfg();
+    var pb = String(c.publicBase || '').replace(/\/+$/, '');
+    if (pb && String(src || '').indexOf(pb) === 0) return src;
+    if (pb && /^https?:\/\/[^/]*\.r2\.dev\//i.test(String(src || ''))) {
+      try { return pb + new URL(src).pathname; } catch (e) {}
+    }
+    var ep = String(c.uploadEndpoint || '').replace(/\/+$/, '');
+    if (!ep || !/^https?:\/\//i.test(String(src || ''))) return src;
+    var key;
+    try { key = decodeURIComponent(new URL(src).pathname.replace(/^\/+/, '')); }
+    catch (e) { return src; }
+    if (!key) return src;
+    return ep + '/read?key=' + encodeURIComponent(key);
+  }
+
   function dataURLToBlob(dataURL) {
     var parts = String(dataURL).split(',');
     var mime = (parts[0].match(/:(.*?);/) || [null, 'image/jpeg'])[1];
@@ -135,6 +156,10 @@
          await NVStorage.buildThumbs();                   // réel
        Idempotent (saute les photos ayant déjà un thumb). Renvoie {found,done,failed}.
        ------------------------------------------------------------------------ */
+    // Adresse de relecture d'une image (voir readableUrl) — utilisée aussi par l'admin
+    // pour tester l'accès avant de lancer la génération des vignettes.
+    readUrl: function (src) { return readableUrl(src); },
+
     buildThumbs: function (opts) {
       opts = opts || {};
       var self = this;
@@ -149,19 +174,6 @@
       var report = function () { if (typeof opts.onProgress === 'function') { try { opts.onProgress(result.done, result.found, result.failed); } catch (e) {} } };
       if (opts.dryRun) { console.log('NVStorage.buildThumbs (simulation) :', result.found, 'photo(s) sans vignette.'); return Promise.resolve(result); }
       report();
-      /* Les URLs publiques (pub-*.r2.dev notamment) n'envoient aucun en-tête CORS :
-         la lecture directe est refusée par le navigateur. On passe donc par le relais
-         /read du worker pour TOUTE image distante, la clé étant le chemin de l'URL.
-         Sans worker configuré, on tente l'URL brute. */
-      function readableUrl(src) {
-        var ep = String(cfg().uploadEndpoint || '').replace(/\/+$/, '');
-        if (!ep || !/^https?:\/\//i.test(String(src || ''))) return src;
-        var key;
-        try { key = decodeURIComponent(new URL(src).pathname.replace(/^\/+/, '')); }
-        catch (e) { return src; }
-        if (!key) return src;
-        return ep + '/read?key=' + encodeURIComponent(key);
-      }
       var i = 0;
       function next() {
         if (i >= ids.length) { window.NVStore.save(); console.log('NVStorage.buildThumbs terminé :', result); return result; }

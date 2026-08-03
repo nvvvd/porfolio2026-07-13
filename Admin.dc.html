@@ -645,17 +645,20 @@ class Component extends DCLogic {
      un échec ici a toujours une cause précise (worker pas redéployé, origine non
      autorisée, clé introuvable) et le message doit la nommer. */
   probeRelay() {
-    const c = (window.NV_CONFIG && window.NV_CONFIG.storage) || {};
-    const ep = String(c.uploadEndpoint || '').replace(/\/+$/, '');
+    const S = window.NVStorage;
     const s = window.NVStore.get();
     const p = Object.values(s.photos || {}).find(x => x && !x.thumb && /^https?:\/\//i.test(x.src || ''));
-    if (!ep || !p) return Promise.resolve(null);
-    let key;
-    try { key = decodeURIComponent(new URL(p.src).pathname.replace(/^\/+/, '')); } catch (e) { return Promise.resolve(null); }
-    return fetch(ep + '/read?key=' + encodeURIComponent(key), { cache: 'reload' })
-      .then((r) => r.ok ? null : r.text().then((t) => 'Le relais du worker répond ' + r.status + ' « ' + t.slice(0, 140) + ' ». Clé demandée : ' + key + '.'))
-      .catch((e) => 'Relais du worker injoignable : ' + (e && e.message ? e.message : e)
-        + '. Le worker est-il redéployé avec la route /read ? (adresse testée : ' + ep + '/read)');
+    if (!p || !S || !S.readUrl) return Promise.resolve(null);
+    const url = S.readUrl(p.src);
+    if (url === p.src) {
+      return Promise.resolve('Aucun chemin de relecture configuré : les images sont sur '
+        + (function () { try { return new URL(p.src).host; } catch (e) { return '?'; } })()
+        + ', qui refuse la lecture. Branchez un domaine personnalisé sur le bucket R2, puis renseignez storage.publicBase dans nv-config.js.');
+    }
+    return fetch(url, { cache: 'reload' })
+      .then((r) => r.ok ? null : r.text().then((t) => 'La lecture des images répond ' + r.status + ' « ' + t.slice(0, 140) + ' ». Adresse testée : ' + url))
+      .catch((e) => 'Lecture des images impossible : ' + (e && e.message ? e.message : e)
+        + '. Adresse testée : ' + url);
   }
 
   // Génère les vignettes 640px manquantes (photos mises en ligne avant la fonction).

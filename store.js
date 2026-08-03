@@ -298,12 +298,20 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
       var c = this.client(clientId); if (!c) return [];
       return c.galleryIds.map(function (id) { return state.galleries.find(function (g) { return g.id === id; }); }).filter(Boolean);
     },
+    /* Substitue le domaine personnalisé du bucket (storage.publicBase) aux URLs
+       pub-*.r2.dev déjà enregistrées en base : rien à migrer, et on gagne le cache
+       Cloudflare + la prise en charge des règles CORS (impossée sur r2.dev). */
+    cdn: function (url) {
+      var pb = (window.NV_CONFIG && window.NV_CONFIG.storage && window.NV_CONFIG.storage.publicBase) || '';
+      if (!pb || !/^https?:\/\/[^/]*\.r2\.dev\//i.test(url)) return url;
+      try { return pb.replace(/\/+$/, '') + new URL(url).pathname; } catch (e) { return url; }
+    },
     resolveSrc: function (p) {
       if (!p) return '';
       var src = (typeof p === 'string') ? p : (p.src || (p.file ? 'images/' + p.file : ''));
       if (!src) return '';
-      // URL absolue / data: / blob: -> telle quelle.
-      if (/^(https?:|data:|blob:)/i.test(src)) return src;
+      // URL absolue / data: / blob: -> telle quelle (domaine personnalisé substitué si défini).
+      if (/^(https?:|data:|blob:)/i.test(src)) return this.cdn(src);
       // Chemin court (ex. "mariage/img.jpg") -> préfixe le stockage externe si défini.
       var base = (window.NV_CONFIG && window.NV_CONFIG.storage && window.NV_CONFIG.storage.baseUrl) || '';
       if (base) return base.replace(/\/+$/, '') + '/' + src.replace(/^\/+/, '');
@@ -312,7 +320,7 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
     // Vignette légère pour les grilles (retombe sur la pleine taille si absente).
     resolveThumb: function (p) {
       if (p && typeof p === 'object' && p.thumb) {
-        if (/^(https?:|data:|blob:)/i.test(p.thumb)) return p.thumb;
+        if (/^(https?:|data:|blob:)/i.test(p.thumb)) return this.cdn(p.thumb);
         var base = (window.NV_CONFIG && window.NV_CONFIG.storage && window.NV_CONFIG.storage.baseUrl) || '';
         if (base) return base.replace(/\/+$/, '') + '/' + p.thumb.replace(/^\/+/, '');
         return p.thumb;
