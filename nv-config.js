@@ -40,7 +40,7 @@ window.NV_CONFIG = {
 
     // Jeton envoyé en en-tête X-Upload-Token (doit correspondre au secret
     // UPLOAD_TOKEN du worker). Évite que des inconnus remplissent le bucket.
-    uploadToken: '61d97d51-7ffb-495d-9972-348858660126-005d0cfe-c2ce-4c37-b57f-fa0ede74cc41',
+    uploadToken: 'dApfus-dixcuz-wopca8',
   },
 
   /* Temps réel : DÉSACTIVÉ pour économiser la bande passante (chaque visiteur
