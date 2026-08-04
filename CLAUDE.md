@@ -19,7 +19,7 @@ Toujours indiquer à la fin de la réponse **la liste exacte des fichiers à red
   (Cloudflare Pages retire le `.html` et cela crée une boucle de redirection infinie).
 
 ## Cache des scripts (ne pas oublier)
-Les pages appellent leurs scripts avec un jeton de version : `nv-storage.js?v=20260803c`.
+Les pages appellent leurs scripts avec un jeton de version : `nv-storage.js?v=20260803d`.
 Les `.js` sont servis avec un cache d'un an (`immutable`) : **toute modification d'un
 fichier `.js` exige de changer ce jeton dans TOUTES les pages** (sources `.dc.html`,
 pages propres `.html` et `404.html`), sinon les visiteurs continuent d'exécuter

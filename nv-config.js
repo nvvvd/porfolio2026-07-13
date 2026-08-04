@@ -51,6 +51,17 @@ window.NV_CONFIG = {
        Les URLs déjà enregistrées en base restent valides : le domaine est substitué
        à l'affichage. Laisser vide = comportement actuel (pub-*.r2.dev). */
     publicBase: 'https://images.nicolasvivaudou.com',
+
+    /* Redimensionnement à la volée (Cloudflare Images → Transformations).
+       Zone qui exécute la transformation, SANS slash final. Les photos restent
+       stockées en une seule version : Cloudflare fabrique l'édition 640 px des
+       grilles à la demande et la garde en cache.
+       À activer une fois dans le tableau de bord : Cloudflare → (zone
+       nicolasvivaudou.com) → Images → Transformations → activer pour la zone.
+       Gratuit jusqu'à 5 000 transformations uniques par mois ; les images déjà
+       transformées sont resservies depuis le cache sans être recomptées.
+       Vide = les grilles chargent la photo pleine taille (comportement d'avant). */
+    resizeBase: 'https://nicolasvivaudou.com/cdn-cgi/image',
   },
 
   /* Temps réel : DÉSACTIVÉ pour économiser la bande passante (chaque visiteur

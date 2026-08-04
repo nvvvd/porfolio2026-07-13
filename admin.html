@@ -6,7 +6,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <title>Administration — Nicolas Vivaudou</title>
 <meta name="robots" content="noindex, nofollow">
-<script src="./support.js?v=20260803c"></script>
+<script src="./support.js?v=20260803d"></script>
 </head>
 <body>
 <x-dc>
@@ -14,11 +14,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onLoad="this.media='all'">
-<script src="nv-config.js?v=20260803c"></script>
-<script src="nv-storage.js?v=20260803c"></script>
-<script src="nv-backend.js?v=20260803c"></script>
-<script src="nv-auth.js?v=20260803c"></script>
-<script src="store.js?v=20260803c"></script>
+<script src="nv-config.js?v=20260803d"></script>
+<script src="nv-storage.js?v=20260803d"></script>
+<script src="nv-backend.js?v=20260803d"></script>
+<script src="nv-auth.js?v=20260803d"></script>
+<script src="store.js?v=20260803d"></script>
 <style>
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -449,9 +449,11 @@
 
         <section style="{{ card }};margin-top:16px;max-width:520px;">
           <div style="{{ cardTitle }}">Performance des images</div>
-          <p style="font-size:13px;color:#5A5A5A;line-height:1.55;margin:0 0 14px;">Les grilles de galerie utilisent une vignette légère (640 px) au lieu de la photo entière. Les photos mises en ligne avant cette fonction n'en ont pas : leurs grilles chargent l'image complète, ce qui ralentit le site.</p>
+          <p style="font-size:13px;color:#5A5A5A;line-height:1.55;margin:0 0 14px;">Les grilles de galerie affichent une version 640 px des photos. Elle est fabriquée à la demande par Cloudflare et gardée en cache : rien à générer, et cela vaut pour toutes les photos, y compris les plus anciennes.</p>
           <div style="font-size:13px;color:#111;margin-bottom:12px;">{{ thumbCountLabel }}</div>
-          <button onClick="{{ runThumbs }}" style="{{ thumbBtn }}">{{ thumbBtnLabel }}</button>
+          <sc-if value="{{ thumbFallback }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ runThumbs }}" style="{{ thumbBtn }}">{{ thumbBtnLabel }}</button>
+          </sc-if>
           <sc-if value="{{ thumbBusy }}">
             <div style="height:5px;background:#EFEFEF;border-radius:99px;overflow:hidden;margin-top:14px;"><div style="height:100%;width:{{ thumbPct }};background:#F2C13C;transition:width .25s;"></div></div>
           </sc-if>
@@ -1152,7 +1154,10 @@ class Component extends DCLogic {
       hasMessages: messageList.length > 0, noMessages: messageList.length === 0, messageList,
 
       f_likeLimit: s.settings.likeLimit, s_likeLimit: onInput((st, v) => st.settings.likeLimit = parseInt(v) || 0),
+      thumbFallback: !((window.NV_CONFIG && window.NV_CONFIG.storage && window.NV_CONFIG.storage.resizeBase) || ''),
       thumbCountLabel: (function () {
+        const rb = (window.NV_CONFIG && window.NV_CONFIG.storage && window.NV_CONFIG.storage.resizeBase) || '';
+        if (rb) return 'Redimensionnement automatique actif ✓';
         const miss = Object.values(s.photos || {}).filter(p => p && !p.thumb && /^https?:\/\//i.test(p.src || '')).length;
         return miss ? (miss + ' photo(s) sans vignette') : 'Toutes les photos ont leur vignette ✓';
       })(),

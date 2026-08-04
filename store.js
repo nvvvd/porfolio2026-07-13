@@ -317,6 +317,17 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
       if (base) return base.replace(/\/+$/, '') + '/' + src.replace(/^\/+/, '');
       return src;
     },
+    /* Redimensionnement à la volée par Cloudflare (Images → Transformations).
+       Une seule photo est stockée ; l'édition 640 px est fabriquée et mise en cache
+       par le réseau Cloudflare à la première demande. Aucune vignette à générer,
+       aucune lecture navigateur, aucun CORS. Vide = comportement d'avant. */
+    resize: function (url, width) {
+      var c = (window.NV_CONFIG && window.NV_CONFIG.storage) || {};
+      var rb = String(c.resizeBase || '').replace(/\/+$/, '');
+      if (!rb || !/^https?:\/\//i.test(url)) return url;
+      if (url.indexOf('/cdn-cgi/image/') !== -1) return url;
+      return rb + '/width=' + (width || 640) + ',quality=78,format=auto/' + url;
+    },
     // Vignette légère pour les grilles (retombe sur la pleine taille si absente).
     resolveThumb: function (p) {
       if (p && typeof p === 'object' && p.thumb) {
@@ -325,7 +336,7 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
         if (base) return base.replace(/\/+$/, '') + '/' + p.thumb.replace(/^\/+/, '');
         return p.thumb;
       }
-      return this.resolveSrc(p);
+      return this.resize(this.resolveSrc(p), 640);
     }
   };
   window.NVStore = NVStore;
