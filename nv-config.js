@@ -50,7 +50,7 @@ window.NV_CONFIG = {
        pas servie par le cache Cloudflare. Un domaine à vous corrige les deux.
        Les URLs déjà enregistrées en base restent valides : le domaine est substitué
        à l'affichage. Laisser vide = comportement actuel (pub-*.r2.dev). */
-    publicBase: '',
+    publicBase: 'https://images.nicolasvivaudou.com',
   },
 
   /* Temps réel : DÉSACTIVÉ pour économiser la bande passante (chaque visiteur
