@@ -203,6 +203,18 @@
               </sc-for>
               <label style="{{ uploadBtn }}"><input type="file" accept="image/*" onChange="{{ onBackstageAdd }}" style="display:none;" />Ajouter</label>
             </div>
+
+            <label class="nvlabel" style="margin-top:18px;">Logos « Ils m’ont fait confiance » (page contact)</label>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+              <sc-for list="{{ logosAdmin }}" as="lg" hint-placeholder-count="0">
+                <div title="{{ lg.name }}" style="position:relative;width:76px;height:56px;border-radius:2px;overflow:hidden;background:#F4F4F4;display:flex;align-items:center;justify-content:center;padding:7px;">
+                  {{ lg.img }}
+                  <button onClick="{{ lg.rename }}" title="Renommer" style="position:absolute;left:2px;bottom:2px;border:none;border-radius:2px;background:rgba(17,17,17,.6);color:#fff;font-size:10px;padding:2px 5px;cursor:pointer;font-family:inherit;">nom</button>
+                  <button onClick="{{ lg.remove }}" title="Retirer" style="position:absolute;top:2px;right:2px;width:20px;height:20px;border:none;border-radius:999px;background:rgba(17,17,17,.65);color:#fff;font-size:12px;line-height:1;cursor:pointer;">×</button>
+                </div>
+              </sc-for>
+              <label style="{{ uploadBtn }}"><input type="file" accept="image/*" onChange="{{ onLogoAdd }}" style="display:none;" />Ajouter</label>
+            </div>
           </section>
 
           <section style="{{ card }}">
@@ -578,7 +590,11 @@ class Component extends DCLogic {
     const { url } = await this.downscale(file, max, 0.85);
     let finalUrl = url;
     try { finalUrl = await window.NVStorage.upload(url, file.name); }
-    catch (e) { console.warn('Upload distant échoué, conservation locale.', e); }
+    catch (e) {
+      console.warn('Téléversement échoué.', e);
+      alert('Téléversement impossible : le fichier n\'a pas pu être envoyé vers le stockage. Rien n\'a été enregistré.');
+      return;
+    }
     window.NVStore.update(apply.bind(null, finalUrl));
   }
 
@@ -804,6 +820,45 @@ class Component extends DCLogic {
         f_heroCtaEn: s.hero.ctaEn || '', s_heroCtaEn: onInput((st, v) => st.hero.ctaEn = v),
         f_heroCapEn: s.hero.captionEn || '', s_heroCapEn: onInput((st, v) => st.hero.captionEn = v),
       f_homeMeta: s.home.metaLabel, s_homeMeta: onInput((st, v) => st.home.metaLabel = v),
+      // Logos « Ils m'ont fait confiance » : liste stockée dans contact.logos.
+      logosAdmin: ((s.contact.logos && s.contact.logos.length) ? s.contact.logos : [
+          { src: 'images/logo-montreal-rugby.png', name: 'Montréal Rugby' },
+          { src: 'images/logo-la-cremerie.jpg', name: 'La Crèmerie — BMX Store' },
+          { src: 'images/logo-art-bmx.png', name: 'A.R.T. BMX Magazine' },
+          { src: 'images/logo-montreal-2026.jpg', name: 'Montréal 2026' }
+        ]).map((lg, i) => ({
+        name: lg.name || '',
+        img: React.createElement('img', { src: window.NVStore.resolveSrc(lg.src), alt: lg.name || '', style: { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' } }),
+        rename: () => {
+          const v = window.prompt('Nom affiché au survol :', lg.name || '');
+          if (v === null) return;
+          this.upd((st) => { const l = (st.contact.logos && st.contact.logos.length) ? st.contact.logos : (st.contact.logos = [
+          { src: 'images/logo-montreal-rugby.png', name: 'Montréal Rugby' },
+          { src: 'images/logo-la-cremerie.jpg', name: 'La Crèmerie — BMX Store' },
+          { src: 'images/logo-art-bmx.png', name: 'A.R.T. BMX Magazine' },
+          { src: 'images/logo-montreal-2026.jpg', name: 'Montréal 2026' }
+        ]); l[i].name = v.trim(); });
+        },
+        remove: () => this.upd((st) => { const l = (st.contact.logos && st.contact.logos.length) ? st.contact.logos : (st.contact.logos = [
+          { src: 'images/logo-montreal-rugby.png', name: 'Montréal Rugby' },
+          { src: 'images/logo-la-cremerie.jpg', name: 'La Crèmerie — BMX Store' },
+          { src: 'images/logo-art-bmx.png', name: 'A.R.T. BMX Magazine' },
+          { src: 'images/logo-montreal-2026.jpg', name: 'Montréal 2026' }
+        ]); l.splice(i, 1); })
+      })),
+      onLogoAdd: (e) => {
+        const f = e.target.files[0]; e.target.value = '';
+        if (!f) return;
+        this.setImageField(f, (url, st) => {
+          if (!(st.contact.logos && st.contact.logos.length)) st.contact.logos = [
+          { src: 'images/logo-montreal-rugby.png', name: 'Montréal Rugby' },
+          { src: 'images/logo-la-cremerie.jpg', name: 'La Crèmerie — BMX Store' },
+          { src: 'images/logo-art-bmx.png', name: 'A.R.T. BMX Magazine' },
+          { src: 'images/logo-montreal-2026.jpg', name: 'Montréal 2026' }
+        ];
+          st.contact.logos.push({ src: url, name: f.name.replace(/\.[a-z0-9]+$/i, '') });
+        });
+      },
       aboutPhotoImg: React.createElement('img', { src: window.NVStore.resolveSrc(s.about.photo), alt: 'portrait', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }),
       onAbout: (e) => { const f = e.target.files[0]; if (f) this.setImageField(f, (url, st) => st.about.photo = url); },
       backstageAdmin: (s.about.backstage || []).map((p, i) => ({ img: React.createElement('img', { src: window.NVStore.resolveSrc(p), alt: 'coulisses', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }), remove: () => this.upd((st) => { (st.about.backstage = st.about.backstage || []).splice(i, 1); }) })),
