@@ -19,7 +19,7 @@
 <meta name="twitter:title" content="Galeries — Nicolas Vivaudou, photographe & vidéaste">
 <meta name="twitter:description" content="Les séries de Nicolas Vivaudou : portrait, paysage, évènements, sport et carnet personnel.">
 <meta name="twitter:image" content="https://www.nicolasvivaudou.com/images/L1190335.jpg">
-<script src="support.js?v=20260804a"></script>
+<script src="support.js?v=20260804b"></script>
 </head>
 <body>
 <x-dc>
@@ -27,13 +27,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&amp;display=swap" rel="stylesheet" media="print" onLoad="this.media='all'">
-<script src="nv-theme.js?v=20260804a"></script>
-<script src="nv-config.js?v=20260804a"></script>
-<script src="nv-i18n.js?v=20260804a"></script>
-<script src="nv-backend.js?v=20260804a"></script>
-<script src="nv-auth.js?v=20260804a"></script>
-<script src="store.js?v=20260804a"></script>
-<script src="nv-ux.js?v=20260804a" defer></script>
+<script src="nv-theme.js?v=20260804b"></script>
+<script src="nv-config.js?v=20260804b"></script>
+<script src="nv-i18n.js?v=20260804b"></script>
+<script src="nv-backend.js?v=20260804b"></script>
+<script src="nv-auth.js?v=20260804b"></script>
+<script src="store.js?v=20260804b"></script>
+<script src="nv-ux.js?v=20260804b" defer></script>
 <style>
   :root{--bg:#FFFFFF;--bg-2:#FAFAFA;--ink:#111111;--ink-2:#4A4A4A;--muted:#767171;--faint:#B0AAA2;--line:#E6E6E6;--ph:#EEEEEE;--accent:#F2C13C;--on-accent:#161310;--error:#C0392B;}
   [data-theme="dark"]{--bg:#100F0D;--bg-2:#1A1815;--ink:#F1EDE6;--ink-2:#B4AEA3;--muted:#86817A;--faint:#4C4840;--line:#2A2723;--ph:#1E1B17;--accent:#F2C13C;--on-accent:#161310;--error:#E8746A;color-scheme:dark;}
@@ -171,8 +171,14 @@ class Component extends DCLogic {
     let galleries = pub.map((g, i) => ({
       colSpan: (i >= _full && (_n - _full)) ? _lastSpan : _normalSpan,
       spanStyle: mobile ? '' : ('grid-column:span ' + ((i >= _full && (_n - _full)) ? _lastSpan : _normalSpan) + ';'),
-      name: L(g.name, g.nameEn), desc: L(g.desc, g.descEn), num: ('0' + (i + 1)).slice(-2), count: g.photoIds.length,
-      cover: window.NVStore.resolveThumb(s.photos[g.coverId || g.photoIds[0]]), href: '/galerie/' + g.slug
+      name: L(g.name, g.nameEn), desc: L(g.desc, g.descEn), num: ('0' + (i + 1)).slice(-2),
+      count: g.photoIds.filter(pid => s.photos[pid] && window.NVStore.resolveSrc(s.photos[pid])).length,
+      // Couverture : la photo désignée si son fichier existe, sinon la première photo affichable.
+      cover: (function () {
+        const cv = s.photos[g.coverId];
+        const pick = (cv && window.NVStore.resolveSrc(cv)) ? cv : g.photoIds.map(pid => s.photos[pid]).find(p => p && window.NVStore.resolveSrc(p));
+        return pick ? window.NVStore.resolveThumb(pick) : 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+      })(), href: '/galerie/' + g.slug
     }));
     if (sort === 'az') galleries.sort((a, b) => a.name.localeCompare(b.name, ui.lang === 'en' ? 'en' : 'fr'));
     else if (sort === 'count') galleries.sort((a, b) => b.count - a.count);

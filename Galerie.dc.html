@@ -19,7 +19,7 @@
 <meta name="twitter:title" content="Galerie — Nicolas Vivaudou">
 <meta name="twitter:description" content="Parcourez les séries photographiques de Nicolas Vivaudou — portrait, paysage, évènements et sport.">
 <meta name="twitter:image" content="https://www.nicolasvivaudou.com/images/L1190335.jpg">
-<script src="support.js?v=20260804a"></script>
+<script src="support.js?v=20260804b"></script>
 </head>
 <body>
 <x-dc>
@@ -27,13 +27,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onLoad="this.media='all'">
-<script src="nv-theme.js?v=20260804a"></script>
-<script src="nv-config.js?v=20260804a"></script>
-<script src="nv-i18n.js?v=20260804a"></script>
-<script src="nv-backend.js?v=20260804a"></script>
-<script src="nv-auth.js?v=20260804a"></script>
-<script src="store.js?v=20260804a"></script>
-<script src="nv-ux.js?v=20260804a" defer></script>
+<script src="nv-theme.js?v=20260804b"></script>
+<script src="nv-config.js?v=20260804b"></script>
+<script src="nv-i18n.js?v=20260804b"></script>
+<script src="nv-backend.js?v=20260804b"></script>
+<script src="nv-auth.js?v=20260804b"></script>
+<script src="store.js?v=20260804b"></script>
+<script src="nv-ux.js?v=20260804b" defer></script>
 <style>
   :root{--bg:#FFFFFF;--bg-2:#FAFAFA;--ink:#111111;--ink-2:#4A4A4A;--muted:#767171;--faint:#B0AAA2;--line:#E6E6E6;--ph:#EEEEEE;--accent:#F2C13C;--on-accent:#161310;--error:#C0392B;}
   [data-theme="dark"]{--bg:#100F0D;--bg-2:#1A1815;--ink:#F1EDE6;--ink-2:#B4AEA3;--muted:#86817A;--faint:#4C4840;--line:#2A2723;--ph:#1E1B17;--accent:#F2C13C;--on-accent:#161310;--error:#E8746A;color-scheme:dark;}
@@ -252,7 +252,7 @@ class Component extends DCLogic {
     const tabBase = 'display:block;width:100%;text-align:left;border:none;background:none;padding:11px 18px;cursor:pointer;font-family:inherit;font-size:16px;white-space:nowrap;letter-spacing:-.02em;transition:color .15s,background .15s;';
     const tabs = pub.map(x => ({ label: L(x.name, x.nameEn), pick: () => { this.setState({ galPick: false, fade: true }); clearTimeout(this._fadeT); this._fadeT = setTimeout(() => { this.setState({ slug: x.slug, lb: -1, fade: false }); try { history.replaceState(null, '', '#' + x.slug); } catch (e) {} }, 220); }, style: tabBase + (g && x.slug === g.slug ? 'color:var(--ink);border-left:2px solid var(--accent);padding-left:16px;' : 'color:var(--muted);border-left:2px solid transparent;padding-left:16px;') }));
     tabs.forEach((t, i) => { const orig = t.pick; t.pick = () => { orig(); const gs = pub[i]; if (gs) { try { history.replaceState(null, '', this.routeUrl(gs.slug, -1)); } catch (e) {} } }; });
-    const photoObjs = g ? g.photoIds.map(pid => s.photos[pid]).filter(Boolean) : [];
+    const photoObjs = g ? g.photoIds.map(pid => s.photos[pid]).filter(p => p && window.NVStore.resolveSrc(p)) : [];
     const photoSrcs = photoObjs.map(p => window.NVStore.resolveSrc(p));
     const gName = g ? L(g.name, g.nameEn) : '';
     const photos = photoObjs.map((p, i) => ({ img: React.createElement('img', { src: window.NVStore.resolveThumb(p), alt: (p.alt || (gName + ' — photo ' + (i + 1))), loading: 'lazy', decoding: 'async', fetchPriority: 'low', style: { width: '100%', display: 'block' } }), open: () => { this.setState({ lb: i }); this.writeHash(i, false); this.preload(i); } }));

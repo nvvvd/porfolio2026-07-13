@@ -6,7 +6,7 @@
 <link rel="icon" type="image/svg+xml" href="/favicon.svg">
 <title>Administration — Nicolas Vivaudou</title>
 <meta name="robots" content="noindex, nofollow">
-<script src="/support.js?v=20260804a"></script>
+<script src="/support.js?v=20260804b"></script>
 </head>
 <body>
 <x-dc>
@@ -14,11 +14,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onLoad="this.media='all'">
-<script src="/nv-config.js?v=20260804a"></script>
-<script src="/nv-storage.js?v=20260804a"></script>
-<script src="/nv-backend.js?v=20260804a"></script>
-<script src="/nv-auth.js?v=20260804a"></script>
-<script src="/store.js?v=20260804a"></script>
+<script src="/nv-config.js?v=20260804b"></script>
+<script src="/nv-storage.js?v=20260804b"></script>
+<script src="/nv-backend.js?v=20260804b"></script>
+<script src="/nv-auth.js?v=20260804b"></script>
+<script src="/store.js?v=20260804b"></script>
 <style>
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -454,6 +454,13 @@
           <sc-if value="{{ thumbFallback }}" hint-placeholder-val="{{ false }}">
             <button onClick="{{ runThumbs }}" style="{{ thumbBtn }}">{{ thumbBtnLabel }}</button>
           </sc-if>
+          <sc-if value="{{ ghostCount }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:16px;padding-top:14px;border-top:1px solid #EEE;">
+              <div style="font-size:13px;color:#111;margin-bottom:6px;">{{ ghostLabel }}</div>
+              <p style="font-size:12px;color:#5A5A5A;line-height:1.55;margin:0 0 10px;">Leur téléversement a échoué : aucun fichier n'est associé, elles n'affichent rien sur le site. À supprimer, puis à renvoyer depuis la galerie concernée.</p>
+              <button onClick="{{ removeGhosts }}" style="{{ thumbBtn }}">Supprimer ces lignes</button>
+            </div>
+          </sc-if>
           <sc-if value="{{ thumbBusy }}">
             <div style="height:5px;background:#EFEFEF;border-radius:99px;overflow:hidden;margin-top:14px;"><div style="height:100%;width:{{ thumbPct }};background:#F2C13C;transition:width .25s;"></div></div>
           </sc-if>
@@ -597,7 +604,7 @@ class Component extends DCLogic {
         if (window.NVStorage && window.NVStorage.enabled()) {
           this.setState({ scanMsg: label + ' — téléversement…' });
           try { const up = await withTimeout(window.NVStorage.uploadWithThumb(url, files[i].name), 90000, 'upload'); src = up.url; thumb = up.thumb || ''; }
-          catch (e) { console.warn('Upload distant échoué, conservation locale.', e); src = url; }
+          catch (e) { console.warn('Téléversement échoué, photo ignorée.', files[i] && files[i].name, e); failed++; continue; }
         }
         window.NVStore.update((s) => {
           const id = window.NVStore.uid('ph');
@@ -1154,6 +1161,26 @@ class Component extends DCLogic {
       hasMessages: messageList.length > 0, noMessages: messageList.length === 0, messageList,
 
       f_likeLimit: s.settings.likeLimit, s_likeLimit: onInput((st, v) => st.settings.likeLimit = parseInt(v) || 0),
+      ghostCount: Object.values(s.photos || {}).filter(p => p && !p.src && !p.file).length,
+      ghostLabel: (function () {
+        const n = Object.values(s.photos || {}).filter(p => p && !p.src && !p.file).length;
+        return n + ' photo(s) sans fichier';
+      })(),
+      removeGhosts: () => {
+        const st = window.NVStore.get();
+        const dead = Object.keys(st.photos || {}).filter(id => { const p = st.photos[id]; return p && !p.src && !p.file; });
+        if (!dead.length) return;
+        if (!confirm('Supprimer définitivement ' + dead.length + ' photo(s) sans fichier ?')) return;
+        window.NVStore.update((s2) => {
+          dead.forEach(id => { delete s2.photos[id]; });
+          s2.galleries.forEach(g => {
+            g.photoIds = g.photoIds.filter(x => dead.indexOf(x) === -1);
+            if (g.coverId && dead.indexOf(g.coverId) !== -1) g.coverId = g.photoIds[0] || null;
+          });
+          (s2.clients || []).forEach(c => { if (c.likes) dead.forEach(id => { delete c.likes[id]; }); });
+        });
+        window.NVStore.save();
+      },
       thumbFallback: !((window.NV_CONFIG && window.NV_CONFIG.storage && window.NV_CONFIG.storage.resizeBase) || ''),
       thumbCountLabel: (function () {
         const rb = (window.NV_CONFIG && window.NV_CONFIG.storage && window.NV_CONFIG.storage.resizeBase) || '';

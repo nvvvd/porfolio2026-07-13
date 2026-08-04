@@ -36,7 +36,7 @@ recopié, réécrire les chemins des scripts et de `favicon.svg` en absolu.
 Assets concernés : `support.js`, `doc-page.js`, `nv-*.js`, `store.js`, `favicon.svg`.
 
 ## Cache des scripts (ne pas oublier)
-Les pages appellent leurs scripts avec un jeton de version : `nv-storage.js?v=20260804a`.
+Les pages appellent leurs scripts avec un jeton de version : `nv-storage.js?v=20260804b`.
 Les `.js` sont servis avec un cache d'un an (`immutable`) : **toute modification d'un
 fichier `.js` exige de changer ce jeton dans TOUTES les pages** (sources `.dc.html`,
 pages propres `.html` et `404.html`), sinon les visiteurs continuent d'exécuter

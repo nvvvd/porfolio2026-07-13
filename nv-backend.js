@@ -259,7 +259,12 @@
 
         // -- photos (map id->photo) --
         var pd = diff(prev.photos || {}, state.photos || {});
-        if (pd.upserts.length) ops.push(db.from('photos').upsert(pd.upserts.map(MAP.photos.toRow)));
+        /* GARDE-FOU : ne JAMAIS écrire une photo sans fichier. Le cache local est
+           allégé quand le quota du navigateur est atteint (slimForLocal retire les
+           images base64) ; pousser cet état effacerait la colonne src en base et
+           les photos disparaîtraient du site. La base reste la source de vérité. */
+        var pUps = pd.upserts.filter(function (p) { return !!(p && (p.src || p.file)); });
+        if (pUps.length) ops.push(db.from('photos').upsert(pUps.map(MAP.photos.toRow)));
         if (pd.deletes.length) ops.push(db.from('photos').delete().in('id', pd.deletes));
 
         // -- clients (mot de passe traité à part, via RPC serveur) --
