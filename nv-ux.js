@@ -178,6 +178,20 @@
     document.addEventListener('error', function (e) {
       var t = e.target;
       if (!t || t.tagName !== 'IMG') return;
+      /* Une URL de redimensionnement (/cdn-cgi/image/...) peut échouer sans que
+         la photo soit perdue : transformations désactivées, quota du mois atteint,
+         paramètre refusé. On retente alors l'original UNE fois avant de masquer. */
+      var s = t.getAttribute('src') || '';
+      var cut = s.indexOf('/cdn-cgi/image/');
+      if (cut !== -1 && !t.hasAttribute('data-nv-orig')) {
+        var m = s.slice(cut).match(/^\/cdn-cgi\/image\/[^/]+\/(.+)$/);
+        if (m && m[1]) {
+          t.setAttribute('data-nv-orig', '1');
+          t.style.visibility = '';
+          t.src = m[1];
+          return;
+        }
+      }
       t.style.visibility = 'hidden';
       // Dans une grille de galerie client, on efface la cellule entière (pas de trou gris).
       var cell = t.closest && t.closest('.nv-ph');
