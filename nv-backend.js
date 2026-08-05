@@ -389,6 +389,17 @@
   }
 
   window.NVBackend = {
+    /* Jeton d'acces de la session courante. Utilise par NVStorage pour
+       s'authentifier aupres du worker d'upload : il remplace l'ancien secret
+       partage UPLOAD_TOKEN, qui devait etre publie dans nv-config.js.
+       supabase-js renouvelle le jeton tout seul quand il approche de sa fin. */
+    accessToken: function () {
+      return getClient().then(function (db) {
+        return db.auth.getSession().then(function (r) {
+          return (r && r.data && r.data.session && r.data.session.access_token) || '';
+        });
+      });
+    },
     create: create,
     // RPC générique (utilisé par NVAuth) — renvoie data ou lève l'erreur.
     rpc: function (name, args) {
