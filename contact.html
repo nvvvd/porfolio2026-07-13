@@ -322,13 +322,19 @@ class Component extends DCLogic {
       atWork: T('ct.atWork'), aboutLabel: ui.lang === 'en' ? 'about' : 'à propos',
       // Section « Ils m'ont fait confiance » — logos toujours visibles, agrandis au survol.
       trustTitle: ui.lang === 'en' ? 'They trusted me' : 'Ils m’ont fait confiance',
-      // Liste éditable dans l'admin (Contenu → logos). Les logos d'origine servent de repli.
-      logos: ((s.contact.logos && s.contact.logos.length) ? s.contact.logos : [
-        { src: 'images/logo-montreal-rugby.png', name: 'Montréal Rugby' },
-        { src: 'images/logo-la-cremerie.jpg', name: 'La Crèmerie — BMX Store' },
-        { src: 'images/logo-art-bmx.png', name: 'A.R.T. BMX Magazine' },
-        { src: 'images/logo-montreal-2026.jpg', name: 'Montréal 2026' }
-      ]).map(lg => ({ name: lg.name, src: window.NVStore.resolveSrc(lg.src) })).map((lg, i) => {
+      /* Liste éditable dans l'admin (Contenu → logos) ; les quatre logos d'origine
+          servent de repli. `s` n'existe pas encore ici (déclaré plus bas) : on lit
+          le store directement, en le supposant absent au premier rendu. */
+      logos: (function () {
+        const st = (window.NVStore && window.NVStore.get()) || null;
+        const list = (st && st.contact && st.contact.logos && st.contact.logos.length) ? st.contact.logos : [
+          { src: 'images/logo-montreal-rugby.png', name: 'Montréal Rugby' },
+          { src: 'images/logo-la-cremerie.jpg', name: 'La Crèmerie — BMX Store' },
+          { src: 'images/logo-art-bmx.png', name: 'A.R.T. BMX Magazine' },
+          { src: 'images/logo-montreal-2026.jpg', name: 'Montréal 2026' }
+        ];
+        return list.map(lg => ({ name: lg.name, src: window.NVStore ? window.NVStore.resolveSrc(lg.src) : lg.src }));
+      })().map((lg, i) => {
         // Logos non cliquables : agrandi au survol, les autres passent à l'arrière-plan (estompés).
         const size = mobile ? 'width:88px;height:66px;' : 'width:52px;height:40px;';
         const hov = this.state.hoverLogo;

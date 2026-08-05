@@ -406,7 +406,6 @@ class Component extends DCLogic {
     try { if (push) history.pushState(null, '', url); else history.replaceState(null, '', url); }
     catch (e) { if (!base && tail) location.hash = tail; }
   }
-  }
   cliSlug() { const g = this.curGallery(); return g ? (g.slug || g.id) : ''; }
   openClientGallery(g) { this.setState({ view: 'gallery', galleryId: g.id, lb: -1 }); this.cliWriteHash(g.slug || g.id, -1, true); }
   openClientPhoto(list, i) { this.openLb(list, i); this.cliWriteHash(this.cliSlug(), i, true); }
