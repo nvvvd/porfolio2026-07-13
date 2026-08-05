@@ -17,6 +17,21 @@
 
   function cfg() { return (window.NV_CONFIG && window.NV_CONFIG.storage) || {}; }
 
+  /* En-tetes d'authentification du worker d'upload : le jeton de session de
+     l'admin connecte (Supabase). Remplace l'ancien secret partage
+     UPLOAD_TOKEN, qui devait etre ecrit en clair dans nv-config.js et partait
+     donc a chaque visiteur du site. */
+  function authHeaders() {
+    var be = window.NVBackend;
+    if (!be || typeof be.accessToken !== "function") {
+      return Promise.reject(new Error("Session indisponible : NVBackend absent."));
+    }
+    return be.accessToken().then(function (tok) {
+      if (!tok) throw new Error("Session expiree : reconnectez-vous a l'administration.");
+      return { Authorization: "Bearer " + tok };
+    });
+  }
+
   /* Adresse utilisable pour RELIRE une image (fabrication des vignettes).
      Les URLs publiques pub-*.r2.dev n'acceptent aucune règle CORS : la lecture
      directe est refusée par le navigateur. Deux chemins, dans l'ordre :
@@ -138,13 +153,14 @@
       return compressBlob(raw).then(function (blob) {
       var fd = new FormData();
       fd.append('file', blob, (filename || ('photo-' + Date.now())).replace(/\.(png|webp)$/i, '.jpg'));
-      var headers = cfg().uploadToken ? { 'X-Upload-Token': cfg().uploadToken } : undefined;
-      return fetch(endpoint, { method: 'POST', body: fd, headers: headers }).then(function (res) {
-        if (!res.ok) throw new Error('Upload HTTP ' + res.status);
-        return res.json();
-      }).then(function (json) {
-        if (!json || !json.url) throw new Error('Réponse d\'upload sans champ "url"');
-        return json.url;
+      return authHeaders().then(function (headers) {
+        return fetch(endpoint, { method: 'POST', body: fd, headers: headers }).then(function (res) {
+          if (!res.ok) throw new Error('Upload HTTP ' + res.status);
+          return res.json();
+        }).then(function (json) {
+          if (!json || !json.url) throw new Error('Réponse d\'upload sans champ "url"');
+          return json.url;
+        });
       });
       });
     },
