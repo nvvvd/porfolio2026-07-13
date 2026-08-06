@@ -2,51 +2,50 @@ FICHIERS À DÉPLOYER — 6 août 2026
 =================================
 
 GitHub (nvvvd/porfolio2026-07-13) → Add file → Upload files
-Glissez le CONTENU de ce dossier, en conservant les sous-dossiers.
+Glissez le CONTENU de ce dossier en conservant les sous-dossiers.
 
 LE FICHIER CRITIQUE
 -------------------
-nv-storage.js   Il n'avait jamais été déployé. C'est lui qui envoie la session
+nv-storage.js   Jamais déployé jusqu'ici. C'est lui qui envoie la session
                 administrateur au worker : sans lui, tout envoi de photo est
-                refusé (401) depuis que REQUIRE_AUTH=true.
+                refusé (401). Il doit partir AVEC Admin.dc.html et admin.html,
+                qui l'appellent en ?v=20260806c.
 
 RACINE
 ------
-nv-storage.js        envoi de photos + message d'erreur explicite
+nv-storage.js        envoi de photos, renouvellement de session, erreurs lisibles
 store.js             édition 1600 px pour la visionneuse
 nv-ux.js             filet global : plus aucune image cassée visible
-upload-worker.js     copie de référence (votre worker Cloudflare est déjà à jour)
+upload-worker.js     copie de référence (worker Cloudflare déjà à jour)
 Verification.dc.html page interne de vérification, non publiée
 github.md            journal de synchronisation
 
 6 sources .dc.html + 6 pages publiées .html
-  jetons de cache : store.js et nv-ux.js -> v=20260806a
-                    nv-storage.js        -> v=20260806b
+  jetons : store.js et nv-ux.js -> v=20260806a
+           nv-storage.js        -> v=20260806c
 
 COPIES DE SECOURS
 -----------------
-deploiement/ et site-nicolas-vivaudou/   resynchronisées
-docs/upload-worker.js                    resynchronisé
+deploiement/, site-nicolas-vivaudou/, docs/upload-worker.js
 
 NON MODIFIÉS (ne pas redéployer)
 --------------------------------
-guide.html, Guide client.dc.html, 404.html,
-_headers, _redirects, nv-config.js, nv-auth.js,
-nv-backend.js, nv-config.js, nv-i18n.js, nv-theme.js
+guide.html, Guide client.dc.html, 404.html, _headers, _redirects,
+nv-config.js, nv-auth.js, nv-backend.js, nv-i18n.js, nv-theme.js
 
 CLOUDFLARE
 ----------
-Rien à faire. Le worker est publié et REQUIRE_AUTH=true est correct :
-le test console a confirmé que la voie session fonctionne.
+Rien à faire. REQUIRE_AUTH=true est correct : le test console a confirmé
+que la voie session fonctionne côté worker.
 
 APRÈS DÉPLOIEMENT
 -----------------
-1. Ajoutez un logo dans /admin -> « Ils m'ont fait confiance ».
-2. Si l'envoi échoue encore, l'alerte affiche désormais le motif exact.
-3. Une fois l'envoi confirmé, on retire uploadToken de nv-config.js.
+Ajoutez un logo dans /admin. En cas d'échec, l'alerte nomme désormais la
+cause exacte : fichier périmé, session absente, ou refus du worker.
 
 RÈGLE À RETENIR
 ---------------
 Un fichier .js et le jeton ?v= des pages qui l'appellent doivent partir dans
 le MÊME dépôt de fichiers. Déployer l'un sans l'autre fige l'ancien code sous
-la nouvelle adresse pendant un an.
+la nouvelle adresse pendant un an. nv-storage.js signale maintenant cet écart
+de lui-même dans la console.

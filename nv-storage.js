@@ -108,7 +108,24 @@
   /* uploadWithThumb(data, filename) -> Promise<{url, thumb}>
      Téléverse la photo compressée + une vignette 640px pour les grilles. */
 
+  /* Version du fichier. La page l'appelle avec un jeton (?v=…) ; si le jeton
+     réclamé et cette valeur diffèrent, le cache sert un fichier périmé sous une
+     adresse neuve — panne invisible autrement, signalée ici sans ambiguïté. */
+  var VERSION = '20260806c';
+  var staleWarning = '';
+  try {
+    var me = (document.currentScript && document.currentScript.src) || '';
+    var want = (me.match(/[?&]v=([^&]+)/) || [])[1];
+    if (want && want !== VERSION) {
+      staleWarning = 'le navigateur exécute nv-storage.js version ' + VERSION +
+        ' alors que la page réclame ' + want + ' : redéployez nv-storage.js.';
+      console.warn('NVStorage : ' + staleWarning);
+    }
+  } catch (e) {}
+
   window.NVStorage = {
+    VERSION: VERSION,
+    staleWarning: function () { return staleWarning; },
     enabled: function () { return !!cfg().uploadEndpoint; },
 
     uploadWithThumb: function (data, filename) {
@@ -143,15 +160,23 @@
       // Jeton de session de l'admin connecté : vérifié par le worker auprès de
       // Supabase, il expire et n'apparaît nulle part dans le code du site.
       var sessionSeen = false;
-      return (window.NVBackend && window.NVBackend.client
-        ? window.NVBackend.client().then(function (db) { return db.auth.getSession(); })
-            .then(function (r) {
-              var t = r && r.data && r.data.session && r.data.session.access_token;
-              if (t) { headers['Authorization'] = 'Bearer ' + t; sessionSeen = true; }
-            })
-            .catch(function () {})
-        : Promise.resolve()
-      ).then(function () {
+      // Le déverrouillage de l'interface admin survit en mémoire de navigateur
+      // alors que la session Supabase, elle, expire. On la renouvelle avant
+      // d'abandonner : sans cela le worker refuse un admin qui se croit connecté.
+      var withSession = (window.NVBackend && window.NVBackend.client)
+        ? window.NVBackend.client().then(function (db) {
+            return db.auth.getSession().then(function (r) {
+              var tok = r && r.data && r.data.session && r.data.session.access_token;
+              if (tok) return tok;
+              return db.auth.refreshSession().then(function (r2) {
+                return r2 && r2.data && r2.data.session && r2.data.session.access_token;
+              }).catch(function () { return null; });
+            });
+          }).then(function (tok) {
+            if (tok) { headers['Authorization'] = 'Bearer ' + tok; sessionSeen = true; }
+          }).catch(function () {})
+        : Promise.resolve();
+      return withSession.then(function () {
       return fetch(endpoint, { method: 'POST', body: fd, headers: headers }).then(function (res) {
         if (res.ok) return res.json();
         // Le motif du refus est dans la réponse du worker : sans lui, l'admin ne
@@ -159,8 +184,10 @@
         return res.text().then(function (body) {
           var why = '';
           try { why = (JSON.parse(body) || {}).error || ''; } catch (e) { why = String(body).slice(0, 200); }
-          if (res.status === 401 && !sessionSeen) {
-            why = (why ? why + ' — ' : '') + 'aucune session administrateur active dans ce navigateur : reconnectez-vous a /admin.';
+          if (res.status === 401) {
+            if (staleWarning) why = (why ? why + ' — ' : '') + staleWarning;
+            else if (!sessionSeen) why = (why ? why + ' — ' : '') +
+              'aucune session administrateur active : reconnectez-vous a /admin.';
           }
           throw new Error('HTTP ' + res.status + (why ? ' — ' + why : ''));
         });
