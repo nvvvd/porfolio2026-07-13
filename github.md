@@ -2,20 +2,20 @@ repo: nvvvd/porfolio2026-07-13
 branch: main
 
 ## Last sync
-date: 2026-08-06T12:05:00Z
+date: 2026-08-06T13:10:00Z
 
 ### Updated in this project
-- Photos manquantes : filet global dans nv-ux.js — une image qui n'arrive pas tente ses adresses de repli puis s'effface, au lieu d'afficher l'icône cassée et son texte alternatif (« sport », « évènement ») au milieu de la page.
-- Visionneuse plein écran : charge désormais une édition 1600 px via la zone (comme les vignettes), avec l'original puis la vignette en repli.
-- Envoi de photos réparé : le worker n'autorisait pas l'en-tête « Authorization » en CORS, ce qui bloquait la requête avant l'envoi.
+- Envoi de photos réparé : l'en-tête « Authorization » manquait dans les en-têtes CORS du worker, ce qui bloquait la requête avant l'envoi ; nv-storage.js renouvelle désormais une session Supabase expirée avant d'abandonner.
+- nv-storage.js connaît sa propre version et la compare au jeton réclamé par la page : un fichier périmé servi sous une adresse neuve est signalé au lieu de rester muet.
+- Jeton d'envoi public retiré de nv-config.js : l'autorisation repose sur la session administrateur vérifiée côté worker (REQUIRE_AUTH=true).
+- Images manquantes : filet global dans nv-ux.js, plus aucune icône cassée ni texte alternatif affiché ; visionneuse en édition 1600 px avec repli sur l'original puis la vignette.
 - Nouvelle page interne Verification.dc.html : charge chaque page, intercepte les erreurs JavaScript, contrôle chemins et jetons de cache.
-- Jetons de cache portés à v=20260806a pour store.js et nv-ux.js sur toutes les pages.
 
 ## Sync history
 ### 2026-08-05
 - Correction d'un ReferenceError fatal sur contact / à propos (variable lue avant sa déclaration).
 - Correction d'une accolade en trop fermant la classe de l'espace client.
-- Envoi de photos : session admin Supabase vérifiée côté worker, jeton statique relégué en secours.
+- Session admin Supabase vérifiée côté worker, jeton statique relégué en secours.
 
 ## Screen map
 | Page publiée | Source d'édition | Scripts |
