@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onLoad="this.media='all'">
 <script src="nv-config.js?v=20260804b"></script>
-<script src="nv-storage.js?v=20260805a"></script>
+<script src="nv-storage.js?v=20260806b"></script>
 <script src="nv-backend.js?v=20260804b"></script>
 <script src="nv-auth.js?v=20260804b"></script>
 <script src="store.js?v=20260806a"></script>
@@ -592,7 +592,7 @@ class Component extends DCLogic {
     try { finalUrl = await window.NVStorage.upload(url, file.name); }
     catch (e) {
       console.warn('Téléversement échoué.', e);
-      alert('Téléversement impossible : le fichier n\'a pas pu être envoyé vers le stockage. Rien n\'a été enregistré.');
+      alert('Téléversement impossible : ' + ((e && e.message) || 'cause inconnue') + '\n\nRien n\'a été enregistré.');
       return;
     }
     window.NVStore.update(apply.bind(null, finalUrl));

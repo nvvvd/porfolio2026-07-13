@@ -6,6 +6,10 @@
      • PUBLIC_BASE_URL  URL publique du bucket (ex. https://cdn.exemple.com)
      • BUCKET           liaison R2
      • ALLOWED_ORIGINS  (optionnel) origines autorisées, séparées par des virgules
+     • SUPABASE_URL     ex. https://xxxx.supabase.co  — active la vérification de session
+     • SUPABASE_ANON_KEY clé publique "anon" du projet
+     • REQUIRE_AUTH     'true' -> SEULE une session admin Supabase est acceptée
+                        (le jeton statique X-Upload-Token est alors refusé)
    ============================================================================ */
 
 const DEFAULT_ORIGINS = [
@@ -67,8 +71,28 @@ export default {
     if (!originOk) return json({ error: 'Origine non autorisée' }, 403);
     if (request.method !== 'POST') return json({ error: 'POST attendu' }, 405);
 
-    if (!env.UPLOAD_TOKEN || request.headers.get('X-Upload-Token') !== env.UPLOAD_TOKEN) {
-      return json({ error: 'Jeton invalide' }, 401);
+    /* Autorisation. Deux voies :
+       1. Session Supabase — l'admin connecté envoie « Authorization: Bearer <jeton> ».
+          Le jeton est validé auprès de Supabase : il expire, il est révocable, et
+          il n'est PAS lisible dans le code source du site. C'est la voie sûre.
+       2. Jeton statique X-Upload-Token — hérité. Il vit dans nv-config.js, donc
+          il est PUBLIC : n'importe qui peut le lire et téléverser. Ne le gardez
+          que le temps de vérifier que la voie 1 fonctionne, puis passez
+          REQUIRE_AUTH='true' pour le désactiver. */
+    const bearer = (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+    let sessionOk = false;
+    if (bearer && env.SUPABASE_URL && env.SUPABASE_ANON_KEY) {
+      try {
+        const r = await fetch(String(env.SUPABASE_URL).replace(/\/+$/, '') + '/auth/v1/user', {
+          headers: { Authorization: 'Bearer ' + bearer, apikey: env.SUPABASE_ANON_KEY },
+        });
+        sessionOk = r.ok;
+      } catch (e) { sessionOk = false; }
+    }
+    const tokenOk = !!env.UPLOAD_TOKEN && request.headers.get('X-Upload-Token') === env.UPLOAD_TOKEN;
+    const strict = String(env.REQUIRE_AUTH || '') === 'true';
+    if (!(sessionOk || (tokenOk && !strict))) {
+      return json({ error: strict ? 'Session administrateur requise' : 'Jeton invalide' }, 401);
     }
 
     let file;
