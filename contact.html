@@ -207,7 +207,7 @@
 
     <div style="{{ footFit }}margin-top:24px;">
       <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;padding:14px 0 22px;font-size:13px;color:var(--muted);">
-        <span style="display:flex;align-items:center;gap:12px;">© {{ brandName }}<button type="button" onClick="{{ openMentions }}" style="border:none;background:none;padding:0;font-family:inherit;color:var(--faint);font-size:12px;cursor:pointer;">mentions</button></span>
+        <span style="display:flex;align-items:center;gap:12px;">© {{ year }} {{ brandName }}<button type="button" onClick="{{ openMentions }}" style="border:none;background:none;padding:0;font-family:inherit;color:var(--faint);font-size:12px;cursor:pointer;">mentions</button></span>
         <span style="display:flex;align-items:center;gap:16px;">
           <a href="{{ emailHref }}" style="text-decoration:none;color:var(--muted);">{{ email }}</a>
           <a href="{{ instagramHref }}" target="_blank" rel="noopener" aria-label="Instagram" title="{{ instagram }}" style="display:flex;align-items:center;color:var(--muted);">
@@ -400,7 +400,7 @@ class Component extends DCLogic {
         });
       }
     };
-    if (!this.state.ready || !window.NVStore) return { ...base, ...formVals, brandName: 'Nicolas Vivaudou', brandRole: ui.lang === 'en' ? 'Photographer' : 'Photographe', brandLoc: 'Montréal, QC', heading: '', intro: '', email: '', instagram: '', emailHref: '#', instagramHref: '#', aboutName: '', aboutPhoto: 'images/nicolas.jpg', aboutText: '', hasServices: false, services: [], servicesTitle: '', hasBackstage: false, backstage: [] };
+    if (!this.state.ready || !window.NVStore) return { ...base, ...formVals, year: new Date().getFullYear(), brandName: 'Nicolas Vivaudou', brandRole: ui.lang === 'en' ? 'Photographer' : 'Photographe', brandLoc: 'Montréal, QC', heading: '', intro: '', email: '', instagram: '', emailHref: '#', instagramHref: '#', aboutName: '', aboutPhoto: 'images/nicolas.jpg', aboutText: '', hasServices: false, services: [], servicesTitle: '', hasBackstage: false, backstage: [] };
     const s = window.NVStore.get();
     // Prestations dépliables (éditables dans l'admin, onglet Contenu).
     const services = (s.services || []).map((sv, i) => {
@@ -418,7 +418,7 @@ class Component extends DCLogic {
       toggleServices: () => this.setState(st => ({ servicesPanel: !st.servicesPanel })),
       isServicesOpen: this.state.servicesPanel, servicesOpen: String(this.state.servicesPanel),
       servicesTitle: ui.lang === 'en' ? 'services & rates' : 'prestations & tarifs',
-      brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn), brandLoc: s.brand.location,
+      year: new Date().getFullYear(), brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn), brandLoc: s.brand.location,
       heading: L(s.contact.heading, s.contact.headingEn), intro: L(s.contact.intro, s.contact.introEn), email: s.contact.email, instagram: s.contact.instagram,
       emailHref: 'mailto:' + s.contact.email,
       instagramHref: 'https://instagram.com/' + String(s.contact.instagram || '').replace(/^@/, ''),

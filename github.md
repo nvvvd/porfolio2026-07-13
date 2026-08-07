@@ -2,10 +2,13 @@ repo: nvvvd/porfolio2026-07-13
 branch: main
 
 ## Last sync
-date: 2026-08-07T12:20:00Z
+date: 2026-08-07T13:05:00Z
 
 ### Updated in this project
 - Space Mono supprimée : la police était chargée sur chaque page mais aucune règle CSS ne l'appelait. Plus aucun lien vers fonts.googleapis.com / fonts.gstatic.com, plus aucun fichier de police — deux connexions tierces en moins au chargement.
+- Mentions légales actualisées : hébergement nommé (Cloudflare Pages, R2, Supabase) au lieu de « Netlify ou équivalent », transfert hors Québec explicité, mesure d'audience déclarée inactive (Plausible n'est pas configuré). Année ajoutée au pied de page.
+- Accueil : le diaporama ne démarre plus après un délai fixe de 2,5 s mais après le chargement complet de la page (+1,5 s), et une seule photo réelle est chargée au montage au lieu de trois. Chaque photo qui apparaissait repoussait le LCP.
+- Verification.dc.html : une source .dc.html servie par redirection n'est plus comptée comme une erreur de chemins. En ligne, /Accueil.dc.html est redirigé vers / et renvoyait index.html sous le nom de la source.
 - Jeton statique X-Upload-Token retiré partout : worker, en-têtes CORS et nv-storage.js. Le téléversement n'accepte plus que la session Supabase de l'administrateur. Les variables UPLOAD_TOKEN et REQUIRE_AUTH ne servent plus.
 - Route GET /read supprimée du worker : elle servait n'importe quel objet du bucket à n'importe quelle origine, factures PDF comprises. La lecture passe par images.nicolasvivaudou.com ; nv-storage.js n'a plus de repli vers ce relais.
 - Image d'accueil : le srcset est désormais fabriqué par la transformation Cloudflare (640/1280/2000 px) au lieu de dépendre d'une vignette générée. Un téléphone ne télécharge plus l'original.

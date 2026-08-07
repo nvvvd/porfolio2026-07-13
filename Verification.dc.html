@@ -206,7 +206,7 @@ class Component extends DCLogic {
       .map(p => ({ title: p[2], file: mode === 'dc' ? p[0] : p[1] }));
     this.setState({ running: true, done: false, groups: [], progress: 'Préparation…' });
 
-    const src = {}, groups = [];
+    const src = {}, meta = {}, groups = [];
     let chain = Promise.resolve();
 
     list.forEach((t, i) => {
@@ -214,7 +214,11 @@ class Component extends DCLogic {
         .then(() => {
           this.setState({ progress: t.file + ' — ' + (i + 1) + '/' + list.length });
           return fetch(encodeURI(t.file), { cache: 'no-store' })
-            .then(r => (r.ok ? r.text() : Promise.reject()))
+            .then(r => {
+              if (!r.ok) return Promise.reject();
+              meta[t.file] = { redirected: r.redirected, url: r.url };
+              return r.text();
+            })
             .catch(() => null);
         })
         .then(html => {
@@ -222,6 +226,21 @@ class Component extends DCLogic {
           const checks = [];
           if (html === null) {
             checks.push({ status: 'warn', label: 'Fichier introuvable dans cet environnement', detail: t.file });
+            groups.push({ title: t.title, subtitle: t.file, checks });
+            this.setState({ groups: groups.slice() });
+            return;
+          }
+
+          /* En ligne, /Accueil.dc.html est normalisé en /Accueil.dc par Cloudflare
+             Pages, puis redirigé vers / par _redirects : le serveur renvoie la PAGE
+             PUBLIÉE sous le nom du fichier source. Contrôler ses chemins reviendrait
+             à reprocher à index.html d'être index.html. On signale la substitution
+             au lieu d'inventer une erreur. */
+          const mt = meta[t.file] || {};
+          const served = decodeURIComponent(String(mt.url || '').split(/[?#]/)[0]).split('/').pop();
+          if (mt.redirected || (served && served !== t.file)) {
+            src[t.file] = null;
+            checks.push({ status: 'warn', label: 'Redirigé — contrôle impossible sur cette cible', detail: t.file + '  →  ' + (mt.url || '?') + "\nEn ligne, les sources .dc.html ne sont pas servies sous leur propre nom. Passez sur « Cible : pages publiées »." });
             groups.push({ title: t.title, subtitle: t.file, checks });
             this.setState({ groups: groups.slice() });
             return;
@@ -309,7 +328,7 @@ class Component extends DCLogic {
       runLabel: s.running ? 'Vérification en cours…' : (s.done ? 'Relancer la vérification' : 'Lancer la vérification'),
       progressText: s.progress,
       modeLabel: s.mode === 'dc' ? 'Cible : sources .dc.html' : 'Cible : pages publiées',
-      modeHint: s.mode === 'dc' ? 'Fonctionne partout, y compris dans l’aperçu.' : 'À utiliser en ligne (chemins absolus).',
+      modeHint: s.mode === 'dc' ? 'À utiliser dans l’aperçu — en ligne, elles sont redirigées.' : 'À utiliser en ligne (chemins absolus).',
       toggleMode: () => this.setState(p => ({ mode: p.mode === 'dc' ? 'pub' : 'dc', groups: [], done: false })),
       run: () => this.run(),
       groups: s.groups.map(g => {

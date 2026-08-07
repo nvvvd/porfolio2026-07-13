@@ -27,6 +27,14 @@ upload-worker.js    ⚠ NE PART PAS AVEC PAGES — à redéployer sur Cloudflare
                     jeton statique X-Upload-Token supprimé : seule la session
                     Supabase de l'administrateur autorise un téléversement
 
+Ajouté en fin de journée
+------------------------
+index.html / Accueil.dc.html   diaporama démarré après le chargement complet
+                               (LCP : chaque photo qui apparaissait le repoussait)
+mentions.html / Mentions.dc.html  hébergeur nommé, mesure d'audience déclarée inactive
+contact.html / Contact.dc.html    année dans le pied de page
+Verification.dc.html           une source redirigée n'est plus comptée en erreur
+
 Après déploiement
 -----------------
 1. Redéployer le worker (upload-worker.js) sur Cloudflare.

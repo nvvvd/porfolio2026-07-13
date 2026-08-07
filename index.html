@@ -171,11 +171,27 @@ class Component extends DCLogic {
   };
   heroTouchEnd = () => { this._heroTouchX = null; this._heroHover = false; };
   componentDidMount() {
-    // LCP : le diaporama (et ses préchargements) ne démarre qu'une fois la 1ère image affichée (+ marge),
-    // pour ne pas concurrencer son téléchargement sur réseau lent.
-    this._heroStart = setTimeout(() => {
-      this._heroTimer = setInterval(() => { if (!this._heroHover) this.heroSetFrame(this._heroFrame + 1); }, 180);
-    }, 2500);
+    /* LCP : chaque photo qui apparaît dans le diaporama devient une nouvelle
+       candidate au Largest Contentful Paint — tant qu'il tourne, la mesure recule.
+       Le déclencheur doit donc être la PREMIÈRE photo elle-même, pas « load » :
+       l'image est insérée par React après l'hydratation de NVStore, sa requête part
+       toujours après l'évènement load, et compter à partir de là revient à démarrer
+       la rotation en plein téléchargement sur 4G lente. Repli à 8 s si elle n'arrive
+       jamais, pour ne pas figer le diaporama sur une image morte. */
+    const startHero = () => {
+      if (this._heroStart || this._heroTimer) return;
+      this._heroStart = setTimeout(() => {
+        this._heroTimer = setInterval(() => { if (!this._heroHover) this.heroSetFrame(this._heroFrame + 1); }, 180);
+      }, 1200);
+    };
+    this._heroWatch = setInterval(() => {
+      const el = this.heroRef.current; if (!el) return;
+      const im = el.querySelector('img'); if (!im) return;
+      clearInterval(this._heroWatch); this._heroWatch = null;
+      if (im.complete) startHero();
+      else { im.addEventListener('load', startHero, { once: true }); im.addEventListener('error', startHero, { once: true }); }
+    }, 120);
+    this._heroCap = setTimeout(startHero, 8000);
     this._wait = setInterval(() => {
       if (window.NVStore) {
         clearInterval(this._wait);
@@ -192,7 +208,7 @@ class Component extends DCLogic {
     window.addEventListener('resize', this._r);
     this._ulang = window.NVI18n.onChange(() => this.setState(s => ({ tick: s.tick + 1 })));
   }
-  componentWillUnmount() { clearInterval(this._wait); clearInterval(this._cyc); clearTimeout(this._heroStart); clearInterval(this._heroTimer); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); }
+  componentWillUnmount() { clearInterval(this._wait); clearInterval(this._cyc); clearTimeout(this._heroStart); clearInterval(this._heroTimer); clearInterval(this._heroWatch); clearTimeout(this._heroCap); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); }
   hoverEnter = (id) => () => {
     if (this.state.mobile) return;
     this.setState({ hover: id });           // construit les vignettes empilées dans la ligne
@@ -301,7 +317,7 @@ class Component extends DCLogic {
       if (a && a !== h.src) return a + ' 640w, ' + HR(h.src, 1280) + ' 1280w, ' + HR(h.src, 2000) + ' 2000w, ' + h.src + ' 2560w';
       return (h.thumb && h.thumb !== h.src) ? (h.thumb + ' 640w, ' + h.src + ' 2560w') : '';
     };
-    const heroImgs = heroSrcs.map((h, i) => React.createElement('img', { key: 'h' + i, src: (i < 3 ? h.src : HERO_PH), srcSet: (i < 3 && heroSet(h)) ? heroSet(h) : undefined, sizes: '(max-width: 640px) 70vw, 100vw', 'data-full': h.src, 'data-srcset': heroSet(h), alt: '', onError: (e) => { e.target.style.visibility = 'hidden'; }, fetchPriority: (i === heroCur ? 'high' : 'low'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'opacity .14s linear', opacity: i === heroCur ? 1 : 0 } }));
+    const heroImgs = heroSrcs.map((h, i) => React.createElement('img', { key: 'h' + i, src: (i === 0 ? h.src : HERO_PH), srcSet: (i === 0 && heroSet(h)) ? heroSet(h) : undefined, sizes: '(max-width: 640px) 70vw, 100vw', 'data-full': h.src, 'data-srcset': heroSet(h), alt: '', onError: (e) => { e.target.style.visibility = 'hidden'; }, fetchPriority: (i === heroCur ? 'high' : 'low'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'opacity .14s linear', opacity: i === heroCur ? 1 : 0 } }));
     return {
       ...base,
       brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn), brandLoc: s.brand.location,
