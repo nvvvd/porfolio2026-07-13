@@ -106,7 +106,7 @@
   /* Version du fichier. La page l'appelle avec un jeton (?v=…) ; si le jeton
      réclamé et cette valeur diffèrent, le cache sert un fichier périmé sous une
      adresse neuve — panne invisible autrement, signalée ici sans ambiguïté. */
-  var VERSION = '20260806c';
+  var VERSION = '20260807b';
   var staleWarning = '';
   try {
     var me = (document.currentScript && document.currentScript.src) || '';
@@ -151,7 +151,6 @@
       var fd = new FormData();
       fd.append('file', blob, (filename || ('photo-' + Date.now())).replace(/\.(png|webp)$/i, '.jpg'));
       var headers = {};
-      if (cfg().uploadToken) headers['X-Upload-Token'] = cfg().uploadToken;
       // Jeton de session de l'admin connecté : vérifié par le worker auprès de
       // Supabase, il expire et n'apparaît nulle part dans le code du site.
       var sessionSeen = false;
