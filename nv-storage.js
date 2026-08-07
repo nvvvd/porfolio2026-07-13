@@ -19,9 +19,10 @@
 
   /* Adresse utilisable pour RELIRE une image (fabrication des vignettes).
      Les URLs publiques pub-*.r2.dev n'acceptent aucune règle CORS : la lecture
-     directe est refusée par le navigateur. Deux chemins, dans l'ordre :
-       1. domaine personnalisé du bucket (storage.publicBase) — respecte le CORS ;
-       2. relais /read du worker, tant qu'aucun domaine n'est branché. */
+     directe est refusée par le navigateur. Le domaine personnalisé du bucket
+     (storage.publicBase) la respecte : toute adresse r2.dev y est réécrite.
+     Le relais /read du worker a été retiré — il servait n'importe quel objet du
+     bucket à n'importe quelle origine, PDF de facture compris. */
   function readableUrl(src) {
     var c = cfg();
     var pb = String(c.publicBase || '').replace(/\/+$/, '');
@@ -29,13 +30,7 @@
     if (pb && /^https?:\/\/[^/]*\.r2\.dev\//i.test(String(src || ''))) {
       try { return pb + new URL(src).pathname; } catch (e) {}
     }
-    var ep = String(c.uploadEndpoint || '').replace(/\/+$/, '');
-    if (!ep || !/^https?:\/\//i.test(String(src || ''))) return src;
-    var key;
-    try { key = decodeURIComponent(new URL(src).pathname.replace(/^\/+/, '')); }
-    catch (e) { return src; }
-    if (!key) return src;
-    return ep + '/read?key=' + encodeURIComponent(key);
+    return src;
   }
 
   function dataURLToBlob(dataURL) {

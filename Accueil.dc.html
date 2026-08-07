@@ -47,9 +47,10 @@
 <body>
 <x-dc>
 <helmet>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" media="print" onLoad="this.media='all'">
+<style>
+@font-face{font-family:'Space Mono';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/space-mono-400.woff2) format('woff2');}
+@font-face{font-family:'Space Mono';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/space-mono-700.woff2) format('woff2');}
+</style>
 <script src="nv-theme.js?v=20260804b"></script>
 <script src="nv-config.js?v=20260806c"></script>
 <script src="nv-i18n.js?v=20260804b"></script>
@@ -294,10 +295,16 @@ class Component extends DCLogic {
        70vw sous 640 px pousse ce choix malgré les écrans à haute densité ; au-dessus, pleine
        résolution. 2560w = borne haute des fichiers d'origine (les imports récents font 2000 px ;
        surestimer ne fait que favoriser la vignette sur mobile).
-       ⚠ Sans vignette générée, thumb === src : aucun srcset n'est émis, donc aucun gain —
-       il faut lancer « Générer les vignettes manquantes » dans l'admin. */
+       Le srcset est fabriqué par la transformation Cloudflare (storage.resizeBase), il
+       existe donc même sans vignette générée : un téléphone ne télécharge plus jamais
+       l'original de 2 à 6 Mo. Repli sur la vignette si les transformations sont coupées. */
     const HERO_PH = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
-    const heroSet = (h) => (h.thumb && h.thumb !== h.src) ? (h.thumb + ' 640w, ' + h.src + ' 2560w') : '';
+    const HR = (u, w) => (window.NVStore && window.NVStore.resize) ? window.NVStore.resize(u, w) : u;
+    const heroSet = (h) => {
+      const a = HR(h.src, 640);
+      if (a && a !== h.src) return a + ' 640w, ' + HR(h.src, 1280) + ' 1280w, ' + HR(h.src, 2000) + ' 2000w, ' + h.src + ' 2560w';
+      return (h.thumb && h.thumb !== h.src) ? (h.thumb + ' 640w, ' + h.src + ' 2560w') : '';
+    };
     const heroImgs = heroSrcs.map((h, i) => React.createElement('img', { key: 'h' + i, src: (i < 3 ? h.src : HERO_PH), srcSet: (i < 3 && heroSet(h)) ? heroSet(h) : undefined, sizes: '(max-width: 640px) 70vw, 100vw', 'data-full': h.src, 'data-srcset': heroSet(h), alt: '', onError: (e) => { e.target.style.visibility = 'hidden'; }, fetchPriority: (i === heroCur ? 'high' : 'low'), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'opacity .14s linear', opacity: i === heroCur ? 1 : 0 } }));
     return {
       ...base,

@@ -1,0 +1,35 @@
+À DÉPLOYER — 7 août 2026
+========================
+
+Copier ces fichiers à la RACINE du dépôt nvvvd/porfolio2026-07-13,
+en conservant l'arborescence (le dossier fonts/ inclus).
+
+Contenu
+-------
+fonts/space-mono-400.woff2      NOUVEAU  police auto-hébergée (16 Ko)
+fonts/space-mono-700.woff2      NOUVEAU  police auto-hébergée (16 Ko)
+
+index.html, portfolio.html, galerie.html, client.html,
+admin.html, contact.html                 pages publiées
+Accueil / Portfolio / Galerie / Client /
+Admin / Contact .dc.html                 sources d'édition
+   -> plus aucun appel à fonts.googleapis.com ni fonts.gstatic.com
+   -> @font-face local, jeton nv-storage.js passé à ?v=20260807a
+   -> index.html + Accueil.dc.html : srcset de l'image d'accueil
+      fabriqué par la transformation Cloudflare (640/1280/2000 px)
+
+nv-storage.js                   plus de repli vers le relais /read du worker
+_headers                        cache 1 an sur /fonts/*
+Verification.dc.html            contrôle en plus l'accès anonyme à la base
+github.md                       journal de synchronisation
+
+upload-worker.js                ⚠ NE PART PAS AVEC PAGES
+                                à redéployer séparément sur Cloudflare Workers
+                                (route GET /read supprimée)
+
+Après déploiement
+-----------------
+1. Redéployer le worker (upload-worker.js) sur Cloudflare.
+2. Ouvrir /Verification.dc.html en ligne, choisir « Cible : pages publiées »
+   et lancer : le bloc « Base de données » doit montrer clients et messages
+   muets, photos et galleries lisibles.

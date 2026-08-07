@@ -8,11 +8,14 @@
 <body>
 <x-dc>
 <helmet>
+<style>
+@font-face{font-family:'Space Mono';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/space-mono-400.woff2) format('woff2');}
+@font-face{font-family:'Space Mono';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/space-mono-700.woff2) format('woff2');}
+</style>
 <meta name="robots" content="noindex, nofollow">
+<script src="nv-config.js?v=20260806c"></script>
 <title>Vérification du site — Nicolas Vivaudou</title>
 <link rel="icon" href="favicon.svg">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   html, body { margin: 0; padding: 0; background: #12100e; }
   a { color: #c9a227; }
@@ -157,6 +160,50 @@ class Component extends DCLogic {
     });
   }
 
+  /* Accès anonyme à la base. « clients » et « messages » contiennent des adresses
+     e-mail, des factures et les codes des galeries privées : un visiteur non
+     connecté ne doit rien pouvoir en lire. Interrogées ici avec la seule clé
+     publique, exactement comme le ferait un curieux depuis la console. */
+  rls() {
+    const cfg = (window.NV_CONFIG || {}).supabase || {};
+    const wrap = (checks) => ({ title: 'Base de données', subtitle: 'accès anonyme (RLS)', checks });
+    if (!cfg.url || !cfg.anonKey) {
+      return Promise.resolve(wrap([{ status: 'warn', label: 'Configuration Supabase absente', detail: 'NV_CONFIG.supabase non chargé ici : contrôle impossible.' }]));
+    }
+    const base = String(cfg.url).replace(/\/+$/, '') + '/rest/v1/';
+    const H = { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey };
+    const ask = (t, sel) => fetch(base + t + '?select=' + sel + '&limit=1', { headers: H, cache: 'no-store' })
+      .then(r => r.text().then(b => ({ code: r.status, body: b })))
+      .catch(e => ({ code: 0, body: String((e && e.message) || e) }));
+
+    const PRIVATE = [['clients', 'id,email,invoices'], ['messages', 'id,email,body']];
+    const PUBLIC = [['photos', 'id'], ['galleries', 'id']];
+
+    return Promise.all(PRIVATE.map(p => ask(p[0], p[1]).then(r => ({ t: p[0], r: r }))))
+      .then(priv => Promise.all(PUBLIC.map(p => ask(p[0], p[1]).then(r => ({ t: p[0], r: r }))))
+        .then(pub => {
+          const checks = [];
+          priv.forEach(x => {
+            const r = x.r;
+            let rows = null;
+            try { rows = JSON.parse(r.body); } catch (e) {}
+            const leaked = r.code === 200 && Array.isArray(rows) && rows.length > 0;
+            if (leaked) checks.push({ status: 'fail', label: 'Table « ' + x.t +' » lisible sans être connecté', detail: 'La clé publique renvoie des lignes :\n' + r.body.slice(0, 220) + '\nActivez la RLS sur cette table et supprimez toute policy SELECT ouverte à « anon ».' });
+            else if (r.code === 200) checks.push({ status: 'ok', label: 'Table « ' + x.t + ' » : rien ne sort sans session' });
+            else if (r.code === 0) checks.push({ status: 'warn', label: 'Table « ' + x.t + ' » : requête impossible', detail: r.body });
+            else checks.push({ status: 'ok', label: 'Table « ' + x.t + ' » : accès refusé (' + r.code + ')' });
+          });
+          pub.forEach(x => {
+            const ok = x.r.code === 200;
+            checks.push(ok
+              ? { status: 'ok', label: 'Table « ' + x.t + ' » lisible (nécessaire au site public)' }
+              : { status: 'fail', label: 'Table « ' + x.t + ' » illisible en anonyme', detail: 'Code ' + x.r.code + ' — les galeries publiques resteront vides.\n' + x.r.body.slice(0, 220) });
+          });
+          return wrap(checks);
+        }))
+      .catch(e => wrap([{ status: 'warn', label: 'Contrôle interrompu', detail: String((e && e.message) || e) }]));
+  }
+
   run() {
     const mode = this.state.mode;
     const list = PAGES.filter(p => (mode === 'dc' ? p[0] : p[1]))
@@ -234,6 +281,10 @@ class Component extends DCLogic {
         ? { status: 'fail', label: 'Jetons de version incohérents entre les pages', detail: split.map(k => k + ' → ' + Object.keys(tok[k]).join(' / ')).join('\n') + "\nLes pages ne chargeraient pas la même version d'un même script." }
         : { status: 'ok', label: 'Un seul jeton de version par script' });
       groups.push({ title: 'Contrôles transverses', subtitle: 'cohérence entre les pages', checks });
+      this.setState({ groups: groups.slice(), progress: 'Base de données — accès anonyme…' });
+      return this.rls();
+    }).then(g => {
+      if (g) groups.push(g);
       this.setState({ groups: groups.slice(), running: false, done: true, progress: '' });
     });
   }
