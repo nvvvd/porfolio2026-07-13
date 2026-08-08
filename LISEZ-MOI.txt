@@ -1,44 +1,78 @@
-À DÉPLOYER — 7 août 2026
+À DÉPLOYER — 8 août 2026
 ========================
 
-Copier ces fichiers à la RACINE du dépôt nvvvd/porfolio2026-07-13.
-
-⚠ SUPPRIMER AUSSI le dossier fonts/ s'il a été poussé plus tôt aujourd'hui :
-    git rm -r fonts
+Copier à la RACINE du dépôt nvvvd/porfolio2026-07-13, arborescence conservée
+(le dossier functions/ inclus).
 
 Contenu
 -------
-index.html, portfolio.html, galerie.html, client.html,
-admin.html, contact.html                 pages publiées
-Accueil / Portfolio / Galerie / Client /
-Admin / Contact .dc.html                 sources d'édition
-   -> plus aucun appel à fonts.googleapis.com ni fonts.gstatic.com,
-      plus aucune déclaration @font-face (Space Mono n'était utilisée nulle part)
-   -> admin : jeton nv-storage.js passé à ?v=20260807b
+Galerie.dc.html / galerie.html
+   Visionneuse mobile. Trois défauts corrigés :
+   1. un glissement se termine par un « click » émis sur l'élément commun au
+      départ et à l'arrivée, ici le fond noir, dont le rôle est de fermer :
+      tout swipe raté ou un peu oblique refermait la photo. Le fond ne ferme
+      plus que sur un toucher immobile.
+   2. les flèches étaient à 10 px du bord, dans la bande réservée au geste
+      « retour » de Safari iOS, qui avalait le toucher. Décalées à 14 px
+      (+ encoche) et agrandies de 44 à 52 px.
+   3. la page continuait de défiler sous la visionneuse : la barre d'adresse se
+      rétractait au premier geste et les flèches, calées à 50 % de hauteur,
+      passaient dessous. Défilement bloqué, position restaurée à la fermeture.
+   Seuil de glissement ramené de 40 à 30 px et limite de 800 ms supprimée :
+   un glissement lent et délibéré ne faisait rien.
 
-nv-storage.js       n'envoie plus l'en-tête X-Upload-Token ; VERSION = 20260807b
-                    plus de repli vers le relais /read du worker
-_headers            plus de règle /fonts/*
-Verification.dc.html contrôle l'accès anonyme à la base
-github.md           journal de synchronisation
+Admin.dc.html / admin.html
+   L'adresse de la galerie devient visible et modifiable sous le titre.
+   Le slug valait « galerie-a3f9 » ; il suit maintenant le nom.
+   -> une galerie nommée « sport » donne /galerie/sport
+   Un slug saisi à la main n'est plus touché par les renommages ultérieurs.
 
-upload-worker.js    ⚠ NE PART PAS AVEC PAGES — à redéployer sur Cloudflare Workers
-                    route GET /read supprimée
-                    jeton statique X-Upload-Token supprimé : seule la session
-                    Supabase de l'administrateur autorise un téléversement
+functions/galerie/[[path]].js        NOUVEAU
+   Aperçu de lien propre à chaque galerie.
+   Réécrit aussi le <link rel="canonical"> : il pointait vers /galerie sur
+   TOUTES les galeries, ce qui aurait annulé le plan de site ci-dessous
+   (Google les aurait tenues pour des doublons d'une seule page).
 
-Ajouté en fin de journée
-------------------------
-index.html / Accueil.dc.html   diaporama démarré après le chargement complet
-                               (LCP : chaque photo qui apparaissait le repoussait)
-mentions.html / Mentions.dc.html  hébergeur nommé, mesure d'audience déclarée inactive
-contact.html / Contact.dc.html    année dans le pied de page
-Verification.dc.html           une source redirigée n'est plus comptée en erreur
+functions/sitemap.xml.js             NOUVEAU
+   Plan de site engendré à la demande, galeries publiques comprises, avec la
+   photo de couverture en <image:image> (éligible à Google Images).
+   ⚠ SUPPRIMER l'ancien fichier :  git rm sitemap.xml
+     (une fonction a priorité sur un fichier statique de même nom, mais garder
+      les deux entretient la confusion)
+
+Client.dc.html / client.html
+Mentions.dc.html / mentions.html
+   Recherche par visage retirée. Elle était décrite dans les mentions légales
+   — section « Données biométriques », consentement Loi 25, gabarits — pour un
+   traitement qui n'a jamais existé : aucune interface ne l'appelait, seules
+   des valeurs mortes subsistaient dans le code. Annoncer la collecte d'une
+   donnée biométrique qu'on ne collecte pas est un risque inutile.
+
+AUCUNE VARIABLE À CRÉER
+-----------------------
+Les deux fonctions lisent l'adresse et la clé publique Supabase dans
+/nv-config.js, que le site sert déjà à tous ses visiteurs. La clé « anon » est
+publique par construction : sa sécurité repose sur les règles RLS de la base,
+pas sur son secret. Rien à saisir dans le tableau de bord.
+(SUPABASE_URL / SUPABASE_ANON_KEY restent prioritaires si vous les définissez.)
+
+⚠ UNE ACTION DANS CLOUDFLARE
+----------------------------
+1. Vérifier que les transformations d'images sont actives sur la zone
+   nicolasvivaudou.com (Images -> Transformations), sinon l'image d'aperçu
+   ne sera pas recadrée en 1200 x 630.
+
+⚠ CHANGER UN SLUG CASSE LES LIENS DÉJÀ PARTAGÉS
+   /galerie/galerie-a3f9 ne répondra plus une fois renommé en /galerie/sport.
+   Autant le faire maintenant que dans six mois.
 
 Après déploiement
 -----------------
-1. Redéployer le worker (upload-worker.js) sur Cloudflare.
-2. Supprimer les variables UPLOAD_TOKEN et REQUIRE_AUTH du worker : elles ne
-   sont plus lues. SUPABASE_URL et SUPABASE_ANON_KEY doivent rester.
-3. Se connecter à /admin et téléverser une photo pour confirmer que la voie
-   session fonctionne toujours.
+- Plan de site : ouvrir https://www.nicolasvivaudou.com/sitemap.xml — les
+  galeries doivent y figurer une à une. Puis le soumettre dans Google Search
+  Console (Sitemaps -> ajouter « sitemap.xml »).
+- Partage : coller https://www.nicolasvivaudou.com/galerie/sport dans
+  https://developers.facebook.com/tools/debug/ puis « Scrape Again ».
+  Le titre et l'image doivent être ceux de la galerie sport.
+- Sur téléphone : ouvrir une photo, glisser lentement, glisser en oblique,
+  appuyer sur les flèches gauche et droite. Aucun de ces gestes ne doit fermer.

@@ -2,6 +2,17 @@ repo: nvvvd/porfolio2026-07-13
 branch: main
 
 ## Last sync
+date: 2026-08-08T10:15:00Z
+
+### Updated in this project
+- Visionneuse mobile réparée : un glissement se terminait par un « click » sur le fond, dont le rôle est de fermer — tout swipe raté ou oblique refermait la photo. Les flèches, à 10 px du bord, tombaient dans la zone du geste « retour » d'iOS. Le corps de page continuait de défiler dessous, ce qui décalait les boutons quand la barre d'adresse se rétractait.
+- Aperçu de lien par galerie : nouvelle fonction Cloudflare Pages functions/galerie/[[path]].js. Les robots de partage ne lisent pas le JavaScript et recevaient les balises og: figées de galerie.html, donc la même photo pour toutes les galeries. La fonction lit le slug, interroge Supabase et réécrit titre, description et image avant l'envoi. Galeries privées exclues.
+- Les deux fonctions Pages lisent l'adresse et la clé publique Supabase dans /nv-config.js plutôt que dans des variables d'environnement à créer à la main : la clé anon est déjà servie en clair à chaque visiteur, la redemander n'ajoutait aucune protection.
+- Plan de site dynamique : functions/sitemap.xml.js remplace le fichier figé de cinq lignes. Les galeries publiques y sont listées une à une avec leur couverture en <image:image>. Le canonical de chaque galerie, qui pointait vers /galerie, est réécrit vers sa propre adresse — sans cela Google les aurait traitées comme des doublons et n'en aurait indexé aucune.
+- Recherche par visage retirée : elle était décrite dans les mentions légales (section « Données biométriques », consentement Loi 25) mais n'avait aucune interface — seules des valeurs mortes subsistaient dans Client.dc.html. Section supprimée, code nettoyé.
+- Adresses de galerie lisibles : le slug était fabriqué en « galerie-a3f9 » et invisible dans l'admin. Il suit maintenant le nom (/galerie/sport) et reste modifiable à la main, avec garde-fou d'unicité.
+
+## Sync history
 date: 2026-08-07T13:05:00Z
 
 ### Updated in this project
@@ -39,3 +50,5 @@ date: 2026-08-07T13:05:00Z
 | /mentions | Mentions.dc.html | nv-theme, nv-ux |
 | /guide | Guide client.dc.html | doc-page |
 | (interne, non publiée) | Verification.dc.html | nv-config |
+| Aperçu de lien /galerie/* | functions/galerie/[[path]].js | galeries, photos (Supabase) |
+| Plan de site /sitemap.xml | functions/sitemap.xml.js | galeries, photos (Supabase) |

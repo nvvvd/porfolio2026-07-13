@@ -258,6 +258,10 @@
                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                   <input class="nvfield" value="{{ g.name }}" onInput="{{ g.rename }}" style="max-width:240px;font-size:16px;" />
                   <input class="nvfield" value="{{ g.nameEn }}" onInput="{{ g.renameEn }}" placeholder="Name — English" style="max-width:240px;font-size:14px;margin-top:6px;color:#5A5A5A;" />
+                  <label style="display:flex;align-items:center;gap:2px;width:100%;margin-top:8px;font-size:12px;color:#8A8A8A;letter-spacing:-.01em;">
+                    <span style="white-space:nowrap;">nicolasvivaudou.com/galerie/</span>
+                    <input class="nvfield" value="{{ g.slug }}" onInput="{{ g.setSlug }}" onBlur="{{ g.commitSlug }}" spellcheck="false" style="max-width:200px;font-size:12px;padding:4px 6px;color:#111;" />
+                  </label>
                   <span style="{{ g.tagStyle }}">{{ g.tag }}</span>
                 </div>
                 <input class="nvfield" value="{{ g.desc }}" onInput="{{ g.setDesc }}" style="margin-top:8px;font-size:13px;color:#5A5A5A;" />
@@ -503,6 +507,23 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
+  /* Adresse d'une galerie : /galerie/<slug>. Le slug était fabriqué à la
+     création sous la forme « galerie-a3f9 » et n'apparaissait nulle part dans
+     l'interface — d'où des adresses illisibles et impartageables. Il suit
+     maintenant le nom, tant qu'il n'a pas été saisi à la main. */
+  slugify(s) {
+    return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48);
+  }
+  /* Deux galeries ne peuvent pas partager une adresse : la seconde ouvrirait
+     toujours la première. En cas de collision, on suffixe. */
+  uniqueSlug(st, id, want) {
+    let s = this.slugify(want); if (!s) return '';
+    const taken = (v) => st.galleries.some(x => x.id !== id && x.slug === v);
+    if (!taken(s)) return s;
+    for (let n = 2; n < 60; n++) if (!taken(s + '-' + n)) return s + '-' + n;
+    return s + '-' + String(id).slice(-4);
+  }
   state = {
     ready: false, tick: 0, mobile: typeof window !== 'undefined' && window.innerWidth < 900,
     locked: true, pinInput: '', emailInput: '', pinError: false, serviceDown: false,
@@ -916,7 +937,20 @@ class Component extends DCLogic {
       });
       const total = g.photoIds.filter(pid => s.photos[pid]).length;
       return {
-        name: g.name, rename: onInput((st, v) => st.galleries.find(x => x.id === g.id).name = v),
+        name: g.name, rename: onInput((st, v) => {
+          const gg = st.galleries.find(x => x.id === g.id);
+          // Un slug encore automatique suit le nom ; un slug choisi ne bouge plus,
+          // sinon renommer une galerie casserait tous les liens déjà partagés.
+          const auto = !gg.slug || /^galerie-[a-z0-9]{4}$/i.test(gg.slug) || gg.slug === this.slugify(gg.name);
+          gg.name = v;
+          if (auto && !gg.private) { const ns = this.uniqueSlug(st, gg.id, v); if (ns) gg.slug = ns; }
+        }),
+        slug: g.slug,
+        setSlug: onInput((st, v) => { st.galleries.find(x => x.id === g.id).slug = this.slugify(v); }),
+        commitSlug: () => this.upd((st) => {
+          const gg = st.galleries.find(x => x.id === g.id);
+          gg.slug = this.uniqueSlug(st, gg.id, gg.slug || gg.name) || ('galerie-' + String(gg.id).slice(-4));
+        }),
         nameEn: g.nameEn || '', renameEn: onInput((st, v) => st.galleries.find(x => x.id === g.id).nameEn = v),
         desc: g.desc, setDesc: onInput((st, v) => st.galleries.find(x => x.id === g.id).desc = v),
         descEn: g.descEn || '', setDescEn: onInput((st, v) => st.galleries.find(x => x.id === g.id).descEn = v),

@@ -315,8 +315,7 @@ class Component extends DCLogic {
     ready: false, tick: 0, mobile: typeof window !== 'undefined' && window.innerWidth < 820,
     clientId: null, loginEmail: '', loginPass: '', loginError: false, serviceDown: false,
     view: 'galleries', galleryId: null,
-    faceModal: false, faceStep: 'idle', faceActive: null, faceCount: 0, faceTried: false,
-    scanPreview: '', scanMsg: '', sent: false, lb: -1, lbList: [], shareCopied: false, gridW: 0
+    sent: false, lb: -1, lbList: [], shareCopied: false, gridW: 0
   };
   componentDidMount() {
     this._wait = setInterval(() => {
@@ -520,7 +519,7 @@ class Component extends DCLogic {
     if (!c) {
       return {
         ...chrome, ...loginLabels,
-        showLogin: true, showApp: false, faceModal: false, zoomOpen: false, serviceDown: this.state.serviceDown,
+        showLogin: true, showApp: false, zoomOpen: false, serviceDown: this.state.serviceDown,
         brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn),
         demoHint: (window.NV_CONFIG && window.NV_CONFIG.backend !== 'local') ? '' : (demoClient ? (demoClient.email + ' / ' + demoClient.password) : ''),
         loginEmail: this.state.loginEmail, loginPass: this.state.loginPass, loginError: this.state.loginError,
@@ -548,7 +547,7 @@ class Component extends DCLogic {
       const badgeN = n.id === 'selection' && likeCount ? likeCount : 0;
       return {
         label: n.label, icon: n.icon, badge: badgeN ? '  ' + badgeN : '',
-        go: () => this.setState({ view: n.id, galleryId: null, faceActive: null }),
+        go: () => this.setState({ view: n.id, galleryId: null }),
         deskStyle: 'border:none;background:none;cursor:pointer;font-family:inherit;font-size:14px;letter-spacing:-.01em;padding:13px 0;color:' + (active ? 'var(--ink)' : 'var(--muted)') + ';border-bottom:2px solid ' + (active ? 'var(--accent)' : 'transparent') + ';',
         botStyle: 'flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;border:none;background:none;cursor:pointer;padding:9px 0;font-family:inherit;color:' + (active ? 'var(--ink)' : 'var(--muted)') + ';'
       };
@@ -557,7 +556,6 @@ class Component extends DCLogic {
     const galleryCards = galleries.map(g => ({
       name: L(g.name, g.nameEn),
       sub: L(g.sub || g.desc, g.subEn || g.descEn) + (this.expiryLabel(g, ui.lang) ? ' · ' + this.expiryLabel(g, ui.lang) : ''),
-      faceSearch: g.faceSearch,
       expired: this.isExpired(g),
       total: g.total || g.photoIds.length,
       liked: g.photoIds.filter(pid => c.likes[pid]).length,
@@ -571,12 +569,12 @@ class Component extends DCLogic {
     const galGone = view === 'gallery' && !g;
     const galExpired = view === 'gallery' && !!g && this.isExpired(g);
     const expDate = galExpired ? new Date(g.expiresAt + 'T12:00:00').toLocaleDateString(window.NVI18n.ui().lang === 'en' ? 'en-CA' : 'fr-CA', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
-    let photos = [], galName = '', galSub = '', galDate = '', coverSrc = '', galTotal = 0, galFace = false;
+    let photos = [], galName = '', galSub = '', galDate = '', coverSrc = '', galTotal = 0;
     if (g) {
-      galName = L(g.name, g.nameEn); galDate = L(g.sub || g.desc, g.subEn || g.descEn); galSub = galDate; galTotal = g.total || g.photoIds.length; galFace = g.faceSearch;
+      galName = L(g.name, g.nameEn); galDate = L(g.sub || g.desc, g.subEn || g.descEn); galSub = galDate; galTotal = g.total || g.photoIds.length;
       coverSrc = window.NVStore.resolveSrc(s.photos[g.coverId || g.photoIds[0]]);
       const exp = this.expiryLabel(g, ui.lang); if (exp) galSub += ' · ' + exp;
-      const ids = this.state.faceActive ? this.state.faceActive : g.photoIds;
+      const ids = g.photoIds;
       const srcList = ids.map(pid => s.photos[pid] ? window.NVStore.resolveSrc(s.photos[pid]) : null).filter(Boolean);
       photos = ids.map(pid => {
         const p = s.photos[pid]; if (!p || !window.NVStore.resolveSrc(p)) return null;
@@ -635,22 +633,16 @@ class Component extends DCLogic {
 
     const invoices = (c.invoices || []).map(i => ({ ...i, hasFile: !!i.fileUrl, fileWord: ui.lang === 'en' ? 'View invoice' : 'Voir la facture', statusLabel: (i.status === 'Payée' ? (ui.lang === 'en' ? 'Paid' : 'Payée') : (ui.lang === 'en' ? 'Due' : 'À régler')), badge: 'flex:none;font-size:11px;letter-spacing:-.01em;padding:6px 11px;border-radius:2px;' + (i.status === 'Payée' ? 'background:var(--ok-bg);color:var(--ok-fg);' : 'background:var(--warn-bg);color:var(--warn-fg);') }));
 
-    const sampleFaces = (s.sampleFaces || []).map(sf => ({ label: sf.label, img: React.createElement('img', { src: sf.src, alt: sf.label, style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }), pick: () => this.pickSample(sf.file) }));
-    const faceActiveOn = !!this.state.faceActive;
 
     return {
       ...chrome,
       showLogin: false, showApp: true, mobile,
       spaceLabel: T('cl.space'), quitLabel: T('cl.quit'), yourGalleries: T('cl.yourGalleries'),
-      faceBadge: T('cl.faceBadge'), photosWord: T('cl.photos'), likedSel: T('cl.likedSel'),
-      noGalleriesMsg: T('cl.noGalleries'), findMyPhotos: T('cl.findMyPhotos'), selectionWord: T('cl.selection'),
-      faceResultsLabel: (ui.lang === 'en' ? 'Face · ' + this.state.faceCount + ' results ✕' : 'Visage · ' + this.state.faceCount + ' résultats ✕'),
-      limitMsg: T('cl.limitReached1') + limit + T('cl.limitReached2'), faceEmptyMsg: T('cl.faceEmpty'),
+      photosWord: T('cl.photos'), likedSel: T('cl.likedSel'),
+      noGalleriesMsg: T('cl.noGalleries'), selectionWord: T('cl.selection'),
+      limitMsg: T('cl.limitReached1') + limit + T('cl.limitReached2'),
       invoicesTitle: T('cl.invoices'), invoicesSub: T('cl.invoicesSub'), noInvoicesMsg: T('cl.noInvoices'),
       mySelectionTitle: T('cl.mySelection'), noSelTitle: T('cl.noSelTitle'), noSelHint: T('cl.noSelHint'),
-      faceTitle: T('cl.faceTitle'), faceHead: T('cl.faceHead'), faceIntro1: T('cl.faceIntro1'), faceIntro2: T('cl.faceIntro2'),
-      faceUpload: T('cl.faceUpload'), faceOrSample: T('cl.faceOrSample'), facePrivacy: T('cl.facePrivacy'),
-      noFaceTitle: T('cl.noFaceTitle'), noFaceHint: T('cl.noFaceHint'), retryLabel: T('cl.retry'), faceFoundWord: T('cl.faceFound'),
       brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn),
       clientName: c.name, appPad: mobile ? 'padding-bottom:72px;' : '',
       logout: () => { window.NVAuth.logoutClient(); this.cliWriteHash('', -1, false); this.setState({ clientId: null, view: 'galleries', galleryId: null, lb: -1 }); },
@@ -673,7 +665,7 @@ class Component extends DCLogic {
       unavailBack: ui.lang === 'en' ? '← Back to my galleries' : '← Retour à mes galeries',
       expiredWord: ui.lang === 'en' ? 'expired' : 'expirée',
       galleryCards, hasGalleries: galleryCards.length > 0, noGalleries: galleryCards.length === 0,
-      photos, galName, galSub, galDate, galTotal, galFace, coverSrc, rows, rowGap: gapN + 'px',
+      photos, galName, galSub, galDate, galTotal, coverSrc, rows, rowGap: gapN + 'px',
       coverImg: coverSrc ? React.createElement('img', { src: coverSrc, alt: galName, onError: (e) => this.onImgErr(e), style: { position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }) : null,
       gridRef: this.gridRefCb,
       imgErr: (e) => this.onImgErr(e),
@@ -683,9 +675,6 @@ class Component extends DCLogic {
       showCentered: (view === 'galleries') || (view === 'invoices') || (view === 'selection') || galGone || galExpired,
       colWidth: mobile ? '110px' : '210px', stickyTop: mobile ? '60px' : '104px',
       likeCount, limit, likePct: Math.min(100, Math.round(likeCount / limit * 100)) + '%', limitReached: likeCount >= limit,
-      faceActive: faceActiveOn, faceCount: this.state.faceCount,
-      faceEmpty: faceActiveOn && this.state.faceActive.length === 0,
-      clearFace: () => this.setState({ faceActive: null }),
       selSummary: (ui.lang === 'en'
         ? (likeCount + ' of ' + limit + ' photos selected')
         : (likeCount + ' photo' + (likeCount > 1 ? 's' : '') + ' sur ' + limit + ' sélectionnée' + (likeCount > 1 ? 's' : ''))),
@@ -760,31 +749,13 @@ class Component extends DCLogic {
       dlWord: ui.lang === 'en' ? 'download' : 'télécharger',
       dlGalleryLabel: ui.lang === 'en' ? 'download the gallery' : 'télécharger la galerie',
       downloadGallery: () => {
-        const list = (this.state.faceActive || (g ? g.photoIds : [])).map(pid => s.photos[pid] ? window.NVStore.resolveSrc(s.photos[pid]) : null).filter(Boolean);
+        const list = (g ? g.photoIds : []).map(pid => s.photos[pid] ? window.NVStore.resolveSrc(s.photos[pid]) : null).filter(Boolean);
         list.forEach((src, i) => setTimeout(() => { const a = document.createElement('a'); a.href = src; a.setAttribute('download', ''); document.body.appendChild(a); a.click(); a.remove(); }, i * 350));
       },
       dlLocked: view === 'selection' && selected.length > 0 && !c.canDownload,
       dlLockedMsg: ui.lang === 'en'
         ? 'High-resolution download will be enabled by Nicolas once your invoice is settled.'
         : 'Le téléchargement haute résolution sera activé par Nicolas une fois votre facture réglée.',
-      // face modal
-      faceModal: this.state.faceModal,
-      openFace: () => this.setState({ faceModal: true, faceStep: 'idle' }),
-      closeFace: () => this.setState({ faceModal: false }),
-      faceIdle: this.state.faceStep === 'idle', faceScanning: this.state.faceStep === 'scanning',
-      faceNoface: this.state.faceStep === 'noface', faceDone: this.state.faceStep === 'done',
-      retryFace: () => this.setState({ faceStep: 'idle' }),
-      sampleFaces, onSelfie: (e) => this.onSelfie(e),
-      scanPreviewImg: this.state.scanPreview ? React.createElement('img', { src: this.state.scanPreview, alt: '', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }) : null, scanFaceShow: this.state.scanPreview ? 'none' : 'block',
-      scanMsg: this.state.scanMsg,
-      faceResultCount: this.state.faceCount,
-      faceResultMsg: this.state.faceCount
-        ? (ui.lang === 'en'
-            ? ((this.state.faceStrong ? this.state.faceStrong + ' strong match' + (this.state.faceStrong > 1 ? 'es' : '') + ' · ' : '') + 'ranked by resemblance.')
-            : ((this.state.faceStrong ? this.state.faceStrong + ' correspondance' + (this.state.faceStrong > 1 ? 's' : '') + ' forte' + (this.state.faceStrong > 1 ? 's' : '') + ' · ' : '') + 'classées par ressemblance.'))
-        : T('cl.faceNoMatch'),
-      faceApplyLabel: this.state.faceCount ? (ui.lang === 'en' ? ('See my ' + this.state.faceCount + ' photos →') : ('Voir mes ' + this.state.faceCount + ' photos →')) : T('cl.faceClose'),
-      applyFace: () => this.setState({ faceModal: false, faceActive: this.state._matched || [], faceTried: true }),
       sheetDesktop: mobile ? '' : 'border-radius:14px;margin-bottom:6vh;'
     };
   }

@@ -114,10 +114,10 @@
   </div>
 
   <sc-if value="{{ lightboxOpen }}" hint-placeholder-val="">
-  <div onClick="{{ closeLightbox }}" onTouchStart="{{ tStart }}" onTouchEnd="{{ tEnd }}" style="position:fixed;inset:0;z-index:80;background:rgba(17,17,17,.96);touch-action:pan-y;display:flex;align-items:center;justify-content:center;padding:clamp(12px,4vw,48px);">
-    <button onClick="{{ closeLightbox }}" aria-label="Fermer" style="position:absolute;top:16px;right:18px;border:none;background:none;color:#fff;font-size:34px;line-height:1;cursor:pointer;z-index:2;width:48px;height:48px;display:flex;align-items:center;justify-content:center;">×</button>
-    <button onClick="{{ prev }}" aria-label="Précédent" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px;border-radius:999px;font-size:20px;cursor:pointer;z-index:2;">‹</button>
-    <button onClick="{{ next }}" aria-label="Suivant" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.12);color:#fff;width:44px;height:44px;border-radius:999px;font-size:20px;cursor:pointer;z-index:2;">›</button>
+  <div onClick="{{ bgClick }}" onTouchStart="{{ tStart }}" onTouchMove="{{ tMove }}" onTouchEnd="{{ tEnd }}" onTouchCancel="{{ tCancel }}" style="position:fixed;inset:0;height:100dvh;z-index:80;background:rgba(17,17,17,.96);touch-action:pinch-zoom;display:flex;align-items:center;justify-content:center;padding:clamp(12px,4vw,48px);">
+    <button onClick="{{ closeLightbox }}" onTouchStart="{{ stopT }}" aria-label="Fermer" style="position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(12px + env(safe-area-inset-right,0px));border:none;background:none;color:#fff;font-size:34px;line-height:1;cursor:pointer;z-index:3;width:52px;height:52px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;">×</button>
+    <button onClick="{{ prev }}" onTouchStart="{{ stopT }}" aria-label="Précédent" style="position:absolute;left:calc(14px + env(safe-area-inset-left,0px));top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.14);color:#fff;width:52px;height:52px;border-radius:999px;font-size:22px;cursor:pointer;z-index:3;display:flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;">‹</button>
+    <button onClick="{{ next }}" onTouchStart="{{ stopT }}" aria-label="Suivant" style="position:absolute;right:calc(14px + env(safe-area-inset-right,0px));top:50%;transform:translateY(-50%);border:none;background:rgba(255,255,255,.14);color:#fff;width:52px;height:52px;border-radius:999px;font-size:22px;cursor:pointer;z-index:3;display:flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;">›</button>
     <img src="{{ lightboxSrc }}" data-fb="{{ lightboxFallbacks }}" loading="lazy" decoding="async" alt="{{ activeName }}" onClick="{{ stop }}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:2px;" />
     <span style="position:absolute;bottom:18px;left:50%;transform:translateX(-50%);font-size:13px;color:var(--faint);letter-spacing:-.01em;">{{ activeName }}</span>
   </div>
@@ -154,6 +154,15 @@ class Component extends DCLogic {
     window.addEventListener('pageshow', this._h);
   }
   componentWillUnmount() { clearInterval(this._wait); if (this._unsub) this._unsub(); if (this._ulang) this._ulang(); window.removeEventListener('resize', this._r); window.removeEventListener('keydown', this._k); window.removeEventListener('hashchange', this._h); window.removeEventListener('popstate', this._h); window.removeEventListener('pageshow', this._h); }
+  componentDidUpdate(pp, ps) {
+    const open = this.state.lb >= 0, was = ps.lb >= 0;
+    if (open === was) return;
+    try {
+      const b = document.body;
+      if (open) { this._scrollY = window.scrollY; b.style.position = 'fixed'; b.style.top = (-this._scrollY) + 'px'; b.style.left = '0'; b.style.right = '0'; b.style.overflow = 'hidden'; }
+      else { b.style.position = ''; b.style.top = ''; b.style.left = ''; b.style.right = ''; b.style.overflow = ''; window.scrollTo(0, this._scrollY || 0); }
+    } catch (e) {}
+  }
   curGallery() { const pub = window.NVStore.publicGalleries(); return pub.find(g => g.slug === this.state.slug) || pub[0]; }
   move(d) { const g = this.curGallery(); if (!g) return; const n = g.photoIds.length; let i = this.state.lb + d; if (i < 0) i = n - 1; if (i >= n) i = 0; this.setState({ lb: i }); this.writeHash(i, false); this.preload(i); }
   // Précharge les photos voisines pour un défilement instantané dans la lightbox.
@@ -273,17 +282,50 @@ class Component extends DCLogic {
         : '', lightboxIdx: lbOpen ? this.state.lb + 1 : 0,
       closeLightbox: () => this.closePhoto(),
       next: (e) => { e.stopPropagation(); this.move(1); }, prev: (e) => { e.stopPropagation(); this.move(-1); }, stop: (e) => e.stopPropagation(),
-      // Swipe mobile : glisser horizontalement pour changer de photo.
-      tStart: (e) => { const t = e.touches[0]; this._tx = t.clientX; this._ty = t.clientY; this._ts = Date.now(); },
+      /* Un toucher sur une flèche remontait jusqu'au fond et était mesuré comme
+         un début de glissement. Les boutons retiennent donc leur toucher. */
+      stopT: (e) => e.stopPropagation(),
+
+      /* Glissement horizontal pour changer de photo.
+         Trois corrections par rapport à la version précédente :
+         • le seuil de 800 ms rejetait tout glissement lent et délibéré — supprimé ;
+         • le seuil de 40 px et le rapport 1,5 imposaient un geste presque parfait
+           sur un écran de 390 px de large — ramenés à 30 px et à une simple
+           dominante horizontale ;
+         • le toucher n'était plus suivi entre le début et la fin, donc un geste
+           interrompu par le navigateur laissait la mesure en plan. */
+      tStart: (e) => {
+        if (e.touches.length !== 1) { this._tx = null; return; }
+        const t = e.touches[0];
+        this._tx = t.clientX; this._ty = t.clientY; this._moved = false;
+      },
+      tMove: (e) => {
+        if (this._tx == null || e.touches.length !== 1) return;
+        const t = e.touches[0];
+        if (Math.abs(t.clientX - this._tx) > 8 || Math.abs(t.clientY - this._ty) > 8) this._moved = true;
+      },
+      tCancel: () => { this._tx = null; },
       tEnd: (e) => {
         if (this._tx == null) return;
         const t = e.changedTouches[0];
         const dx = t.clientX - this._tx, dy = t.clientY - this._ty;
         this._tx = null;
-        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - this._ts < 800) {
-          e.stopPropagation(); e.preventDefault();
+        if (Math.abs(dx) > 30 && Math.abs(dx) > Math.abs(dy)) {
+          this._swiped = Date.now();
           this.move(dx < 0 ? 1 : -1);
         }
+      },
+
+      /* Le défaut le plus visible : un glissement se termine par un « click »
+         émis sur l'ancêtre commun du départ et de l'arrivée, c'est-à-dire ce
+         fond. Tout glissement un peu oblique, ou trop court pour franchir le
+         seuil, refermait donc la visionneuse au lieu de ne rien faire. On ne
+         referme plus que sur un vrai toucher immobile. */
+      bgClick: () => {
+        const moved = this._moved, swiped = Date.now() - (this._swiped || 0) < 400;
+        this._moved = false;
+        if (moved || swiped) return;
+        this.closePhoto();
       }
     };
   }
