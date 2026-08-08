@@ -180,6 +180,9 @@ class Component extends DCLogic {
       const h = (location.hash || '').replace(/^#/, '');
       if (!base || !h) return;
       const path = decodeURIComponent(location.pathname).replace(/^\/galerie\/?/i, '').replace(/\/+$/, '');
+      /* Le chemin fait foi dès qu'il porte un slug ; l'ancre n'est reprise que
+         s'il est vide. Dans les deux cas l'adresse réécrite n'a plus d'ancre,
+         donc /galerie/sport#sport redevient /galerie/sport. */
       history.replaceState(null, '', base + '/' + (path || h));
     } catch (e) {}
   }
@@ -201,7 +204,13 @@ class Component extends DCLogic {
     const g = this.curGallery(); if (!g) return;
     const base = this.routeBase();
     const url = this.routeUrl(g.slug, i);
-    const cur = base ? (decodeURIComponent(location.pathname).replace(/\/+$/, '') || '/') : location.hash;
+    /* L'ancre fait partie de l'adresse : la comparer au seul chemin faisait
+       sortir la fonction avant d'avoir retiré un « #slug » résiduel, qui
+       restait alors visible dans la barre d'adresse et se propageait aux liens
+       partagés depuis cette page. */
+    const cur = base
+      ? ((decodeURIComponent(location.pathname).replace(/\/+$/, '') || '/') + (location.hash || ''))
+      : location.hash;
     if (cur === decodeURIComponent(url)) return;
     try { if (push) history.pushState(null, '', url); else history.replaceState(null, '', url); }
     catch (e) { if (!base) location.hash = g.slug + (i >= 0 ? '/' + (i + 1) : ''); }
