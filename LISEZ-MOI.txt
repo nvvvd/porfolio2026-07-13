@@ -1,78 +1,60 @@
-À DÉPLOYER — 8 août 2026
+À DÉPLOYER — 9 août 2026
 ========================
 
-Copier à la RACINE du dépôt nvvvd/porfolio2026-07-13, arborescence conservée
-(le dossier functions/ inclus).
+Copier à la RACINE du dépôt nvvvd/porfolio2026-07-13, arborescence conservée.
 
-Contenu
--------
-Galerie.dc.html / galerie.html
-   Visionneuse mobile. Trois défauts corrigés :
-   1. un glissement se termine par un « click » émis sur l'élément commun au
-      départ et à l'arrivée, ici le fond noir, dont le rôle est de fermer :
-      tout swipe raté ou un peu oblique refermait la photo. Le fond ne ferme
-      plus que sur un toucher immobile.
-   2. les flèches étaient à 10 px du bord, dans la bande réservée au geste
-      « retour » de Safari iOS, qui avalait le toucher. Décalées à 14 px
-      (+ encoche) et agrandies de 44 à 52 px.
-   3. la page continuait de défiler sous la visionneuse : la barre d'adresse se
-      rétractait au premier geste et les flèches, calées à 50 % de hauteur,
-      passaient dessous. Défilement bloqué, position restaurée à la fermeture.
-   Seuil de glissement ramené de 40 à 30 px et limite de 800 ms supprimée :
-   un glissement lent et délibéré ne faisait rien.
+LE POINT IMPORTANT
+------------------
+_redirects           MODIFIÉ — c'est LA correction.
 
-Admin.dc.html / admin.html
-   L'adresse de la galerie devient visible et modifiable sous le titre.
-   Le slug valait « galerie-a3f9 » ; il suit maintenant le nom.
-   -> une galerie nommée « sport » donne /galerie/sport
-   Un slug saisi à la main n'est plus touché par les renommages ultérieurs.
+  La règle « /galerie/*  /galerie  200 » a été supprimée.
 
-functions/galerie/[[path]].js        NOUVEAU
-   Aperçu de lien propre à chaque galerie.
-   Réécrit aussi le <link rel="canonical"> : il pointait vers /galerie sur
-   TOUTES les galeries, ce qui aurait annulé le plan de site ci-dessous
-   (Google les aurait tenues pour des doublons d'une seule page).
+  Cloudflare Pages applique les règles de _redirects AVANT les fonctions.
+  Tant qu'elle existait, /galerie/mariage était réécrit en /galerie et servi
+  comme simple fichier statique : la fonction d'aperçu n'était jamais appelée,
+  et tous les liens partagés affichaient le titre « Galerie » et la photo
+  générique du site. C'est exactement ce que montrait votre capture.
 
-functions/sitemap.xml.js             NOUVEAU
-   Plan de site engendré à la demande, galeries publiques comprises, avec la
-   photo de couverture en <image:image> (éligible à Google Images).
-   ⚠ SUPPRIMER l'ancien fichier :  git rm sitemap.xml
-     (une fonction a priorité sur un fichier statique de même nom, mais garder
-      les deux entretient la confusion)
+  La fonction assure désormais elle-même cette réécriture, en interne : les
+  adresses /galerie/mariage continuent d'ouvrir la page normalement.
 
-Client.dc.html / client.html
-Mentions.dc.html / mentions.html
-   Recherche par visage retirée. Elle était décrite dans les mentions légales
-   — section « Données biométriques », consentement Loi 25, gabarits — pour un
-   traitement qui n'a jamais existé : aucune interface ne l'appelait, seules
-   des valeurs mortes subsistaient dans le code. Annoncer la collecte d'une
-   donnée biométrique qu'on ne collecte pas est un risque inutile.
+functions/galerie/[[path]].js   MODIFIÉ
+   • sert la page de galerie (rôle repris à _redirects)
+   • couverture : si la galerie n'a pas de photo de couverture choisie dans
+     l'admin, la première photo de la galerie est utilisée. Sans ce repli,
+     une galerie sans couverture gardait l'image générique.
+   • ajoute og:image:width / height / alt / secure_url — sans elles iMessage
+     affiche une petite vignette carrée au lieu de la grande image.
+   • diagnostic : ?_debug (voir plus bas)
 
-AUCUNE VARIABLE À CRÉER
------------------------
-Les deux fonctions lisent l'adresse et la clé publique Supabase dans
-/nv-config.js, que le site sert déjà à tous ses visiteurs. La clé « anon » est
-publique par construction : sa sécurité repose sur les règles RLS de la base,
-pas sur son secret. Rien à saisir dans le tableau de bord.
-(SUPABASE_URL / SUPABASE_ANON_KEY restent prioritaires si vous les définissez.)
+Le reste du dossier est identique au zip du 8 août (v5), pour que tout parte
+d'un coup si vous n'aviez pas encore déployé.
 
-⚠ UNE ACTION DANS CLOUDFLARE
-----------------------------
-1. Vérifier que les transformations d'images sont actives sur la zone
-   nicolasvivaudou.com (Images -> Transformations), sinon l'image d'aperçu
-   ne sera pas recadrée en 1200 x 630.
+VÉRIFIER APRÈS DÉPLOIEMENT
+--------------------------
+1. Ouvrir dans un navigateur :
+      https://www.nicolasvivaudou.com/galerie/mariage?_debug
 
-⚠ CHANGER UN SLUG CASSE LES LIENS DÉJÀ PARTAGÉS
-   /galerie/galerie-a3f9 ne répondra plus une fois renommé en /galerie/sport.
-   Autant le faire maintenant que dans six mois.
+   Réponse attendue, en JSON :
+      "found": true
+      "meta": { "gallery": "Mariage", "image": "https://…/cdn-cgi/image/…" }
 
-Après déploiement
------------------
-- Plan de site : ouvrir https://www.nicolasvivaudou.com/sitemap.xml — les
-  galeries doivent y figurer une à une. Puis le soumettre dans Google Search
-  Console (Sitemaps -> ajouter « sitemap.xml »).
-- Partage : coller https://www.nicolasvivaudou.com/galerie/sport dans
-  https://developers.facebook.com/tools/debug/ puis « Scrape Again ».
-  Le titre et l'image doivent être ceux de la galerie sport.
-- Sur téléphone : ouvrir une photo, glisser lentement, glisser en oblique,
-  appuyer sur les flèches gauche et droite. Aucun de ces gestes ne doit fermer.
+   Si "found": false      -> le slug ne correspond à aucune galerie PUBLIQUE
+                             (vérifier l'orthographe dans l'admin ; une galerie
+                              privée est volontairement exclue de l'aperçu)
+   Si "error": "Supabase 4xx…"  -> le message dit quelle table a refusé
+   Si la page s'affiche au lieu du JSON -> la fonction n'est pas déployée :
+                             vérifier que le dossier functions/ est bien poussé
+                             sur GitHub, à la racine du dépôt
+
+2. Ouvrir l'adresse de l'image renvoyée par ?_debug : elle doit afficher la
+   photo, recadrée. Sinon, activer les transformations d'images sur la zone
+   nicolasvivaudou.com (Cloudflare -> Images -> Transformations).
+
+3. Forcer les robots à relire :
+      https://developers.facebook.com/tools/debug/  -> « Scrape Again »
+
+⚠ iMESSAGE GARDE LES APERÇUS EN MÉMOIRE
+   Un lien déjà envoyé gardera son ancienne image, même corrigée. Pour tester,
+   utilisez une adresse jamais partagée, ou ajoutez un paramètre :
+      https://www.nicolasvivaudou.com/galerie/mariage?v=2

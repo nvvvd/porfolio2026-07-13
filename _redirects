@@ -1,8 +1,13 @@
-# URLs en chemin pour les galeries et les photos.
-# Destination SANS « .html » (/galerie, /client) : c'est la forme déjà normalisée
-# par Cloudflare Pages, donc aucune redirection en chaîne n'est possible.
-/galerie/*   /galerie   200
+# URLs en chemin pour les espaces client.
+# Destination SANS « .html » (/client) : c'est la forme déjà normalisée par
+# Cloudflare Pages, donc aucune redirection en chaîne n'est possible.
 /client/*    /client    200
+
+# ⚠ NE PAS RÉTABLIR « /galerie/*  /galerie  200 ».
+# Cloudflare Pages applique _redirects AVANT les fonctions : cette règle
+# court-circuitait functions/galerie/[[path]].js, qui n'était donc jamais
+# appelée — tous les liens de galerie partagés affichaient la même photo.
+# La fonction assure elle-même cette réécriture, en interne.
 
 # Anciennes adresses -> nouvelles (SEO). Aucune réécriture vers un fichier .dc.html.
 /accueil        /            301

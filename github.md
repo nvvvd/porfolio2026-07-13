@@ -2,6 +2,15 @@ repo: nvvvd/porfolio2026-07-13
 branch: main
 
 ## Last sync
+date: 2026-08-09T09:30:00Z
+
+### Updated in this project
+- L'aperçu de partage restait générique : la règle _redirects « /galerie/* → /galerie 200 » est appliquée AVANT les fonctions Cloudflare Pages, donc functions/galerie/[[path]].js n'était jamais appelée. Règle supprimée ; la fonction assure elle-même la réécriture, en interne.
+- Couverture d'aperçu : repli sur la première photo de la galerie quand cover_id est vide (cas de la plupart des galeries), au lieu de laisser l'image générique du site.
+- Balises og:image:width/height/alt/secure_url ajoutées à la volée : sans elles iMessage affiche une vignette carrée au lieu de la grande image.
+- Diagnostic : ?_debug sur une adresse de galerie renvoie un rapport JSON (galerie trouvée, image retenue, erreur Supabase).
+
+## Sync history
 date: 2026-08-08T10:15:00Z
 
 ### Updated in this project
