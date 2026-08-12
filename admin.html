@@ -472,6 +472,48 @@
         </sc-for>
       </sc-if>
 
+      <!-- ===== FACTURES ===== -->
+      <sc-if value="{{ isInvoices }}">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:18px;">
+          <a href="/facture?mode=facture" style="{{ primaryBtn }};text-decoration:none;">+ Nouvelle facture</a>
+          <a href="/facture?mode=devis" style="{{ ghostBtn }};text-decoration:none;">+ Nouveau devis</a>
+          <span style="flex:1;"></span>
+          <span style="font-size:13px;padding:7px 12px;border-radius:2px;background:#E8F0EA;color:#2F6B3F;">Encaissé : {{ paidTotal }}</span>
+          <span style="font-size:13px;padding:7px 12px;border-radius:2px;background:#FBF1D8;color:#7A610F;">À encaisser : {{ dueTotal }}</span>
+        </div>
+
+        <sc-for list="{{ docGroups }}" as="dg" hint-placeholder-count="2">
+          <section style="{{ card }};margin-bottom:14px;">
+            <div style="{{ cardTitle }};display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span>{{ dg.name }}</span>
+              <span style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                <span style="font-size:11px;color:#9A9A9A;text-transform:none;letter-spacing:0;">{{ dg.summary }}</span>
+                <a href="{{ dg.newHref }}" style="{{ ghostBtnSm }};text-decoration:none;">+ document</a>
+              </span>
+            </div>
+            <sc-for list="{{ dg.docs }}" as="d" hint-placeholder-count="2">
+              <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 0;border-top:1px solid #EEE;">
+                <span style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#9A9A9A;min-width:78px;">{{ d.num }}</span>
+                <span style="flex:1;min-width:150px;font-size:14px;color:#111;">{{ d.label }}</span>
+                <span style="font-size:13px;color:#555;min-width:80px;text-align:right;">{{ d.amount }}</span>
+                <span style="{{ d.badge }}">{{ d.status }}</span>
+                <a href="{{ d.href }}" style="{{ d.openBtn }}">✎ ouvrir</a>
+              </div>
+            </sc-for>
+            <sc-if value="{{ dg.empty }}"><div style="font-size:13px;color:#9A9A9A;padding-top:8px;">Aucun document. « + document » ouvre l’éditeur sur cette fiche.</div></sc-if>
+          </section>
+        </sc-for>
+
+        <sc-if value="{{ noClients }}">
+          <section style="{{ card }};text-align:center;padding:34px 18px;">
+            <div style="font-size:14px;color:#555;">Aucune fiche client pour l’instant.</div>
+            <p style="font-size:13px;color:#9A9A9A;margin:8px 0 0;">Créez-en une dans l’onglet Clients pour rattacher les documents, ou rédigez un devis libre avec les boutons ci-dessus.</p>
+          </section>
+        </sc-if>
+
+        <p style="font-size:12px;color:#9A9A9A;line-height:1.6;max-width:680px;margin:16px 0 0;">Les documents rédigés dans l’éditeur sont rangés dans la fiche du client : ils suivent la synchronisation du site et s’affichent dans son espace. Un devis rédigé sans client reste un brouillon sur cet appareil — le menu « Client » de l’éditeur permet de le rattacher plus tard. Les lignes ajoutées à la main depuis une fiche client n’apparaissent pas ici : elles n’ont pas de document.</p>
+      </sc-if>
+
       <!-- ===== MESSAGES ===== -->
       <sc-if value="{{ isMessages }}">
         <sc-if value="{{ hasMessages }}">
@@ -801,6 +843,7 @@ class Component extends DCLogic {
       { id: 'content', label: 'Contenu' },
       { id: 'galleries', label: 'Galeries' },
       { id: 'clients', label: 'Clients' },
+      { id: 'invoices', label: 'Factures' },
       { id: 'messages', label: 'Messages' },
       { id: 'settings', label: 'Réglages' }
     ];
@@ -827,6 +870,7 @@ class Component extends DCLogic {
       content: ['Contenu du site', 'Identité, accueil, à propos, contact et prestations — tout est éditable.'],
       galleries: ['Galeries publiques', 'Vos galeries de portfolio — portrait, paysage, sport… (les galeries clients sont dans l’onglet Clients).'],
       clients: ['Espaces clients', 'Accès, galeries privées, sélections et factures — tout par client.'],
+      invoices: ['Devis & factures', 'Tous les documents, tous clients confondus. L’éditeur s’ouvre sur une page dédiée.'],
       messages: ['Messages reçus', 'Demandes envoyées depuis la page contact.'],
       settings: ['Réglages', 'Limites, filigrane et données.']
     };
@@ -883,6 +927,32 @@ class Component extends DCLogic {
     const shareEntry = (s.share || {})[shareKey] || {};
     const shareSlot = (st) => { if (!st.share) st.share = {}; if (!st.share[shareKey]) st.share[shareKey] = {}; return st.share[shareKey]; };
     const shareImgSrc = window.NVStore.resolveSrc(shareEntry.image || 'images/L1190335.jpg');
+
+    /* ---- onglet Factures ----
+       Une fiche par client, ne listant que les documents rédigés dans l'éditeur
+       (ceux qui portent un docId) : les lignes saisies à la main dans une fiche
+       ne sont qu'un montant, il n'y a rien à ouvrir. */
+    const docGroups = s.clients.map(c => {
+      const docs = (c.invoices || []).filter(inv => inv.docId);
+      const dueN = docs.filter(inv => inv.status !== 'Payée').length;
+      return {
+        name: c.name || c.email || 'Client',
+        newHref: '/facture?client=' + encodeURIComponent(c.id) + '&mode=facture',
+        empty: docs.length === 0,
+        summary: docs.length
+          ? docs.length + ' document' + (docs.length > 1 ? 's' : '') + (dueN ? ' · ' + dueN + ' à régler' : '')
+          : '',
+        docs: docs.map(inv => ({
+          num: inv.num || '—',
+          label: inv.label || 'Document',
+          amount: inv.amount || '',
+          status: inv.status,
+          badge: 'font-size:11px;border-radius:2px;padding:4px 9px;flex:none;' + (inv.status === 'Payée' ? 'background:#E8F0EA;color:#2F6B3F;' : 'background:#FBF1D8;color:#7A610F;'),
+          href: '/facture?id=' + encodeURIComponent(inv.docId),
+          openBtn: 'border:1px solid #E0E0E0;background:#fff;color:#333;border-radius:2px;padding:5px 10px;font-size:12px;text-decoration:none;flex:none;'
+        }))
+      };
+    });
 
     // ---- content fields ----
     const content = {
@@ -1314,7 +1384,8 @@ class Component extends DCLogic {
       syncDotStyle: 'width:7px;height:7px;border-radius:50%;flex:none;background:' + syncMeta.color + ';',
       tabTitle: titles[tab][0], tabHint: titles[tab][1],
 
-      isStats: tab === 'stats', isContent: tab === 'content', isGalleries: tab === 'galleries', isClients: tab === 'clients', isMessages: tab === 'messages', isSettings: tab === 'settings',
+      isStats: tab === 'stats', isContent: tab === 'content', isGalleries: tab === 'galleries', isClients: tab === 'clients', isInvoices: tab === 'invoices', isMessages: tab === 'messages', isSettings: tab === 'settings',
+      docGroups,
       statCols: mobile ? '1fr 1fr' : 'repeat(4,1fr)',
       statCards, topPhotos, hasTopPhotos: topPhotos.length > 0, noTopPhotos: topPhotos.length === 0,
       statClients, paidTotal: money(paidSum), dueTotal: money(dueSum),
