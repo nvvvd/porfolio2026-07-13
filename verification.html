@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="/support.js?v=20260804b"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="robots" content="noindex, nofollow">
+<script src="/nv-config.js?v=20260806c"></script>
+<title>Vérification du site — Nicolas Vivaudou</title>
+<link rel="icon" href="/favicon.svg">
+<style>
+  html, body { margin: 0; padding: 0; background: #12100e; }
+  a { color: #c9a227; }
+  a:hover { color: #e0b93a; }
+  @keyframes nvspin { to { transform: rotate(360deg); } }
+</style>
+</helmet>
+<div style="min-height:100vh;background:#12100e;color:#f2ece2;font-family:'Inter Tight',system-ui,sans-serif;padding:48px 32px 96px;box-sizing:border-box;">
+  <div style="max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:34px;">
+
+    <header style="display:flex;flex-direction:column;gap:13px;border-bottom:1px solid #2e2a25;padding-bottom:26px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:#8d8577;">Outil interne — non indexé</div>
+      <h1 style="margin:0;font-size:33px;font-weight:600;letter-spacing:-.02em;line-height:1.15;">Vérification du site</h1>
+      <p style="margin:0;max-width:62ch;font-size:15px;line-height:1.6;color:#a9a094;text-wrap:pretty;">Charge réellement chaque page, intercepte toute erreur JavaScript, puis contrôle les chemins des scripts et les jetons de cache. À lancer avant chaque mise en ligne.</p>
+    </header>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;">
+      <button onClick="{{ run }}" disabled="{{ running }}" style="font-family:inherit;font-size:14px;font-weight:600;padding:13px 26px;border-radius:999px;border:0;cursor:pointer;background:#c9a227;color:#17140f;" style-hover="background:#e0b93a;">{{ runLabel }}</button>
+      <button onClick="{{ toggleMode }}" disabled="{{ running }}" style="font-family:inherit;font-size:14px;font-weight:500;padding:12px 22px;border-radius:999px;border:1px solid #3a352d;cursor:pointer;background:transparent;color:#d8d0c4;" style-hover="border-color:#6a6357;color:#f2ece2;">{{ modeLabel }}</button>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#8d8577;">{{ modeHint }}</div>
+    </div>
+
+    <sc-if value="{{ running }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;align-items:center;gap:14px;padding:17px 22px;border-radius:14px;background:#1a1714;border:1px solid #2e2a25;">
+        <div style="width:15px;height:15px;border-radius:50%;border:2px solid #3a352d;border-top-color:#c9a227;animation:nvspin .75s linear infinite;"></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#a9a094;">{{ progressText }}</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasSummary }}" hint-placeholder-val="{{ false }}">
+      <div style="padding:22px 24px;border-radius:14px;border:1px solid #2e2a25;background:#1a1714;display:flex;align-items:flex-start;gap:16px;">
+        <div style="font-size:21px;line-height:1.2;color:{{ verdictColor }};">{{ verdictMark }}</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:17px;font-weight:600;color:{{ verdictColor }};">{{ verdictTitle }}</div>
+          <div style="font-size:14.5px;line-height:1.6;color:#a9a094;max-width:70ch;text-wrap:pretty;">{{ verdictText }}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:12.5px;color:#8d8577;margin-top:4px;">{{ tally }}</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+      <section style="display:flex;flex-direction:column;border:1px solid #2e2a25;border-radius:14px;overflow:hidden;background:#17130f;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 22px;background:#1c1815;border-bottom:1px solid #2e2a25;">
+          <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
+            <div style="font-size:16px;font-weight:600;">{{ g.title }}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#8d8577;">{{ g.subtitle }}</div>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:500;padding:5px 12px;border-radius:999px;background:{{ g.badgeBg }};color:{{ g.badgeColor }};white-space:nowrap;">{{ g.badge }}</div>
+        </div>
+        <sc-for list="{{ g.checks }}" as="c" hint-placeholder-count="2">
+          <div style="display:flex;align-items:flex-start;gap:14px;padding:13px 22px;border-top:1px solid #221e1a;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:13px;width:14px;flex:none;color:{{ c.color }};padding-top:1px;">{{ c.mark }}</div>
+            <div style="display:flex;flex-direction:column;gap:5px;min-width:0;flex:1;">
+              <div style="font-size:14.5px;font-weight:500;color:#e8e1d6;">{{ c.label }}</div>
+              <sc-if value="{{ c.detail }}" hint-placeholder-val="{{ false }}">
+                <div style="font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.65;color:{{ c.color }};white-space:pre-wrap;overflow-wrap:anywhere;">{{ c.detail }}</div>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      </section>
+    </sc-for>
+
+    <div style="font-family:'JetBrains Mono',monospace;font-size:12px;line-height:1.7;color:#6f685c;border-top:1px solid #2e2a25;padding-top:20px;">Cette page ne modifie rien. Elle relit les fichiers du site tels qu'ils sont servis.</div>
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1100,&quot;height&quot;:900}}">
+const PAGES = [
+  ['Accueil.dc.html', 'index.html', 'Accueil'],
+  ['Portfolio.dc.html', 'portfolio.html', 'Portfolio'],
+  ['Galerie.dc.html', 'galerie.html', 'Galerie'],
+  ['Client.dc.html', 'client.html', 'Espace client'],
+  ['Admin.dc.html', 'admin.html', 'Administration'],
+  ['Contact.dc.html', 'contact.html', 'Contact / à propos'],
+  ['Mentions.dc.html', 'mentions.html', 'Mentions légales'],
+  ['Guide client.dc.html', 'guide.html', 'Guide client'],
+  [null, '404.html', 'Page 404']
+];
+const ASSET = /^(support|doc-page|store|nv-[a-z0-9-]+)\.js$/i;
+
+// Composés à l'exécution : la page ne doit contenir aucune balise de script
+// écrite en clair, sinon elle se refermerait sur elle-même.
+const T0 = '<' + 'script';
+const T1 = '<' + '/script>';
+const LOGIC_RE = new RegExp(T0 + ' type="text/x-dc" data-dc-script[^>]*>([\\s\\S]*?)' + T1);
+const SRC_RE = T0 + '[^>]+src="[^"]+"';
+
+class Component extends DCLogic {
+  state = { running: false, mode: 'dc', groups: [], done: false, progress: '' };
+
+  /* Vérifie que le bloc de logique compile, et localise la ligne où les
+     accolades se déséquilibrent — c'est elle qui ferme la classe trop tôt. */
+  syntax(html) {
+    const m = html.match(LOGIC_RE);
+    if (!m) return null;
+    try { new Function(m[1]); return { ok: true }; } catch (e) {
+      const lines = m[1].split('\n');
+      let d = 0, str = null, com = false, at = 0;
+      for (let i = 0; i < lines.length && !at; i++) {
+        const L = lines[i];
+        for (let j = 0; j < L.length; j++) {
+          const c = L[j], p = L[j - 1];
+          if (com) { if (c === '/' && p === '*') com = false; continue; }
+          if (str) { if (c === str && p !== '\\') str = null; continue; }
+          if (c === '/' && L[j + 1] === '*') { com = true; j++; continue; }
+          if (c === '/' && L[j + 1] === '/') break;
+          if (c === '"' || c === "'" || c === '`') { str = c; continue; }
+          if (c === '{') d++;
+          if (c === '}' && --d < 1 && i > 2) { at = i + 1; break; }
+        }
+      }
+      return { ok: false, msg: e.message, line: at, text: at ? lines[at - 1].trim().slice(0, 150) : '' };
+    }
+  }
+
+  /* Charge la page dans un cadre isolé, avec un capteur d'erreurs injecté en
+     tête : erreurs au rendu et promesses rejetées sont remontées. Les images
+     manquantes sont ignorées — elles ne cassent pas une page. */
+  probe(html, key) {
+    return new Promise(resolve => {
+      const errs = [];
+      const onMsg = e => { if (e.data && e.data.__nv === key) errs.push(e.data.m); };
+      window.addEventListener('message', onMsg);
+      const sensor = T0 + '>(function(){function s(m){try{parent.postMessage({__nv:' +
+        JSON.stringify(key) + ',m:String(m)},"*")}catch(e){}}' +
+        'addEventListener("error",function(e){if(e.target&&e.target.tagName==="IMG")return;' +
+        's((e.message||"Erreur")+(e.lineno?" (ligne "+e.lineno+")":""))},true);' +
+        'addEventListener("unhandledrejection",function(e){s("Promesse rejetée : "+((e.reason&&e.reason.message)||e.reason))});' +
+        '})()' + T1;
+      const fr = document.createElement('iframe');
+      fr.setAttribute('aria-hidden', 'true');
+      fr.style.cssText = 'position:fixed;left:-9999px;top:0;width:1200px;height:860px;border:0;opacity:0;pointer-events:none';
+      fr.srcdoc = html.replace(/<head([^>]*)>/i, (m, a) => '<head' + a + '>' + sensor);
+      document.body.appendChild(fr);
+      setTimeout(() => {
+        window.removeEventListener('message', onMsg);
+        try { fr.remove(); } catch (e) {}
+        resolve(errs);
+      }, 3000);
+    });
+  }
+
+  /* Accès anonyme à la base. « clients » et « messages » contiennent des adresses
+     e-mail, des factures et les codes des galeries privées : un visiteur non
+     connecté ne doit rien pouvoir en lire. Interrogées ici avec la seule clé
+     publique, exactement comme le ferait un curieux depuis la console. */
+  rls() {
+    const cfg = (window.NV_CONFIG || {}).supabase || {};
+    const wrap = (checks) => ({ title: 'Base de données', subtitle: 'accès anonyme (RLS)', checks });
+    if (!cfg.url || !cfg.anonKey) {
+      return Promise.resolve(wrap([{ status: 'warn', label: 'Configuration Supabase absente', detail: 'NV_CONFIG.supabase non chargé ici : contrôle impossible.' }]));
+    }
+    const base = String(cfg.url).replace(/\/+$/, '') + '/rest/v1/';
+    const H = { apikey: cfg.anonKey, Authorization: 'Bearer ' + cfg.anonKey };
+    const ask = (t, sel) => fetch(base + t + '?select=' + sel + '&limit=1', { headers: H, cache: 'no-store' })
+      .then(r => r.text().then(b => ({ code: r.status, body: b })))
+      .catch(e => ({ code: 0, body: String((e && e.message) || e) }));
+
+    const PRIVATE = [['clients', 'id,email,invoices'], ['messages', 'id,email,body']];
+    const PUBLIC = [['photos', 'id'], ['galleries', 'id']];
+
+    return Promise.all(PRIVATE.map(p => ask(p[0], p[1]).then(r => ({ t: p[0], r: r }))))
+      .then(priv => Promise.all(PUBLIC.map(p => ask(p[0], p[1]).then(r => ({ t: p[0], r: r }))))
+        .then(pub => {
+          const checks = [];
+          priv.forEach(x => {
+            const r = x.r;
+            let rows = null;
+            try { rows = JSON.parse(r.body); } catch (e) {}
+            const leaked = r.code === 200 && Array.isArray(rows) && rows.length > 0;
+            if (leaked) checks.push({ status: 'fail', label: 'Table « ' + x.t +' » lisible sans être connecté', detail: 'La clé publique renvoie des lignes :\n' + r.body.slice(0, 220) + '\nActivez la RLS sur cette table et supprimez toute policy SELECT ouverte à « anon ».' });
+            else if (r.code === 200) checks.push({ status: 'ok', label: 'Table « ' + x.t + ' » : rien ne sort sans session' });
+            else if (r.code === 0) checks.push({ status: 'warn', label: 'Table « ' + x.t + ' » : requête impossible', detail: r.body });
+            else checks.push({ status: 'ok', label: 'Table « ' + x.t + ' » : accès refusé (' + r.code + ')' });
+          });
+          pub.forEach(x => {
+            const ok = x.r.code === 200;
+            checks.push(ok
+              ? { status: 'ok', label: 'Table « ' + x.t + ' » lisible (nécessaire au site public)' }
+              : { status: 'fail', label: 'Table « ' + x.t + ' » illisible en anonyme', detail: 'Code ' + x.r.code + ' — les galeries publiques resteront vides.\n' + x.r.body.slice(0, 220) });
+          });
+          return wrap(checks);
+        }))
+      .catch(e => wrap([{ status: 'warn', label: 'Contrôle interrompu', detail: String((e && e.message) || e) }]));
+  }
+
+  run() {
+    const mode = this.state.mode;
+    const list = PAGES.filter(p => (mode === 'dc' ? p[0] : p[1]))
+      .map(p => ({ title: p[2], file: mode === 'dc' ? p[0] : p[1] }));
+    this.setState({ running: true, done: false, groups: [], progress: 'Préparation…' });
+
+    const src = {}, meta = {}, groups = [];
+    let chain = Promise.resolve();
+
+    list.forEach((t, i) => {
+      chain = chain
+        .then(() => {
+          this.setState({ progress: t.file + ' — ' + (i + 1) + '/' + list.length });
+          return fetch(encodeURI(t.file), { cache: 'no-store' })
+            .then(r => {
+              if (!r.ok) return Promise.reject();
+              meta[t.file] = { redirected: r.redirected, url: r.url };
+              return r.text();
+            })
+            .catch(() => null);
+        })
+        .then(html => {
+          src[t.file] = html;
+          const checks = [];
+          if (html === null) {
+            checks.push({ status: 'warn', label: 'Fichier introuvable dans cet environnement', detail: t.file });
+            groups.push({ title: t.title, subtitle: t.file, checks });
+            this.setState({ groups: groups.slice() });
+            return;
+          }
+
+          /* En ligne, /Accueil.dc.html est normalisé en /Accueil.dc par Cloudflare
+             Pages, puis redirigé vers / par _redirects : le serveur renvoie la PAGE
+             PUBLIÉE sous le nom du fichier source. Contrôler ses chemins reviendrait
+             à reprocher à index.html d'être index.html. On signale la substitution
+             au lieu d'inventer une erreur. */
+          const mt = meta[t.file] || {};
+          const served = decodeURIComponent(String(mt.url || '').split(/[?#]/)[0]).split('/').pop();
+          if (mt.redirected || (served && served !== t.file)) {
+            src[t.file] = null;
+            checks.push({ status: 'warn', label: 'Redirigé — contrôle impossible sur cette cible', detail: t.file + '  →  ' + (mt.url || '?') + "\nEn ligne, les sources .dc.html ne sont pas servies sous leur propre nom. Passez sur « Cible : pages publiées »." });
+            groups.push({ title: t.title, subtitle: t.file, checks });
+            this.setState({ groups: groups.slice() });
+            return;
+          }
+
+          const syn = this.syntax(html);
+          if (!syn) checks.push({ status: 'ok', label: 'Page sans bloc de logique' });
+          else if (syn.ok) checks.push({ status: 'ok', label: 'Syntaxe JavaScript valide' });
+          else checks.push({
+            status: 'fail',
+            label: 'Erreur de syntaxe — la page restera vide',
+            detail: syn.msg + (syn.line ? '\nLigne ' + syn.line + ' du bloc de logique : ' + syn.text : '')
+          });
+
+          const srcs = (html.match(new RegExp(SRC_RE, 'gi')) || [])
+            .map(s => s.match(/src="([^"]+)"/)[1])
+            .filter(s => ASSET.test(s.replace(/^\//, '').split('?')[0]));
+          const wantAbs = /\.html$/i.test(t.file) && !/\.dc\.html$/i.test(t.file);
+          const wrong = srcs.filter(s => (wantAbs ? !s.startsWith('/') : s.startsWith('/')));
+          checks.push(wrong.length
+            ? { status: 'fail', label: wantAbs ? 'Chemins relatifs sur une page publiée' : 'Chemins absolus dans une source', detail: wrong.join('\n') + (wantAbs ? '\nUne adresse imbriquée (/galerie/xxx) les chercherait au mauvais endroit.' : "\nL'aperçu d'édition ne les trouvera pas.") }
+            : { status: 'ok', label: wantAbs ? 'Chemins absolus (correct pour une page publiée)' : 'Chemins relatifs (correct pour une source)' });
+
+          const bare = srcs.filter(s => !/\?v=/.test(s));
+          checks.push(bare.length
+            ? { status: 'fail', label: 'Script appelé sans jeton de version', detail: bare.join('\n') + "\nLes .js sont servis en cache d'un an : les visiteurs garderaient l'ancienne version." }
+            : { status: 'ok', label: 'Tous les scripts portent un jeton de version' });
+
+          return this.probe(html, t.file).then(errs => {
+            checks.push(errs.length
+              ? { status: 'fail', label: 'Erreur JavaScript au chargement', detail: errs.slice(0, 4).join('\n') }
+              : { status: 'ok', label: 'Se charge sans erreur JavaScript' });
+            groups.push({ title: t.title, subtitle: t.file, checks });
+            this.setState({ groups: groups.slice() });
+          });
+        });
+    });
+
+    chain.then(() => {
+      const checks = [], tok = {};
+      Object.keys(src).forEach(f => {
+        if (!src[f]) return;
+        const re = /([a-z0-9-]+\.js)\?v=([a-z0-9._-]+)/gi;
+        let m;
+        while ((m = re.exec(src[f]))) {
+          const k = m[1].toLowerCase();
+          tok[k] = tok[k] || {};
+          tok[k][m[2]] = (tok[k][m[2]] || []).concat(f);
+        }
+      });
+      const split = Object.keys(tok).filter(k => Object.keys(tok[k]).length > 1);
+      checks.push(split.length
+        ? { status: 'fail', label: 'Jetons de version incohérents entre les pages', detail: split.map(k => k + ' → ' + Object.keys(tok[k]).join(' / ')).join('\n') + "\nLes pages ne chargeraient pas la même version d'un même script." }
+        : { status: 'ok', label: 'Un seul jeton de version par script' });
+      groups.push({ title: 'Contrôles transverses', subtitle: 'cohérence entre les pages', checks });
+      this.setState({ groups: groups.slice(), progress: 'Base de données — accès anonyme…' });
+      return this.rls();
+    }).then(g => {
+      if (g) groups.push(g);
+      this.setState({ groups: groups.slice(), running: false, done: true, progress: '' });
+    });
+  }
+
+  renderVals() {
+    const s = this.state;
+    let ok = 0, warn = 0, bad = 0;
+    s.groups.forEach(g => g.checks.forEach(c => {
+      if (c.status === 'ok') ok++; else if (c.status === 'warn') warn++; else bad++;
+    }));
+    const v = bad ? 'fail' : (warn ? 'warn' : 'ok');
+    const col = st => (st === 'ok' ? '#7fc492' : st === 'warn' ? '#dcbb5c' : '#e08a82');
+
+    return {
+      running: s.running,
+      hasSummary: s.done && ok + warn + bad > 0,
+      tally: ok + ' conforme(s) · ' + warn + ' avertissement(s) · ' + bad + ' erreur(s)',
+      verdictMark: v === 'ok' ? '✓' : v === 'warn' ? '!' : '✕',
+      verdictColor: col(v),
+      verdictTitle: v === 'ok' ? 'Aucun défaut détecté' : v === 'warn' ? 'Rien de bloquant, des points à regarder' : 'Ne pas déployer en l’état',
+      verdictText: v === 'ok'
+        ? 'Toutes les pages se chargent sans erreur JavaScript, les chemins suivent le bon régime et les jetons de cache sont cohérents.'
+        : v === 'warn'
+          ? 'Aucune page ne plante. Les avertissements signalent un fichier absent de cet environnement — normal dans l’aperçu d’édition, à confirmer en ligne.'
+          : 'Au moins une page comporte une erreur fatale : elle s’affichera vide chez les visiteurs. Corrigez les lignes signalées avant de pousser.',
+      runLabel: s.running ? 'Vérification en cours…' : (s.done ? 'Relancer la vérification' : 'Lancer la vérification'),
+      progressText: s.progress,
+      modeLabel: s.mode === 'dc' ? 'Cible : sources .dc.html' : 'Cible : pages publiées',
+      modeHint: s.mode === 'dc' ? 'À utiliser dans l’aperçu — en ligne, elles sont redirigées.' : 'À utiliser en ligne (chemins absolus).',
+      toggleMode: () => this.setState(p => ({ mode: p.mode === 'dc' ? 'pub' : 'dc', groups: [], done: false })),
+      run: () => this.run(),
+      groups: s.groups.map(g => {
+        const b = g.checks.filter(c => c.status === 'fail').length;
+        const w = g.checks.filter(c => c.status === 'warn').length;
+        return {
+          title: g.title,
+          subtitle: g.subtitle,
+          badge: b ? b + ' erreur' + (b > 1 ? 's' : '') : (w ? w + ' avertissement' + (w > 1 ? 's' : '') : 'conforme'),
+          badgeBg: b ? '#3a1c1a' : (w ? '#332b16' : '#1b3225'),
+          badgeColor: col(b ? 'fail' : (w ? 'warn' : 'ok')),
+          checks: g.checks.map(c => ({
+            label: c.label,
+            detail: c.detail || '',
+            mark: c.status === 'ok' ? '✓' : (c.status === 'warn' ? '!' : '✕'),
+            color: col(c.status)
+          }))
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -6,6 +6,7 @@ Disallow: /client
 Disallow: /Client.dc.html
 Disallow: /admin
 Disallow: /facture
+Disallow: /verification
 Disallow: /Admin.dc.html
 
 Sitemap: https://www.nicolasvivaudou.com/sitemap.xml
