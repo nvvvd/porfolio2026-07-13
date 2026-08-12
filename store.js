@@ -105,7 +105,7 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
     }];
 
     return {
-      version: 8,
+      version: 9,
       brand: { name: 'Nicolas Vivaudou', role: 'Photographe', roleEn: 'Photographer', location: 'Montréal, QC' },
       hero: { src: 'images/L1190335.jpg', caption: 'Studio — lumière colorée, 2026', captionEn: 'Studio — coloured light, 2026', cta: 'voir la série', ctaEn: 'view the series' },
       home: { metaLabel: 'Travaux choisis — Montréal, 2026', metaLabelEn: 'Selected work — Montréal, 2026', defaultView: 'list' },
@@ -120,6 +120,12 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
         intro: 'Portrait, paysage par drone, évènement ou projet sur mesure — dites-moi ce que vous avez en tête. Les disponibilités 2026 ouvrent ce printemps.',
         introEn: 'Portrait, drone landscape, event or bespoke project — tell me what you have in mind. 2026 availability opens this spring.' },
       settings: { likeLimit: 20, adminPin: '1234', watermark: false },
+      /* Aperçu des liens partagés (iMessage, WhatsApp, Facebook…), page par page :
+         { accueil|portfolio|galerie|contact: { title, desc, image } }. Une clé
+         absente ou vide laisse en place la balise écrite dans le HTML de la page ;
+         les galeries, elles, gardent leur nom et leur couverture (voir
+         functions/galerie/[[path]].js). */
+      share: {},
       services: [
         { id: uid('sv'), name: 'Portrait & studio', nameEn: 'Portrait & studio', price: 'à partir de 250 $', priceEn: 'from $250', desc: 'Séance individuelle ou duo d\u2019environ une heure — repérage lumière, direction naturelle, galerie privée et photos retouchées incluses.', descEn: 'Individual or duo session, about one hour — light scouting, natural direction, private gallery and retouched photos included.' },
         { id: uid('sv'), name: 'Mariage', nameEn: 'Wedding', price: 'à partir de 1 500 $', priceEn: 'from $1,500', desc: 'Des préparatifs aux dernières lueurs — galerie privée en ligne, sélection par vos soins et fichiers haute résolution livrés.', descEn: 'From getting ready to the last light — private online gallery, your own selection and high-resolution files delivered.' },
@@ -167,6 +173,13 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
     return s;
   }
 
+  // Migration v8 -> v9 : aperçus de liens partagés, réglables page par page.
+  function migrateV9(s) {
+    if (!s.share) s.share = {};
+    s.version = 9;
+    return s;
+  }
+
   // Amorce unique des photos de coulisses (page à propos) pour les états déjà enregistrés.
   function ensureBackstage(s) {
     try {
@@ -185,11 +198,12 @@ window.NV_FACEDATA = {"DSC07445.jpg":[[-0.0552,0.1341,0.0337,-0.1136,-0.1103,-0.
       var raw = localStorage.getItem(KEY);
       if (raw) {
         var s = JSON.parse(raw);
-        if (s && s.version === 8) { ensureBackstage(s); return s; }
-        // Migrations en chaîne v6 -> v7 -> v8, sans toucher au contenu existant.
-        if (s && (s.version === 6 || s.version === 7)) {
+        if (s && s.version === 9) { ensureBackstage(s); return s; }
+        // Migrations en chaîne v6 -> v7 -> v8 -> v9, sans toucher au contenu existant.
+        if (s && s.version >= 6 && s.version <= 8) {
           var ms = s.version === 6 ? migrateV7(s) : s;
-          ms = migrateV8(ms);
+          if (ms.version === 7) ms = migrateV8(ms);
+          ms = migrateV9(ms);
           try { localStorage.setItem(KEY, JSON.stringify(ms)); } catch (e2) {}
           return ms;
         }

@@ -21,7 +21,7 @@
    ============================================================================ */
 (function () {
   var LIB = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js';
-  var SINGLETON_KEYS = ['brand', 'hero', 'home', 'about', 'contact', 'settings', 'sampleFaces', 'version'];
+  var SINGLETON_KEYS = ['brand', 'hero', 'home', 'about', 'contact', 'settings', 'services', 'share', 'sampleFaces', 'version'];
   var TABLES = ['site', 'galleries', 'photos', 'clients', 'messages'];
 
   var _client = null;       // client supabase-js (lazy)
@@ -220,6 +220,12 @@
           version: data.version || 5,
           brand: data.brand, hero: data.hero, home: data.home,
           about: data.about, contact: data.contact, settings: data.settings,
+          /* Repli sur l'état courant : ces deux clés n'existent pas dans les
+             lignes `site` écrites avant leur ajout, et l'hydratation REMPLACE
+             l'état — sans repli, les prestations et les aperçus de partage
+             disparaîtraient de l'admin au premier chargement. */
+          services: data.services || ((getState() || {}).services || []),
+          share: data.share || ((getState() || {}).share || {}),
           sampleFaces: data.sampleFaces || [],
           galleries: galleries, photos: photos, clients: clients, messages: messages
         };

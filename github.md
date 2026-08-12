@@ -2,6 +2,14 @@ repo: nvvvd/porfolio2026-07-13
 branch: main
 
 ## Last sync
+date: 2026-08-12T00:00:00Z
+
+### Updated in this project
+- Aperçu des liens partagés réglable depuis l'admin (onglet Contenu) : titre, texte et photo par page — accueil, portfolio, galeries, contact — avec aperçu en direct de la carte reçue dans une messagerie.
+- Nouvelle fonction functions/_middleware.js : les robots de partage ne lisent pas le JavaScript, les réglages sont donc injectés dans les balises og:/twitter: avant l'envoi de la page. Un champ laissé vide garde la balise écrite dans le HTML ; /galerie/* est ignoré, sa propre fonction s'en charge déjà.
+- store.js v9 : clé `share`. nv-backend.js synchronisait `settings` mais ni `services` ni `share` — l'hydratation remplaçant l'état, les prestations de la page contact revenaient vides après un rechargement. Les deux clés sont désormais poussées et relues, avec repli sur l'état local.
+
+## Sync history
 date: 2026-08-09T09:30:00Z
 
 ### Updated in this project
@@ -60,4 +68,5 @@ date: 2026-08-07T13:05:00Z
 | /guide | Guide client.dc.html | doc-page |
 | (interne, non publiée) | Verification.dc.html | nv-config |
 | Aperçu de lien /galerie/* | functions/galerie/[[path]].js | galeries, photos (Supabase) |
+| Aperçu de lien des pages fixes | functions/_middleware.js | site.data.share (Supabase) |
 | Plan de site /sitemap.xml | functions/sitemap.xml.js | galeries, photos (Supabase) |

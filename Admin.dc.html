@@ -13,9 +13,9 @@
 <helmet>
 <script src="nv-config.js?v=20260806c"></script>
 <script src="nv-storage.js?v=20260807b"></script>
-<script src="nv-backend.js?v=20260804b"></script>
+<script src="nv-backend.js?v=20260812a"></script>
 <script src="nv-auth.js?v=20260804b"></script>
-<script src="store.js?v=20260806a"></script>
+<script src="store.js?v=20260812a"></script>
 <style>
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
@@ -242,6 +242,46 @@
                 <textarea class="nvfield" rows="2" value="{{ sv.desc }}" onInput="{{ sv.setDesc }}" placeholder="Description courte…" style="margin-top:6px;resize:vertical;line-height:1.45;font-size:13px;"></textarea>
               </div>
             </sc-for>
+          </section>
+
+          <section style="{{ card }};grid-column:1/-1;">
+            <div style="{{ cardTitle }}">Aperçu des liens partagés</div>
+            <p style="font-size:12px;color:#9A9A9A;line-height:1.6;margin:0 0 16px;max-width:660px;">Ce qu'affichent iMessage, WhatsApp, Facebook ou LinkedIn quand vous envoyez un lien du site. Les galeries utilisent déjà leur propre nom et leur photo de couverture — ces réglages concernent les pages ci-dessous. Comptez quelques minutes avant que le changement apparaisse, et une messagerie garde souvent en mémoire un lien déjà envoyé.</p>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px;">
+              <sc-for list="{{ sharePages }}" as="shp" hint-placeholder-count="4">
+                <button onClick="{{ shp.go }}" style="{{ shp.style }}">{{ shp.label }}</button>
+              </sc-for>
+            </div>
+            <div style="display:grid;grid-template-columns:{{ twoCol }};gap:22px;align-items:start;">
+              <div style="min-width:0;">
+                <label class="nvlabel">Titre</label>
+                <input class="nvfield" value="{{ f_shareTitle }}" onInput="{{ s_shareTitle }}" placeholder="{{ shareTitlePh }}" />
+                <label class="nvlabel" style="margin-top:14px;">Texte sous le titre</label>
+                <textarea class="nvfield" rows="3" value="{{ f_shareDesc }}" onInput="{{ s_shareDesc }}" placeholder="{{ shareDescPh }}" style="resize:vertical;line-height:1.5;"></textarea>
+                <p style="font-size:12px;color:#9A9A9A;line-height:1.55;margin:8px 0 0;">Un champ laissé vide garde le texte par défaut. Le titre de la page dans Google, lui, ne change pas.</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+                  <label style="{{ uploadBtn }}"><input type="file" accept="image/*" onChange="{{ onShareImg }}" style="display:none;" />Téléverser une photo</label>
+                  <button onClick="{{ resetShare }}" style="{{ ghostBtnSm }};padding:9px 14px;font-size:13px;">Réinitialiser cette page</button>
+                </div>
+              </div>
+              <div style="min-width:0;">
+                <label class="nvlabel">Aperçu</label>
+                <div style="display:flex;gap:12px;align-items:center;border:1px solid #E6E6E6;border-radius:14px;padding:10px;background:#fff;max-width:440px;">
+                  <div style="width:92px;height:92px;flex:none;border-radius:8px;overflow:hidden;background:#EEE;">{{ shareImg }}</div>
+                  <div style="min-width:0;">
+                    <div style="font-size:14px;font-weight:600;line-height:1.3;color:#111;">{{ sharePreviewTitle }}</div>
+                    <div style="font-size:12px;color:#8A8A8A;line-height:1.45;margin-top:4px;">{{ sharePreviewDesc }}</div>
+                    <div style="font-size:12px;color:#B0AAA2;margin-top:6px;">{{ sharePreviewUrl }}</div>
+                  </div>
+                </div>
+                <label class="nvlabel" style="margin-top:18px;">…ou choisir une photo déjà en ligne</label>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(58px,1fr));gap:6px;max-height:210px;overflow:auto;">
+                  <sc-for list="{{ sharePickPhotos }}" as="shq" hint-placeholder-count="8">
+                    <div onClick="{{ shq.pick }}" title="Utiliser cette photo" style="position:relative;aspect-ratio:1;border-radius:2px;overflow:hidden;background:#EEE;cursor:pointer;{{ shq.ring }}">{{ shq.img }}</div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
           </section>
         </div>
       </sc-if>
@@ -527,7 +567,7 @@ class Component extends DCLogic {
   state = {
     ready: false, tick: 0, mobile: typeof window !== 'undefined' && window.innerWidth < 900,
     locked: true, pinInput: '', emailInput: '', pinError: false, serviceDown: false,
-    tab: 'stats', clientTab: null, showArchived: false, copiedLinkId: null, newPin: '', pinSaved: false,
+    tab: 'stats', clientTab: null, sharePage: 'accueil', showArchived: false, copiedLinkId: null, newPin: '', pinSaved: false,
     scanning: false, scanMsg: '', scanPct: '0%',
     thumbBusy: false, thumbMsg: '', thumbPct: '0%',
     syncStatus: (typeof window !== 'undefined' && window.NVStore && window.NVStore.syncStatus) ? window.NVStore.syncStatus() : 'local'
@@ -821,8 +861,40 @@ class Component extends DCLogic {
       };
     });
 
+    /* ---- aperçus de liens partagés ----
+       Les valeurs par défaut reproduisent les balises og: écrites dans le HTML
+       de chaque page : elles servent de texte grisé et d'aperçu tant que rien
+       n'a été saisi. Un champ vide n'est jamais poussé — la page garde alors sa
+       balise d'origine (voir functions/_middleware.js). */
+    const SHARE_PAGES = [
+      { key: 'accueil', label: 'Accueil', path: '/', title: 'Nicolas Vivaudou — Photographe & Vidéaste par Drone à Montréal', desc: 'Nicolas Vivaudou, photographe et vidéaste par drone basé à Montréal, disponible partout dans le monde — portrait, mariage, évènementiel, sport et prises de vue aériennes.' },
+      { key: 'portfolio', label: 'Portfolio', path: '/portfolio', title: 'Galeries — Nicolas Vivaudou, photographe & vidéaste', desc: 'Les séries de Nicolas Vivaudou : portrait, paysage, évènements, sport et carnet personnel.' },
+      { key: 'galerie', label: 'Galeries', path: '/galerie', title: 'Galerie — Nicolas Vivaudou', desc: 'Parcourez les séries photographiques de Nicolas Vivaudou — portrait, paysage, évènements et sport.' },
+      { key: 'contact', label: 'Contact', path: '/contact', title: 'Contact — Nicolas Vivaudou', desc: 'Discutons de votre projet photo ou vidéo — portrait, mariage, drone, évènement ou sur-mesure. Basé à Montréal, disponible partout dans le monde.' }
+    ];
+    const shareKey = SHARE_PAGES.some(p => p.key === this.state.sharePage) ? this.state.sharePage : 'accueil';
+    const sharePageDef = SHARE_PAGES.find(p => p.key === shareKey);
+    const shareEntry = (s.share || {})[shareKey] || {};
+    const shareSlot = (st) => { if (!st.share) st.share = {}; if (!st.share[shareKey]) st.share[shareKey] = {}; return st.share[shareKey]; };
+    const shareImgSrc = window.NVStore.resolveSrc(shareEntry.image || 'images/L1190335.jpg');
+
     // ---- content fields ----
     const content = {
+      sharePages: SHARE_PAGES.map(p => ({ label: p.label, go: () => this.setState({ sharePage: p.key }), style: segBtn(p.key === shareKey) })),
+      shareTitlePh: sharePageDef.title, shareDescPh: sharePageDef.desc,
+      f_shareTitle: shareEntry.title || '', s_shareTitle: onInput((st, v) => { shareSlot(st).title = v; }),
+      f_shareDesc: shareEntry.desc || '', s_shareDesc: onInput((st, v) => { shareSlot(st).desc = v; }),
+      sharePreviewTitle: shareEntry.title || sharePageDef.title,
+      sharePreviewDesc: shareEntry.desc || sharePageDef.desc,
+      sharePreviewUrl: 'nicolasvivaudou.com' + (sharePageDef.path === '/' ? '' : sharePageDef.path),
+      shareImg: React.createElement('img', { src: shareImgSrc, alt: '', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }),
+      onShareImg: (e) => { const f = e.target.files[0]; if (f) this.setImageField(f, (url, st) => { shareSlot(st).image = url; }); e.target.value = ''; },
+      resetShare: U((st) => { if (st.share) delete st.share[shareKey]; }),
+      sharePickPhotos: pubPhotos.map(p => ({
+        img: React.createElement('img', { src: window.NVStore.resolveSrc(p), alt: '', loading: 'lazy', style: { width: '100%', height: '100%', objectFit: 'cover', display: 'block' } }),
+        ring: (shareEntry.image && shareEntry.image === p.src) ? 'box-shadow:0 0 0 2px #F2C13C inset;' : 'opacity:.6;',
+        pick: U((st) => { shareSlot(st).image = p.src; })
+      })),
       slideIsAuto: slideMode === 'auto', slideIsManual: slideMode === 'manual',
       slideAuto: U((st) => { st.hero.slideshow = 'auto'; }),
       slideManual: U((st) => { st.hero.slideshow = 'manual'; if (!st.hero.slideshowIds) st.hero.slideshowIds = []; }),
