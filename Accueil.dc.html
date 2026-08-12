@@ -49,7 +49,7 @@
 <helmet>
 <script src="nv-theme.js?v=20260804b"></script>
 <script src="nv-config.js?v=20260806c"></script>
-<script src="nv-i18n.js?v=20260804b"></script>
+<script src="nv-i18n.js?v=20260812b"></script>
 <script src="nv-backend.js?v=20260812a"></script>
 <script src="nv-auth.js?v=20260804b"></script>
 <script src="store.js?v=20260812a"></script>
@@ -260,7 +260,7 @@ class Component extends DCLogic {
         heroFrames: [{ src: 'images/L1190335.jpg', vis: 'opacity:1;' }], heroCaption: '', heroCta: ui.t ? '' : '', metaLabel: '',
         availLabel: window.NVI18n.t('home.available'), workLabel: window.NVI18n.t('home.workTogether'),
         heroAlt: 'Nicolas Vivaudou — Photographe',
-        rows: [], email: '', emailHref: '#', instagramHref: '#' };
+        rows: [], email: window.NVI18n.t('footer.write'), emailHref: '/contact', instagramHref: '#' };
     }
     const s = window.NVStore.get();
     const view = this.state.view, hover = this.state.hover;
@@ -324,7 +324,7 @@ class Component extends DCLogic {
       heroAlt: (L(s.hero.caption, s.hero.captionEn) || (s.brand.name + ' — ' + L(s.brand.role, s.brand.roleEn))), heroCaption: L(s.hero.caption, s.hero.captionEn), heroCta: stripArrow(L(s.hero.cta, s.hero.ctaEn) || window.NVI18n.t('home.defaultCta')),
       metaLabel: L(s.home.metaLabel, s.home.metaLabelEn) + ' / ' + ('00' + total).slice(-3) + ' ' + window.NVI18n.t('home.photos'),
       availLabel: window.NVI18n.t('home.available'), workLabel: window.NVI18n.t('home.workTogether'),
-      email: s.contact.email, emailHref: 'mailto:' + s.contact.email,
+      email: window.NVI18n.t('footer.write'), emailHref: '/contact',
       instagramHref: 'https://instagram.com/' + String(s.contact.instagram || '').replace(/^@/, ''),
       ready: true,
       heroImgs,

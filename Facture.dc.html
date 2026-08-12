@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Devis &amp; Facture — Nicolas Vivaudou</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#17170F">
+<script src="support.js?v=20260804b"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="nv-config.js?v=20260806c"></script>
+<script src="nv-storage.js?v=20260807b"></script>
+<script src="nv-backend.js?v=20260812a"></script>
+<script src="nv-auth.js?v=20260804b"></script>
+<script src="store.js?v=20260812a"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;background:#EDEBE6}
+  a{color:#17170F}a:hover{color:#9A7A12}
+  *{box-sizing:border-box}
+  input,textarea,select,button{font:inherit;color:inherit}
+  textarea{resize:none;overflow:hidden}
+  ::placeholder{color:#C2C1BB}
+  @media print{
+    @page{size:A4;margin:12mm}
+    html,body{background:#fff!important}
+    .np{display:none!important}
+    .desk{padding:0!important;background:#fff!important}
+    .sheet{box-shadow:none!important;border-radius:0!important;max-width:none!important;margin:0!important;border:none!important}
+    .padx{padding-left:0!important;padding-right:0!important}
+    input,textarea{background:transparent!important;outline:none!important;box-shadow:none!important}
+    .avoid{break-inside:avoid}
+    .pgb{break-before:page}
+    .ink{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</helmet>
+
+<sc-if value="{{ locked }}">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#EDEBE6;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#17170F">
+    <div style="background:#fff;border:1px solid #E2E0DA;border-radius:16px;padding:30px;max-width:380px;text-align:center">
+      <div style="font-family:Newsreader,Georgia,serif;font-size:22px;margin-bottom:8px">Devis &amp; Facture</div>
+      <p style="margin:0 0 20px;font-size:13px;line-height:1.6;color:#6E6E6C">Cet outil contient les coordonnées et les montants de vos clients. Connectez-vous d'abord à l'administration.</p>
+      <a href="/admin" style="display:inline-block;background:#17170F;color:#fff;text-decoration:none;border-radius:9px;padding:10px 18px;font-size:13px">Aller à l'administration →</a>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ unlocked }}" hint-placeholder-val="{{ true }}">
+<div class="desk" style="min-height:100vh;background:#EDEBE6;font-family:'IBM Plex Sans',system-ui,sans-serif;color:#17170F;font-size:13px;padding:0 0 70px;-webkit-font-smoothing:antialiased">
+
+  <header class="np" style="position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid #E2E0DA">
+    <div style="max-width:1080px;margin:0 auto;padding:9px clamp(12px,3vw,24px);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <a class="np" href="/admin" title="Retour à l'administration" style="text-decoration:none;color:#9A998F;font-size:12px;white-space:nowrap" style-hover="color:#17170F">← admin</a>
+      <div style="display:flex;align-items:center;gap:9px;margin-right:2px">
+        <svg viewBox="0 0 120 120" style="width:28px;height:28px;display:block" role="img" aria-label="NV"><rect width="120" height="120" rx="28" fill="#17170F"></rect><text x="60" y="58" text-anchor="middle" dominant-baseline="central" font-family="Helvetica Neue,Helvetica,Arial,sans-serif" font-weight="600" font-size="46" fill="#F4F3EF">NV</text><rect x="45" y="86" width="30" height="5" rx="2.5" fill="#ECC549"></rect></svg>
+        <span style="font-family:Newsreader,Georgia,serif;font-size:16px;letter-spacing:-.01em">{{ t.app_name }}</span>
+      </div>
+
+      <div style="display:inline-flex;background:#F2F1EC;border-radius:999px;padding:3px;gap:2px">
+        <button onClick="{{ goDevis }}" style="{{ tabDevis }}" style-hover="opacity:.75">{{ t.seg_devis }}</button>
+        <button onClick="{{ goFacture }}" style="{{ tabFacture }}" style-hover="opacity:.75">{{ t.seg_facture }}</button>
+      </div>
+
+      <div style="display:inline-flex;background:#F2F1EC;border-radius:999px;padding:3px;gap:2px">
+        <button onClick="{{ setFr }}" style="{{ tabFr }}" style-hover="opacity:.75">FR</button>
+        <button onClick="{{ setEn }}" style="{{ tabEn }}" style-hover="opacity:.75">EN</button>
+      </div>
+
+      <span style="flex:1"></span>
+
+      <span style="font-size:11px;color:#9A998F;white-space:nowrap">{{ savedLabel }} {{ syncLabel }}</span>
+
+      <button onClick="{{ openDocs }}" style="border:1px solid #DAD8D1;background:#fff;border-radius:9px;padding:7px 12px;font-size:12px;font-weight:500;cursor:pointer" style-hover="border-color:#17170F">{{ t.docs }}</button>
+      <button onClick="{{ openStats }}" style="border:1px solid #DAD8D1;background:#fff;border-radius:9px;padding:7px 12px;font-size:12px;font-weight:500;cursor:pointer" style-hover="border-color:#17170F">{{ t.stats }}</button>
+      <button onClick="{{ doPrint }}" style="border:1px solid #17170F;background:#17170F;color:#fff;border-radius:9px;padding:7px 14px;font-size:12px;font-weight:500;cursor:pointer" style-hover="background:#000">{{ t.print }}</button>
+    </div>
+
+    <div style="max-width:1080px;margin:0 auto;padding:0 clamp(12px,3vw,24px) 9px;display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+      <label style="{{ chipTax }}"><input type="checkbox" checked="{{ taxable }}" onChange="{{ toggleTax }}" style="margin:0;width:13px;height:13px;accent-color:#C9A420">{{ t.tax_label }}</label>
+      <sc-if value="{{ isDevis }}" hint-placeholder-val="{{ true }}">
+        <label style="{{ chipSched }}"><input type="checkbox" checked="{{ sched }}" onChange="{{ toggleSched }}" style="margin:0;width:13px;height:13px;accent-color:#C9A420">{{ t.opt_schedule }}</label>
+        <label style="{{ chipSigns }}"><input type="checkbox" checked="{{ signs }}" onChange="{{ toggleSigns }}" style="margin:0;width:13px;height:13px;accent-color:#C9A420">{{ t.opt_signatures }}</label>
+      </sc-if>
+      <label style="{{ chipClient }}" title="Rattacher ce document à une fiche client">
+        <span style="color:#9A998F">Client</span>
+        <select value="{{ clientId }}" onChange="{{ onClient }}" style="border:none;background:transparent;font:inherit;color:inherit;cursor:pointer;max-width:170px">
+          <sc-for list="{{ clientOptions }}" as="co" hint-placeholder-count="2">
+            <option value="{{ co.id }}">{{ co.label }}</option>
+          </sc-for>
+        </select>
+      </label>
+      <span style="flex:1"></span>
+      <button onClick="{{ newDoc }}" style="border:1px solid #DAD8D1;background:#fff;border-radius:999px;padding:6px 12px;font-size:11.5px;cursor:pointer;color:#4A4A46" style-hover="border-color:#17170F;color:#17170F">{{ t.new_doc }}</button>
+      <sc-if value="{{ isDevis }}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{ dupToFacture }}" style="border:1px solid #DAD8D1;background:#fff;border-radius:999px;padding:6px 12px;font-size:11.5px;cursor:pointer;color:#4A4A46" style-hover="border-color:#17170F;color:#17170F">{{ t.dup }}</button>
+      </sc-if>
+      <button onClick="{{ copyEmail }}" style="border:1px solid #DAD8D1;background:#fff;border-radius:999px;padding:6px 12px;font-size:11.5px;cursor:pointer;color:#4A4A46" style-hover="border-color:#17170F;color:#17170F">{{ emailBtnLabel }}</button>
+    </div>
+  </header>
+
+  <div style="padding:clamp(14px,3vw,30px) clamp(8px,2vw,20px) 0">
+  <div class="sheet" style="max-width:860px;margin:0 auto;background:#fff;border-radius:18px;overflow:hidden;box-shadow:0 30px 70px -46px rgba(0,0,0,.45),0 1px 0 rgba(0,0,0,.04)">
+
+    <div class="ink padx" style="background:#17170F;color:#F4F3EF;padding:26px clamp(20px,5vw,48px) 22px;display:flex;justify-content:space-between;align-items:flex-start;gap:22px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:14px;min-width:230px">
+        <svg viewBox="0 0 120 120" style="width:44px;height:44px;display:block;flex-shrink:0" role="img" aria-label="NV"><rect width="120" height="120" rx="27" fill="#ECC549"></rect><text x="60" y="58" text-anchor="middle" dominant-baseline="central" font-family="Helvetica Neue,Helvetica,Arial,sans-serif" font-weight="600" font-size="46" fill="#17170F">NV</text><rect x="45" y="86" width="30" height="5" rx="2.5" fill="#17170F"></rect></svg>
+        <div>
+          <div style="font-family:Newsreader,Georgia,serif;font-size:26px;font-weight:400;letter-spacing:-.015em;line-height:1.05;white-space:nowrap">Nicolas Vivaudou</div>
+          <div style="font-size:9px;letter-spacing:.28em;text-transform:uppercase;color:#9A998F;margin-top:6px">{{ t.role_caps }} · Montréal</div>
+        </div>
+      </div>
+      <div style="text-align:right;flex:1;min-width:200px">
+        <input value="{{ top.kind.v }}" onChange="{{ top.kind.on }}" spellcheck="false" style="font-family:Newsreader,Georgia,serif;font-size:24px;font-weight:300;font-style:italic;letter-spacing:-.01em;text-align:right;width:100%;background:transparent;border:none;border-radius:7px;padding:2px 6px;color:#F4F3EF" style-hover="background:rgba(255,255,255,.08)" style-focus="background:rgba(255,255,255,.12);outline:1.5px solid #ECC549">
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:7px;margin-top:5px">
+          <span style="font-size:10px;color:#75746C">Nº</span>
+          <input value="{{ top.docno.v }}" onChange="{{ top.docno.on }}" spellcheck="false" size="14" style="font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.04em;text-align:right;width:auto;min-width:118px;background:transparent;border:none;border-radius:6px;padding:3px 6px;color:#ECC549" style-hover="background:rgba(255,255,255,.08)" style-focus="background:rgba(255,255,255,.12);outline:1.5px solid #ECC549">
+        </div>
+      </div>
+    </div>
+
+    <div class="padx" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));border-bottom:1px solid #EAE9E5;padding:0 clamp(20px,5vw,48px)">
+      <div style="padding:11px 14px 11px 0;border-right:1px solid #EAE9E5">
+        <div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#B4B3AE;margin-bottom:3px">{{ t.lbl_date }}</div>
+        <input value="{{ top.docdate.v }}" onChange="{{ top.docdate.on }}" style="{{ metaIn }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+      </div>
+      <sc-if value="{{ isDevis }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:11px 14px;border-right:1px solid #EAE9E5">
+          <div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#B4B3AE;margin-bottom:3px">{{ t.lbl_valid }}</div>
+          <input value="{{ top.docvalid.v }}" onChange="{{ top.docvalid.on }}" style="{{ metaIn }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+        </div>
+      </sc-if>
+      <sc-if value="{{ isFacture }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:11px 14px;border-right:1px solid #EAE9E5">
+          <div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#B4B3AE;margin-bottom:3px">{{ t.lbl_due }}</div>
+          <input value="{{ top.docdue.v }}" onChange="{{ top.docdue.on }}" style="{{ metaIn }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+        </div>
+        <div style="padding:11px 14px">
+          <div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#B4B3AE;margin-bottom:3px">{{ t.lbl_status }}</div>
+          <button onClick="{{ toggleStatus }}" style="{{ statusStyle }}">{{ statusLabel }}</button>
+        </div>
+      </sc-if>
+      <div style="padding:11px 0 11px 14px">
+        <div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#B4B3AE;margin-bottom:3px">{{ t.total_cad }}</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:500">{{ grand }}</div>
+      </div>
+    </div>
+
+    <div class="padx" style="padding:26px clamp(20px,5vw,48px) 38px">
+
+      <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px">
+        <div style="background:#FAFAF8;border:1px solid #EFEEE9;border-radius:13px;padding:14px 16px">
+          <div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#B4B3AE;margin-bottom:7px">{{ t.eb_photographer }}</div>
+          <input value="{{ me.name.v }}" onChange="{{ me.name.on }}" style="{{ nameIn }}" style-hover="background:#F1F0EA" style-focus="background:#fff;outline:1.5px solid #ECC549">
+          <div style="display:grid;gap:1px;margin-top:4px">
+            <input value="{{ me.email.v }}" onChange="{{ me.email.on }}" style="{{ lineIn }}" style-hover="background:#F1F0EA" style-focus="background:#fff;outline:1.5px solid #ECC549">
+            <input value="{{ me.phone.v }}" onChange="{{ me.phone.on }}" style="{{ lineIn }}" style-hover="background:#F1F0EA" style-focus="background:#fff;outline:1.5px solid #ECC549">
+            <input value="{{ me.address.v }}" onChange="{{ me.address.on }}" style="{{ lineIn }}" style-hover="background:#F1F0EA" style-focus="background:#fff;outline:1.5px solid #ECC549">
+            <sc-if value="{{ taxable }}" hint-placeholder-val="{{ true }}">
+              <input value="{{ me.tax.v }}" onChange="{{ me.tax.on }}" placeholder="{{ t.ph_tax }}" style="{{ lineIn }}" style-hover="background:#F1F0EA" style-focus="background:#fff;outline:1.5px solid #ECC549">
+            </sc-if>
+            <sc-if value="{{ showNas }}" hint-placeholder-val="{{ false }}">
+              <input value="{{ me.nas.v }}" onChange="{{ me.nas.on }}" placeholder="{{ t.ph_nas }}" style="{{ lineIn }}" style-hover="background:#F1F0EA" style-focus="background:#fff;outline:1.5px solid #ECC549">
+            </sc-if>
+          </div>
+          <sc-if value="{{ hideNas }}" hint-placeholder-val="{{ true }}">
+            <button class="np" onClick="{{ addNas }}" style="margin-top:6px;border:none;background:transparent;color:#B4B3AE;font-size:10px;padding:0;cursor:pointer" style-hover="color:#17170F">{{ t.add_nas }}</button>
+          </sc-if>
+        </div>
+        <div style="background:#FAFAF8;border:1px solid #EFEEE9;border-radius:13px;padding:14px 16px;position:relative">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
+            <span style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#B4B3AE">{{ clientLabel }}</span>
+            <span style="flex:1"></span>
+            <button class="np" onClick="{{ toggleBook }}" style="{{ bookBtn }}" style-hover="border-color:#17170F;color:#17170F">{{ bookLabel }}</button>
+          </div>
+          <div class="np" style="{{ bookStyle }}">
+            <sc-for list="{{ book }}" as="b" hint-placeholder-count="3">
+              <button onClick="{{ b.on }}" style="{{ b.style }}" style-hover="background:#FDFBF3">
+                <span style="display:block;font-size:12.5px;font-weight:500">{{ b.name }}</span>
+                <span style="display:block;font-size:10.5px;color:#9A998F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.sub }}</span>
+              </button>
+            </sc-for>
+          </div>
+          <input value="{{ client.name.v }}" onChange="{{ client.name.on }}" placeholder="{{ t.ph_clientname }}" style="{{ nameIn }}" style-hover="background:#F1F0EA" style-focus="background:#fff;outline:1.5px solid #ECC549">
+          <div style="display:grid;gap:1px;margin-top:4px">
+            <input value="{{ client.email.v }}" onChange="{{ client.email.on }}" placeholder="{{ t.ph_email }}" style="{{ lineIn }}" style-hover="background:#F1F0EA" style-focus="background:#fff;outline:1.5px solid #ECC549">
+            <input value="{{ client.phone.v }}" onChange="{{ client.phone.on }}" placeholder="{{ t.ph_phone }}" style="{{ lineIn }}" style-hover="background:#F1F0EA" style-focus="background:#fff;outline:1.5px solid #ECC549">
+            <input value="{{ client.address.v }}" onChange="{{ client.address.on }}" placeholder="{{ t.ph_address }}" style="{{ lineIn }}" style-hover="background:#F1F0EA" style-focus="background:#fff;outline:1.5px solid #ECC549">
+            <input value="{{ client.ref.v }}" onChange="{{ client.ref.on }}" placeholder="{{ t.ph_ref }}" style="{{ lineIn }}" style-hover="background:#F1F0EA" style-focus="background:#fff;outline:1.5px solid #ECC549">
+          </div>
+        </div>
+      </section>
+
+      <sc-if value="{{ isDevis }}" hint-placeholder-val="{{ true }}">
+        <section style="margin-top:30px">
+          <div style="display:flex;align-items:baseline;gap:13px;border-bottom:1px solid #17170F;padding-bottom:6px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#B4B3AE">01</span>
+            <h2 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:19px;letter-spacing:-.01em">{{ t.sec_prestation }}</h2>
+            <span style="margin-left:auto;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE">{{ t.note_prestation }}</span>
+          </div>
+          <textarea data-grow="1" value="{{ brief.objet.v }}" onChange="{{ brief.objet.on }}" placeholder="{{ t.ph_objet }}" rows="1" style="width:100%;margin-top:14px;font-family:Newsreader,Georgia,serif;font-size:17px;line-height:1.5;background:transparent;border:none;border-radius:8px;padding:4px 8px" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549"></textarea>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:14px">
+            <div style="border:1px solid #EFEEE9;border-radius:11px;padding:10px 12px">
+              <div style="font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#B4B3AE;margin-bottom:4px">{{ t.lbl_lieu }}</div>
+              <input value="{{ brief.lieu.v }}" onChange="{{ brief.lieu.on }}" placeholder="{{ t.ph_lieu }}" style="{{ cellIn }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+            </div>
+            <div style="border:1px solid #EFEEE9;border-radius:11px;padding:10px 12px">
+              <div style="font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#B4B3AE;margin-bottom:4px">{{ t.lbl_livraison }}</div>
+              <input value="{{ brief.livraison.v }}" onChange="{{ brief.livraison.on }}" style="{{ cellIn }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+            </div>
+            <div style="border:1px solid #EFEEE9;border-radius:11px;padding:10px 12px">
+              <div style="font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#B4B3AE;margin-bottom:4px">{{ t.lbl_delai }}</div>
+              <input value="{{ brief.delai.v }}" onChange="{{ brief.delai.on }}" style="{{ cellIn }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+            </div>
+            <div style="border:1px solid #EFEEE9;border-radius:11px;padding:10px 12px">
+              <div style="font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#B4B3AE;margin-bottom:4px">{{ t.lbl_nbimg }}</div>
+              <input value="{{ brief.nbimg.v }}" onChange="{{ brief.nbimg.on }}" placeholder="{{ t.ph_nbimg }}" style="{{ cellIn }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+            </div>
+          </div>
+        </section>
+      </sc-if>
+
+      <section style="margin-top:30px">
+        <div style="display:flex;align-items:baseline;gap:13px;border-bottom:1px solid #17170F;padding-bottom:6px">
+          <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#B4B3AE">{{ itemsIdx }}</span>
+          <h2 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:19px;letter-spacing:-.01em">{{ itemsTitle }}</h2>
+          <span style="margin-left:auto;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE">{{ t.note_cad }}</span>
+        </div>
+
+        <table style="width:100%;border-collapse:collapse;margin-top:4px;font-size:12.5px">
+          <thead><tr>
+            <th style="text-align:left;padding:8px 6px 7px 0;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE;font-weight:600">{{ t.th_desc }}</th>
+            <th style="text-align:right;padding:8px 6px 7px;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE;font-weight:600;width:62px">{{ t.th_qty }}</th>
+            <th style="text-align:right;padding:8px 6px 7px;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE;font-weight:600;width:98px">{{ t.th_pu }}</th>
+            <th style="text-align:right;padding:8px 0 7px 6px;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE;font-weight:600;width:104px">{{ t.th_amount }}</th>
+            <th class="np" style="width:26px"></th>
+          </tr></thead>
+          <tbody>
+            <sc-for list="{{ items }}" as="it" hint-placeholder-count="3">
+              <tr style="border-top:1px solid #EFEEE9">
+                <td style="padding:3px 6px 3px 0"><input value="{{ it.d }}" onChange="{{ it.onD }}" placeholder="{{ it.ph }}" style="{{ it.inD }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549"></td>
+                <td style="padding:3px 6px"><input value="{{ it.q }}" onChange="{{ it.onQ }}" inputmode="decimal" style="{{ it.inN }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549"></td>
+                <td style="padding:3px 6px"><input value="{{ it.p }}" onChange="{{ it.onP }}" inputmode="decimal" placeholder="0" style="{{ it.inN }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549"></td>
+                <td style="padding:3px 0 3px 6px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;white-space:nowrap">{{ it.amount }}</td>
+                <td class="np" style="text-align:right"><button onClick="{{ it.onDel }}" title="×" style="border:none;background:transparent;color:#D3D2CC;font-size:16px;line-height:1;padding:2px 4px;cursor:pointer" style-hover="color:#B3261E">×</button></td>
+              </tr>
+            </sc-for>
+          </tbody>
+        </table>
+        <button class="np" onClick="{{ addItem }}" style="margin-top:10px;border:1px dashed #DAD8D1;background:transparent;border-radius:9px;padding:7px 13px;font-size:11.5px;color:#6E6E6C;cursor:pointer" style-hover="border-color:#17170F;color:#17170F">{{ t.add_row }}</button>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:18px;align-items:start">
+          <sc-if value="{{ showSched }}" hint-placeholder-val="{{ true }}">
+            <div class="avoid" style="background:#FAFAF8;border:1px solid #EFEEE9;border-radius:13px;padding:13px 15px">
+              <div style="font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#B4B3AE;margin-bottom:8px">{{ t.pay_sched_h }}</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11.5px;padding:3px 0">
+                <span style="color:#6E6E6C">{{ t.pay1_label }} (<input value="{{ top.depPct.v }}" onChange="{{ top.depPct.on }}" inputmode="decimal" style="width:30px;text-align:center;background:transparent;border:none;border-bottom:1px solid #DAD8D1;font-size:11.5px;padding:0" style-focus="outline:none;border-bottom-color:#C9A420">%)</span>
+                <b style="font-family:'IBM Plex Mono',monospace;font-weight:500;white-space:nowrap">{{ pay1 }}</b>
+              </div>
+              <div style="display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:3px 0">
+                <span style="color:#6E6E6C">{{ t.pay2_label }} ({{ pct2 }}%)</span>
+                <b style="font-family:'IBM Plex Mono',monospace;font-weight:500;white-space:nowrap">{{ pay2 }}</b>
+              </div>
+              <div style="font-size:10px;color:#B4B3AE;padding-top:5px">{{ t.pay_note }}</div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ isFacture }}" hint-placeholder-val="{{ false }}">
+            <div class="avoid" style="background:#FAFAF8;border:1px solid #EFEEE9;border-radius:13px;padding:13px 15px">
+              <div style="font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#B4B3AE;margin-bottom:8px">{{ t.pay_h }}</div>
+              <div style="display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:3px 0"><span style="color:#6E6E6C">{{ t.pay_interac }}</span><b style="font-weight:500">n.vivaudou@gmail.com</b></div>
+              <div style="display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:3px 0"><span style="color:#6E6E6C">{{ t.pay_cheque }}</span><b style="font-weight:500">{{ t.pay_cheque_v }}</b></div>
+              <div style="display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:3px 0"><span style="color:#6E6E6C">{{ t.pay_due }}</span><b style="font-weight:500">{{ top.docdue.v }}</b></div>
+              <div class="{{ depClass }}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11.5px;padding:5px 0 3px;margin-top:4px;border-top:1px solid #EFEEE9">
+                <span style="color:#6E6E6C">{{ t.deposit_label }}</span>
+                <input value="{{ top.deposit.v }}" onChange="{{ top.deposit.on }}" inputmode="decimal" placeholder="0" style="width:82px;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11.5px;background:transparent;border:none;border-bottom:1px solid #DAD8D1;border-radius:4px;padding:1px 4px" style-hover="background:#F1F0EA" style-focus="background:#fff;outline:1.5px solid #ECC549">
+              </div>
+              <div class="{{ depClass }}" style="display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:3px 0"><span style="color:#6E6E6C">{{ t.balance_label }}</span><b style="font-family:'IBM Plex Mono',monospace;font-weight:600">{{ balance }}</b></div>
+            </div>
+          </sc-if>
+
+          <div class="avoid">
+            <div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 2px"><span style="color:#6E6E6C">{{ t.t_subtotal }}</span><span style="font-family:'IBM Plex Mono',monospace">{{ subtotal }}</span></div>
+            <sc-if value="{{ taxable }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 2px"><span style="color:#6E6E6C">{{ t.t_gst }} <span style="color:#B4B3AE">{{ t.t_gst_rate }}</span></span><span style="font-family:'IBM Plex Mono',monospace">{{ tps }}</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 2px"><span style="color:#6E6E6C">{{ t.t_qst }} <span style="color:#B4B3AE">{{ t.t_qst_rate }}</span></span><span style="font-family:'IBM Plex Mono',monospace">{{ tvq }}</span></div>
+            </sc-if>
+            <div class="ink" style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;background:#17170F;color:#F4F3EF;border-radius:13px;padding:13px 17px;margin-top:9px">
+              <span style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#9A998F">{{ grandLabel }}</span>
+              <span style="font-family:Newsreader,Georgia,serif;font-size:27px;letter-spacing:-.02em;color:#ECC549;white-space:nowrap">{{ grand }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <sc-if value="{{ isDevis }}" hint-placeholder-val="{{ true }}">
+        <section class="pgb" style="margin-top:30px">
+          <div style="display:flex;align-items:baseline;gap:13px;border-bottom:1px solid #17170F;padding-bottom:6px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#B4B3AE">03</span>
+            <h2 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:19px;letter-spacing:-.01em">{{ t.sec_terms }}</h2>
+            <span style="margin-left:auto;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE">{{ t.note_terms }}</span>
+          </div>
+          <div style="columns:2;column-gap:32px;margin-top:14px">
+            <sc-for list="{{ clauses }}" as="c" hint-placeholder-count="6">
+              <div class="avoid" style="break-inside:avoid;margin-bottom:12px;position:relative;padding-left:22px">
+                <span style="position:absolute;left:0;top:3px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:#B4B3AE">{{ c.n }}</span>
+                <input value="{{ c.t }}" onChange="{{ c.onT }}" style="width:100%;font-family:Newsreader,Georgia,serif;font-size:13px;background:transparent;border:none;border-radius:5px;padding:1px 4px;margin-left:-4px" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+                <textarea data-grow="1" value="{{ c.p }}" onChange="{{ c.onP }}" rows="1" style="width:100%;font-size:10.5px;line-height:1.6;color:#6E6E6C;background:transparent;border:none;border-radius:5px;padding:1px 4px;margin-left:-4px" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549"></textarea>
+                <button class="np" onClick="{{ c.onDel }}" title="×" style="position:absolute;top:0;right:0;border:none;background:transparent;color:#E0DFD9;font-size:14px;line-height:1;padding:0 2px;cursor:pointer" style-hover="color:#B3261E">×</button>
+              </div>
+            </sc-for>
+          </div>
+          <button class="np" onClick="{{ addClause }}" style="margin-top:4px;border:1px dashed #DAD8D1;background:transparent;border-radius:9px;padding:7px 13px;font-size:11.5px;color:#6E6E6C;cursor:pointer" style-hover="border-color:#17170F;color:#17170F">{{ t.add_clause }}</button>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ isFacture }}" hint-placeholder-val="{{ false }}">
+        <section style="margin-top:30px">
+          <div style="display:flex;align-items:baseline;gap:13px;border-bottom:1px solid #17170F;padding-bottom:6px">
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#B4B3AE">02</span>
+            <h2 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:19px;letter-spacing:-.01em">{{ t.sec_mentions }}</h2>
+            <span style="margin-left:auto;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE">{{ t.note_mentions }}</span>
+          </div>
+          <div style="columns:2;column-gap:32px;margin-top:14px">
+            <sc-for list="{{ mentions }}" as="m" hint-placeholder-count="4">
+              <div class="avoid" style="break-inside:avoid;margin-bottom:12px;display:{{ m.disp }}">
+                <input value="{{ m.t }}" onChange="{{ m.onT }}" style="width:100%;font-family:Newsreader,Georgia,serif;font-size:13px;background:transparent;border:none;border-radius:5px;padding:1px 4px;margin-left:-4px" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+                <textarea data-grow="1" value="{{ m.p }}" onChange="{{ m.onP }}" rows="1" style="width:100%;font-size:10.5px;line-height:1.6;color:#6E6E6C;background:transparent;border:none;border-radius:5px;padding:1px 4px;margin-left:-4px" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549"></textarea>
+              </div>
+            </sc-for>
+          </div>
+        </section>
+      </sc-if>
+
+      <section class="{{ notesClass }}" style="margin-top:24px">
+        <div style="display:flex;align-items:baseline;gap:13px;border-bottom:1px solid #EAE9E5;padding-bottom:6px">
+          <h2 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:16px;letter-spacing:-.01em">{{ t.sec_notes }}</h2>
+          <span style="margin-left:auto;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE">{{ t.note_optional }}</span>
+        </div>
+        <textarea data-grow="1" value="{{ top.notes.v }}" onChange="{{ top.notes.on }}" placeholder="{{ t.ph_notes }}" rows="1" style="width:100%;margin-top:8px;font-size:11.5px;line-height:1.6;color:#4A4A46;background:transparent;border:none;border-radius:8px;padding:4px 8px;margin-left:-8px" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549"></textarea>
+      </section>
+
+      <sc-if value="{{ showSigns }}" hint-placeholder-val="{{ true }}">
+        <section class="avoid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:44px;margin-top:30px">
+          <div>
+            <div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#B4B3AE;margin-bottom:6px">{{ t.who_photographer }}</div>
+            <div style="font-size:11px;color:#6E6E6C;margin-bottom:12px;display:flex;align-items:baseline;gap:5px;flex-wrap:wrap">
+              <span>{{ t.sign_at }}</span>
+              <input value="{{ sign.city.v }}" onChange="{{ sign.city.on }}" style="{{ signIn }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+              <span>{{ t.sign_on }}</span>
+              <input value="{{ sign.date.v }}" onChange="{{ sign.date.on }}" style="{{ signInWide }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+            </div>
+            <div style="border-top:1px solid #17170F;height:52px;position:relative">
+              <img src="signature.png" alt="" style="position:absolute;bottom:6px;left:2px;height:46px;width:auto;opacity:.92;mix-blend-mode:multiply;pointer-events:none">
+            </div>
+          </div>
+          <div>
+            <div style="font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#B4B3AE;margin-bottom:6px">{{ t.who_client }}</div>
+            <div style="font-size:11px;color:#6E6E6C;margin-bottom:12px;display:flex;align-items:baseline;gap:5px;flex-wrap:wrap">
+              <span>{{ t.sign_at }}</span>
+              <input value="{{ sign.ccity.v }}" onChange="{{ sign.ccity.on }}" placeholder="{{ t.ph_city }}" style="{{ signIn }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+              <span>{{ t.sign_on }}</span>
+              <input value="{{ sign.cdate.v }}" onChange="{{ sign.cdate.on }}" placeholder="JJ/MM/AAAA" style="{{ signInWide }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+            </div>
+            <div style="border-top:1px solid #17170F;height:52px;display:flex;align-items:flex-end;padding-bottom:3px"><span style="font-size:9px;color:#B4B3AE">{{ t.sign_label_client }}</span></div>
+          </div>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{ showEntente }}" hint-placeholder-val="{{ false }}">
+        <section style="margin-top:24px">
+          <p style="margin:0;font-size:11px;line-height:1.65;color:#6E6E6C;max-width:80%">{{ t.entente }}</p>
+        </section>
+      </sc-if>
+
+      <div style="margin-top:22px;font-size:9px;line-height:1.5;color:#C2C1BB;text-align:center">{{ t.disclaimer }}</div>
+    </div>
+
+    <footer class="padx" style="background:#FAFAF8;border-top:1px solid #EFEEE9;padding:13px clamp(20px,5vw,48px);display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;font-size:9.5px;color:#8C8C8A">
+      <span>Montréal (QC) · n.vivaudou@gmail.com · (514) 664-4473</span>
+      <a href="https://www.nicolasvivaudou.com" style="color:#17170F;text-decoration:none;border-bottom:1.5px solid #ECC549;padding-bottom:1px">nicolasvivaudou.com</a>
+    </footer>
+
+  </div>
+  </div>
+
+  <div class="np" style="display:{{ panelDisplay }};position:fixed;inset:0;z-index:60;background:rgba(23,23,15,.42)" onClick="{{ closePanel }}">
+    <div onClick="{{ stop }}" style="{{ drawerStyle }}">
+
+      <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid #EAE9E5;position:sticky;top:0;background:#fff;z-index:2">
+        <span style="font-family:Newsreader,Georgia,serif;font-size:20px;letter-spacing:-.01em">{{ panelTitle }}</span>
+        <span style="flex:1"></span>
+        <button onClick="{{ closePanel }}" style="border:none;background:#F2F1EC;width:30px;height:30px;border-radius:8px;font-size:17px;line-height:1;cursor:pointer;color:#6E6E6C" style-hover="background:#E6E4DD">×</button>
+      </div>
+
+      <sc-if value="{{ isDocsPanel }}" hint-placeholder-val="{{ true }}">
+        <div style="padding:14px 20px 24px">
+          <input value="{{ query }}" onChange="{{ onQuery }}" placeholder="{{ t.search_ph }}" style="width:100%;border:1px solid #DAD8D1;background:#FAFAF8;border-radius:10px;padding:9px 12px;font-size:13px" style-focus="outline:none;border-color:#C9A420;background:#fff">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+            <sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+              <button onClick="{{ f.on }}" style="{{ f.style }}">{{ f.label }}</button>
+            </sc-for>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:16px;padding-bottom:6px;border-bottom:1px solid #EAE9E5">
+            <span style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE">{{ docsCountLabel }}</span>
+            <span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#6E6E6C">{{ docsSum }}</span>
+          </div>
+          <sc-for list="{{ docRows }}" as="d" hint-placeholder-count="4">
+            <div style="{{ d.rowStyle }}">
+              <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                <span style="{{ d.typeStyle }}">{{ d.type }}</span>
+                <div style="min-width:0">
+                  <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.client }}</div>
+                  <div style="font-size:10.5px;color:#9A998F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.sub }}</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;white-space:nowrap">{{ d.total }}</span>
+                <span style="{{ d.badgeStyle }}">{{ d.badge }}</span>
+              </div>
+              <div style="display:flex;gap:5px;grid-column:1/-1;justify-content:flex-end">
+                <button onClick="{{ d.onOpen }}" style="border:1px solid #DAD8D1;background:#fff;border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer" style-hover="border-color:#17170F">{{ t.open }}</button>
+                <button onClick="{{ d.onDup }}" style="border:1px solid #DAD8D1;background:#fff;border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer" style-hover="border-color:#17170F">{{ t.duplicate }}</button>
+                <button onClick="{{ d.onDel }}" style="border:1px solid #DAD8D1;background:#fff;border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer;color:#B3261E" style-hover="border-color:#B3261E">{{ t.delete }}</button>
+              </div>
+            </div>
+          </sc-for>
+          <div style="display:{{ emptyDisplay }};padding:26px 0;text-align:center;font-size:12.5px;color:#B4B3AE">{{ t.no_docs }}</div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:18px;padding-top:14px;border-top:1px solid #EAE9E5">
+            <button onClick="{{ exportDB }}" style="{{ ghostBtn }}" style-hover="border-color:#17170F">{{ t.export_db }}</button>
+            <button onClick="{{ pickImport }}" style="{{ ghostBtn }}" style-hover="border-color:#17170F">{{ t.import_db }}</button>
+            <input type="file" accept="application/json" onChange="{{ onImport }}" ref="{{ fileRef }}" style="display:none">
+          </div>
+          <p style="font-size:10.5px;line-height:1.6;color:#B4B3AE;margin:12px 0 0">{{ t.storage_note }}</p>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isStatsPanel }}" hint-placeholder-val="{{ false }}">
+        <div style="padding:14px 20px 24px">
+          <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center">
+            <sc-for list="{{ years }}" as="y" hint-placeholder-count="2">
+              <button onClick="{{ y.on }}" style="{{ y.style }}">{{ y.label }}</button>
+            </sc-for>
+            <span style="flex:1"></span>
+            <button onClick="{{ exportCSV }}" style="{{ ghostBtn }}" style-hover="border-color:#17170F">{{ t.csv }}</button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px;margin-top:16px">
+            <div style="background:#17170F;color:#F4F3EF;border-radius:12px;padding:13px 15px;grid-column:span 2">
+              <div style="font-family:Newsreader,Georgia,serif;font-size:26px;letter-spacing:-.02em;color:#ECC549">{{ st.totFact }}</div>
+              <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#9A998F;margin-top:4px">{{ t.k_invoiced }}</div>
+            </div>
+            <div style="{{ kpiBox }}"><div style="{{ kpiVal }}">{{ st.paidSum }}</div><div style="{{ kpiLab }}">{{ t.k_collected }}</div></div>
+            <div style="{{ kpiBox }}"><div style="{{ kpiVal }}">{{ st.dueSum }}</div><div style="{{ kpiLab }}">{{ t.k_outstanding }}</div></div>
+            <div style="{{ kpiBox }}"><div style="{{ kpiVal }}">{{ st.nFact }}</div><div style="{{ kpiLab }}">{{ t.k_invoices }}</div></div>
+            <div style="{{ kpiBox }}"><div style="{{ kpiVal }}">{{ st.nDevis }}</div><div style="{{ kpiLab }}">{{ t.k_quotes }}</div></div>
+            <div style="{{ kpiBox }}"><div style="{{ kpiVal }}">{{ st.avg }}</div><div style="{{ kpiLab }}">{{ t.k_avg }}</div></div>
+            <div style="{{ kpiBox }}"><div style="{{ kpiVal }}">{{ st.totTax }}</div><div style="{{ kpiLab }}">{{ t.k_tax }}</div></div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:20px;margin-bottom:8px">
+            <span style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE">{{ chartTitle }}</span>
+            <span style="display:flex;gap:11px;font-size:10px;color:#8C8C8A"><span style="display:inline-flex;align-items:center;gap:4px"><i style="width:9px;height:9px;border-radius:2px;background:#F0DCA0;display:inline-block"></i>{{ t.lg_invoiced }}</span><span style="display:inline-flex;align-items:center;gap:4px"><i style="width:9px;height:9px;border-radius:2px;background:#ECC549;display:inline-block"></i>{{ t.lg_collected }}</span></span>
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:4px;height:130px;border-bottom:1px solid #EAE9E5;padding-bottom:0">
+            <sc-for list="{{ bars }}" as="b" hint-placeholder-count="12">
+              <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;position:relative">
+                <span style="font-size:8px;color:#9A998F;margin-bottom:2px">{{ b.tip }}</span>
+                <div style="{{ b.invStyle }}"><div style="{{ b.paidStyle }}"></div></div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:4px;margin-top:4px">
+            <sc-for list="{{ bars }}" as="b" hint-placeholder-count="12">
+              <div style="flex:1;text-align:center;font-size:8.5px;color:#B4B3AE">{{ b.label }}</div>
+            </sc-for>
+          </div>
+
+          <div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE;margin-top:22px;margin-bottom:2px">{{ t.top_clients }}</div>
+          <sc-for list="{{ topClients }}" as="c" hint-placeholder-count="4">
+            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid #F3F2EE;font-size:12.5px">
+              <span style="min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ c.n }}</span>
+              <span style="display:flex;align-items:center;gap:9px;flex-shrink:0"><span style="font-family:'IBM Plex Mono',monospace;font-size:11.5px">{{ c.v }}</span><i style="{{ c.bar }}"></i></span>
+            </div>
+          </sc-for>
+
+          <div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE;margin-top:22px;margin-bottom:2px">{{ t.followups }}</div>
+          <sc-for list="{{ reminders }}" as="r" hint-placeholder-count="2">
+            <div style="display:grid;grid-template-columns:1fr auto;gap:7px 10px;align-items:center;padding:9px 0;border-bottom:1px solid #F3F2EE">
+              <div style="min-width:0">
+                <div style="font-size:12.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.client }}</div>
+                <div style="font-size:10.5px;color:#9A998F">{{ r.sub }}</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-family:'IBM Plex Mono',monospace;font-size:12px">{{ r.amount }}</span><span style="{{ r.badgeStyle }}">{{ r.badge }}</span></div>
+              <div style="grid-column:1/-1;display:flex;gap:5px;justify-content:flex-end">
+                <button onClick="{{ r.onRemind }}" style="border:1px solid #DAD8D1;background:#fff;border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer" style-hover="border-color:#17170F">{{ t.remind }}</button>
+                <button onClick="{{ r.onPaid }}" style="border:1px solid #DAD8D1;background:#fff;border-radius:7px;padding:4px 9px;font-size:11px;cursor:pointer" style-hover="border-color:#17170F">{{ t.mark_paid }}</button>
+              </div>
+            </div>
+          </sc-for>
+          <div style="display:{{ noRemDisplay }};padding:14px 0;font-size:12.5px;color:#B4B3AE">{{ t.no_followups }}</div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+
+</div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  static DICT = {
+    fr:{
+      app_name:"Devis & Facture", seg_devis:"Devis", seg_facture:"Facture", role_caps:"Photographe",
+      kind_devis:"Devis · Contrat", kind_facture:"Facture",
+      tax_label:"Assujetti TPS/TVQ", opt_schedule:"Échéancier", opt_signatures:"Signatures",
+      new_doc:"Nouveau", dup:"Dupliquer → facture", copy_email:"Copier le courriel", copied:"Copié ✓",
+      docs:"Documents", stats:"Statistiques", print:"Imprimer / PDF",
+      saving:"Enregistrement…", saved_at:"Enregistré à ", storage_off:"Stockage indisponible",
+      lbl_date:"Émis le", lbl_valid:"Validité", lbl_due:"Échéance", lbl_status:"Statut", total_cad:"Total CAD",
+      status_pending:"En attente", status_paid:"Payée",
+      eb_photographer:"Photographe", eb_client:"Client", eb_billed:"Facturé à",
+      ph_tax:"Nº d'inscription TPS / TVQ", ph_nas:"NAS — au besoin (T4A)", add_nas:"+ ajouter le NAS",
+      ph_clientname:"Nom du client / organisation", ph_email:"courriel@exemple.com", ph_phone:"(514) 000-0000", ph_address:"Adresse", ph_ref:"Projet / contact",
+      sec_prestation:"La prestation", note_prestation:"description de la séance",
+      ph_objet:"Ex. : Portraits d'équipe — 18 personnes.",
+      lbl_lieu:"Lieu & date", ph_lieu:"Lieu — JJ/MM/AAAA",
+      lbl_livraison:"Livraison", val_livraison:"Galerie privée en ligne · fichiers .JPG haute résolution",
+      lbl_delai:"Délai de remise", val_delai:"Sous 15 jours ouvrables après la séance",
+      lbl_nbimg:"Images livrées", ph_nbimg:"Ex. : 25 images retouchées",
+      sec_fees:"Honoraires", sec_details:"Détail", note_cad:"montants en CAD",
+      th_desc:"Description", th_qty:"Qté", th_pu:"Prix unitaire", th_amount:"Montant", ph_desc:"Désignation",
+      add_row:"+ Ajouter une ligne", add_clause:"+ Ajouter une clause",
+      t_subtotal:"Sous-total", t_gst:"TPS", t_qst:"TVQ", t_gst_rate:"(5 %)", t_qst_rate:"(9,975 %)", t_total:"Total", t_total_due:"Total à payer",
+      pay_sched_h:"Échéancier de paiement", pay1_label:"Versement à la réservation", pay2_label:"Solde à la remise des images",
+      pay_note:"Les sommes versées s'imputent sur le prix total convenu.",
+      pay_h:"Paiement", pay_interac:"Virement Interac", pay_cheque:"Dépôt direct / virement", pay_cheque_v:"spécimen de chèque fourni", pay_due:"Échéance",
+      deposit_label:"Acompte reçu", balance_label:"Solde dû", book:"Carnet", book_none:"Aucun client enregistré",
+      sec_terms:"Conditions du contrat", note_terms:"devis valant entente une fois accepté",
+      sec_mentions:"Mentions", note_mentions:"conditions & cadre légal",
+      sec_notes:"Notes & conditions particulières", note_optional:"facultatif",
+      ph_notes:"Ex. : 2e séance offerte en cas de pluie · livraison express possible…",
+      who_photographer:"Le photographe", who_client:"Le client", sign_at:"Fait à", sign_on:"le", ph_city:"Ville",
+      sign_label_client:"nom & signature — bon pour accord",
+      entente:"Ce document reflète l'entente convenue entre les parties. Conformément aux articles 1385-1386 du Code civil du Québec, le contrat se forme par le seul échange des consentements et n'exige aucune signature pour être valide. Le paiement du premier versement ou le début de la prestation vaut acceptation intégrale des présentes modalités.",
+      disclaimer:"Document modèle — ne constitue pas un avis juridique.",
+      search_ph:"Rechercher un client, un numéro…", f_all:"Tous", f_devis:"Devis", f_facture:"Factures", f_due:"En attente", f_paid:"Payées",
+      open:"Ouvrir", duplicate:"Dupliquer", delete:"Supprimer", no_docs:"Aucun document pour cette recherche.",
+      export_db:"⤓ Exporter la sauvegarde", import_db:"Importer un fichier", csv:"⤓ CSV (Excel)",
+      storage_note:"Tes documents sont conservés sur cet appareil. Exporte la sauvegarde pour l'archiver ou la transférer sur ton téléphone.",
+      k_invoiced:"Total facturé", k_collected:"Encaissé", k_outstanding:"En attente", k_invoices:"Factures", k_quotes:"Devis", k_avg:"Moyenne / facture", k_tax:"TPS + TVQ perçues",
+      all_years:"Toutes", chart_12:"Revenu — 12 derniers mois", chart_y:"Revenu — ",
+      lg_invoiced:"Facturé", lg_collected:"Encaissé", top_clients:"Meilleurs clients",
+      followups:"Paiements à suivre", no_followups:"Aucune facture en attente ✓", remind:"Relance", mark_paid:"Marquer payée",
+      overdue:"En retard · ", due_in:"À échoir · ", days:" j", pending:"En attente",
+      confirm_del:"Supprimer ce document ?", confirm_new:"Créer un nouveau document ? Le document courant est déjà enregistré.",
+      email:"Bonjour {client},\n\nSuite à votre approbation, vous trouverez ci-joint {kind} nº {no} qui détaille les modalités convenues pour notre collaboration.\n\nCe document sert de référence officielle pour encadrer le projet. Conformément au Code civil du Québec (art. 1385-1386), notre entente est déjà formée par l'échange de nos consentements; le présent document en fait foi.\n\nPour confirmer le démarrage, il vous suffit de régler le premier versement ou de me confirmer le coup d'envoi de la prestation.\n\nAu plaisir de collaborer,\nNicolas Vivaudou\nPhotographe · (514) 664-4473 · n.vivaudou@gmail.com",
+      seed:[{d:"Forfait photographie — séance",q:1,p:0},{d:"Retouche & post-traitement",q:1,p:0},{d:"Frais de déplacement",q:1,p:0}],
+      clauses:[
+        {t:"Acceptation",p:"La présente entente se forme par l'échange des consentements (art. 1385-1386 C.c.Q.) et n'exige pas de signature. La signature du document, le paiement du premier versement ou le début de la prestation confirme l'acceptation intégrale des présentes modalités. Le devis est valable pour la durée indiquée en en-tête."},
+        {t:"Modalités de paiement",p:"Sauf entente contraire, le prix est payable en deux versements : un versement à la confirmation de la réservation et le solde à la remise des images. Les sommes versées s'imputent sur le prix total. Paiement par virement Interac (n.vivaudou@gmail.com) ou par dépôt direct / virement bancaire."},
+        {t:"Annulation",p:"En cas d'annulation par le client, les sommes versées sont remboursées, déduction faite des services déjà rendus et des frais raisonnables réellement engagés à la date de l'annulation. Aucune somme n'est retenue à titre de pénalité au-delà de ce montant."},
+        {t:"Report & force majeure",p:"Un report sans frais est possible une fois, selon les disponibilités, s'il est demandé au moins 7 jours avant la séance. Pour une séance en extérieur, une nouvelle date est convenue sans frais si les conditions rendent la prise de vue impossible."},
+        {t:"Livraison",p:"Les images sélectionnées et retouchées sont remises via une galerie privée en ligne, au format convenu. Les fichiers bruts (RAW) et les images non retenues ne sont pas livrés."},
+        {t:"Droits d'auteur",p:"Conformément à la Loi sur le droit d'auteur, Nicolas Vivaudou est le premier titulaire du droit d'auteur sur les images, y compris celles de commande, et en conserve les droits moraux."},
+        {t:"Licence d'utilisation",p:"Le client obtient une licence d'utilisation à des fins personnelles et non commerciales. Tout usage commercial, publicitaire ou par un tiers fait l'objet d'une entente écrite et d'une licence distincte."},
+        {t:"Droit à l'image",p:"Le client consent à l'utilisation de son image pour la prestation convenue et garantit détenir les autorisations des personnes identifiables figurant sur les images. L'usage à des fins de portfolio des personnes identifiables est soumis à leur consentement (art. 35-36 C.c.Q.)."},
+        {t:"Crédit photographique",p:"Le crédit « Photo : Nicolas Vivaudou » est requis lors de toute diffusion à des fins professionnelles."},
+        {t:"Conservation & renseignements",p:"Les fichiers sont conservés 90 jours après la livraison ; au-delà, l'archivage n'est pas garanti. Les renseignements du client servent uniquement à l'exécution du contrat."}
+      ],
+      mentions:[
+        {t:"Modalités de paiement",p:"Paiement à réception, échéance indiquée en en-tête. Virement Interac à n.vivaudou@gmail.com, ou dépôt direct / virement bancaire."},
+        {t:"Droits d'auteur",p:"Nicolas Vivaudou demeure premier titulaire du droit d'auteur (Loi sur le droit d'auteur). Licence d'utilisation selon l'entente convenue."},
+        {t:"Taxes",p:"Montants incluant la TPS (5 %) et la TVQ (9,975 %). Numéros d'inscription indiqués ci-dessus.",tax:true},
+        {t:"Retard",p:"Des intérêts peuvent s'appliquer sur tout solde impayé après l'échéance, au taux convenu entre les parties."}
+      ]
+    },
+    en:{
+      app_name:"Quote & Invoice", seg_devis:"Quote", seg_facture:"Invoice", role_caps:"Photographer",
+      kind_devis:"Quote · Contract", kind_facture:"Invoice",
+      tax_label:"GST/QST registered", opt_schedule:"Schedule", opt_signatures:"Signatures",
+      new_doc:"New", dup:"Duplicate → invoice", copy_email:"Copy email", copied:"Copied ✓",
+      docs:"Documents", stats:"Statistics", print:"Print / PDF",
+      saving:"Saving…", saved_at:"Saved at ", storage_off:"Storage unavailable",
+      lbl_date:"Issued", lbl_valid:"Valid until", lbl_due:"Due", lbl_status:"Status", total_cad:"Total CAD",
+      status_pending:"Pending", status_paid:"Paid",
+      eb_photographer:"Photographer", eb_client:"Client", eb_billed:"Billed to",
+      ph_tax:"GST / QST registration no.", ph_nas:"SIN — if needed (T4A)", add_nas:"+ add SIN",
+      ph_clientname:"Client name / organization", ph_email:"email@example.com", ph_phone:"(514) 000-0000", ph_address:"Address", ph_ref:"Project / contact",
+      sec_prestation:"The shoot", note_prestation:"session details",
+      ph_objet:"E.g.: Team portraits — 18 people.",
+      lbl_lieu:"Location & date", ph_lieu:"Location — DD/MM/YYYY",
+      lbl_livraison:"Delivery", val_livraison:"Private online gallery · high-resolution .JPG files",
+      lbl_delai:"Turnaround", val_delai:"Within 15 business days after the session",
+      lbl_nbimg:"Images delivered", ph_nbimg:"E.g.: 25 edited images",
+      sec_fees:"Fees", sec_details:"Details", note_cad:"amounts in CAD",
+      th_desc:"Description", th_qty:"Qty", th_pu:"Unit price", th_amount:"Amount", ph_desc:"Item",
+      add_row:"+ Add a line", add_clause:"+ Add a clause",
+      t_subtotal:"Subtotal", t_gst:"GST", t_qst:"QST", t_gst_rate:"(5%)", t_qst_rate:"(9.975%)", t_total:"Total", t_total_due:"Total due",
+      pay_sched_h:"Payment schedule", pay1_label:"Deposit on booking", pay2_label:"Balance on delivery",
+      pay_note:"Amounts paid are applied to the total price.",
+      pay_h:"Payment", pay_interac:"Interac e-transfer", pay_cheque:"Direct deposit / transfer", pay_cheque_v:"void cheque provided", pay_due:"Due",
+      deposit_label:"Deposit received", balance_label:"Balance due", book:"Address book", book_none:"No saved client",
+      sec_terms:"Contract terms", note_terms:"quote becomes an agreement once accepted",
+      sec_mentions:"Notes", note_mentions:"terms & legal",
+      sec_notes:"Additional notes", note_optional:"optional",
+      ph_notes:"E.g.: second session offered if it rains · rush delivery available…",
+      who_photographer:"The photographer", who_client:"The client", sign_at:"Signed at", sign_on:"on", ph_city:"City",
+      sign_label_client:"name & signature — agreed",
+      entente:"This document reflects the agreement reached between the parties. Under articles 1385-1386 of the Civil Code of Québec, a contract is formed by the sole exchange of consents and requires no signature to be valid. Payment of the first installment or the start of services constitutes full acceptance of these terms.",
+      disclaimer:"Template only — not legal advice.",
+      search_ph:"Search a client, a number…", f_all:"All", f_devis:"Quotes", f_facture:"Invoices", f_due:"Outstanding", f_paid:"Paid",
+      open:"Open", duplicate:"Duplicate", delete:"Delete", no_docs:"No document for this search.",
+      export_db:"⤓ Export backup", import_db:"Import a file", csv:"⤓ CSV (Excel)",
+      storage_note:"Your documents are kept on this device. Export the backup to archive it or move it to your phone.",
+      k_invoiced:"Total invoiced", k_collected:"Collected", k_outstanding:"Outstanding", k_invoices:"Invoices", k_quotes:"Quotes", k_avg:"Avg / invoice", k_tax:"GST + QST collected",
+      all_years:"All", chart_12:"Revenue — last 12 months", chart_y:"Revenue — ",
+      lg_invoiced:"Invoiced", lg_collected:"Collected", top_clients:"Top clients",
+      followups:"Payments to follow up", no_followups:"No outstanding invoices ✓", remind:"Remind", mark_paid:"Mark paid",
+      overdue:"Overdue · ", due_in:"Due · ", days:" d", pending:"Pending",
+      confirm_del:"Delete this document?", confirm_new:"Start a new document? The current one is already saved.",
+      email:"Hello {client},\n\nFollowing your approval, please find attached {kind} no. {no} setting out the terms agreed for our collaboration.\n\nThis document serves as the official reference for the project. Under the Civil Code of Québec (arts. 1385-1386), our agreement is already formed by the exchange of our consents; this document evidences it.\n\nTo get started, simply settle the first installment or confirm the go-ahead for the work.\n\nLooking forward to working together,\nNicolas Vivaudou\nPhotographer · (514) 664-4473 · n.vivaudou@gmail.com",
+      seed:[{d:"Photography package — session",q:1,p:0},{d:"Editing & post-processing",q:1,p:0},{d:"Travel expenses",q:1,p:0}],
+      clauses:[
+        {t:"Acceptance",p:"This agreement is formed by the exchange of consents (arts. 1385-1386 C.C.Q.) and requires no signature. Signing the document, paying the first installment, or the start of services confirms full acceptance of these terms. The quote is valid for the period shown in the header."},
+        {t:"Payment terms",p:"Unless otherwise agreed, the price is payable in two installments: one on confirmation of the booking and the balance on delivery of the images. Amounts paid are applied to the total price. Payment by Interac e-transfer (n.vivaudou@gmail.com) or by direct deposit / bank transfer."},
+        {t:"Cancellation",p:"If the client cancels, amounts paid are refunded, less services already rendered and reasonable expenses actually incurred as of the cancellation date. No amount is withheld as a penalty beyond this."},
+        {t:"Rescheduling & force majeure",p:"One free reschedule is possible, subject to availability, if requested at least 7 days before the session. For an outdoor session, a new date is set at no charge if conditions make shooting impossible."},
+        {t:"Delivery",p:"Selected, edited images are delivered through a private online gallery in the agreed format. Raw files (RAW) and unselected images are not delivered."},
+        {t:"Copyright",p:"Under the Copyright Act, Nicolas Vivaudou is the first owner of copyright in the images, including commissioned work, and retains his moral rights."},
+        {t:"Usage licence",p:"The client receives a licence for personal, non-commercial use. Any commercial, advertising or third-party use is subject to a separate written agreement and licence."},
+        {t:"Image rights",p:"The client consents to the use of their image for the agreed work and warrants holding the authorizations of identifiable persons appearing in the images. Portfolio use of identifiable persons is subject to their consent (arts. 35-36 C.C.Q.)."},
+        {t:"Photo credit",p:"The credit « Photo: Nicolas Vivaudou » is required for any professional use."},
+        {t:"Retention & data",p:"Files are kept for 90 days after delivery; beyond that, archiving is not guaranteed. The client's information is used solely to perform the contract."}
+      ],
+      mentions:[
+        {t:"Payment terms",p:"Payment on receipt, by the due date shown in the header. Interac e-transfer to n.vivaudou@gmail.com, or direct deposit / bank transfer."},
+        {t:"Copyright",p:"Nicolas Vivaudou remains the first owner of copyright (Copyright Act). Usage licence as agreed."},
+        {t:"Taxes",p:"Amounts include GST (5%) and QST (9.975%). Registration numbers shown above.",tax:true},
+        {t:"Late payment",p:"Interest may apply to any balance unpaid after the due date, at the rate agreed between the parties."}
+      ]
+    }
+  };
+
+  static KEY = "nv_docs_v1";
+  static BAK = "nv_docs_backup";
+
+  constructor(props){
+    super(props);
+    this.fileRef = React.createRef();
+    const s = this.fresh("devis","fr");
+    s.db = {}; s.curId = null; s.panel = null; s.query = ""; s.filter = "all";
+    s.statYear = "all"; s.savedAt = ""; s.storeOk = true; s.locked = true; s.noAuto = true; s.nasOpen = false; s.copied = false; s.bookOpen = false;
+    this.state = s;
+    this._timer = null;
+  }
+
+  /* ---------- helpers ---------- */
+  dict(l){ return Component.DICT[l || this.state.lang]; }
+  loc(l){ return (l || this.state.lang) === "fr" ? "fr-CA" : "en-CA"; }
+  money(n,l){ try{ return new Intl.NumberFormat(this.loc(l),{style:"currency",currency:"CAD"}).format(n||0); }catch(e){ return (n||0).toFixed(2)+" $"; } }
+  fdate(d,l){ try{ return d.toLocaleDateString(this.loc(l),{day:"numeric",month:"long",year:"numeric"}); }catch(e){ return d.toISOString().slice(0,10); } }
+  plus(d,n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
+  num(v){ let s = String(v==null?"":v).replace(/[^\d.,-]/g,""); if(s.indexOf(",")>-1 && s.indexOf(".")===-1) s = s.replace(",","."); else s = s.replace(/,/g,""); const n = parseFloat(s); return isNaN(n)?0:n; }
+
+  fresh(mode, lang){
+    const D = Component.DICT[lang]; const now = new Date();
+    return {
+      lang, mode, status:"due", paidDate:"", clientId:null,
+      kind: mode === "facture" ? D.kind_facture : D.kind_devis,
+      docno:"", docdate:this.fdate(now,lang), docvalid:this.fdate(this.plus(now,30),lang), docdue:this.fdate(this.plus(now,15),lang),
+      taxable:true, sched:true, signs:true, depPct:"50", deposit:"",
+      me:{name:"Nicolas Vivaudou", email:"n.vivaudou@gmail.com", phone:"(514) 664-4473", address:"901 boul. St-Joseph E., H1J 2K7, Montréal (QC)", tax:"", nas:""},
+      client:{name:"", email:"", phone:"", address:"", ref:""},
+      brief:{objet:"", lieu:"", livraison:D.val_livraison, delai:D.val_delai, nbimg:""},
+      items: D.seed.map((s,i)=>({id:"i"+Date.now()+i, d:s.d, q:String(s.q), p:String(s.p)})),
+      clauses: D.clauses.map(c=>({t:c.t,p:c.p})),
+      mentions: D.mentions.map(m=>({t:m.t,p:m.p,tax:!!m.tax})),
+      notes:"", sign:{city:"Montréal", date:this.fdate(now,lang), ccity:"", cdate:""}
+    };
+  }
+
+  totals(st){
+    const s = st || this.state;
+    let sub = 0; (s.items||[]).forEach(it=>{ sub += this.num(it.q) * this.num(it.p); });
+    const tx = s.taxable !== false;
+    const tps = tx ? sub*0.05 : 0, tvq = tx ? sub*0.09975 : 0;
+    return {sub, tps, tvq, tax:tps+tvq, total:sub+tps+tvq};
+  }
+
+  /* ---------- stockage ----------
+     Un document rattaché à un client est rangé dans sa fiche (`client.invoices`,
+     table `clients`) : il se synchronise avec la base, apparaît dans l'admin et
+     dans l'espace du client. Un document sans client reste un brouillon local à
+     ce navigateur — rien de nominatif ne part dans la ligne `site`, qui est
+     publiquement lisible. Le reste de l'outil (recherche, statistiques, CSV)
+     ignore cette distinction : il ne voit qu'un seul jeu de documents. */
+  store(){ return (window.NVStore && window.NVStore.get()) || null; }
+
+  loadDB(){
+    let db = {};
+    try{ db = JSON.parse(localStorage.getItem(Component.KEY) || "{}"); }catch(e){ db = {}; }
+    const s = this.store();
+    if(s) (s.clients||[]).forEach(c=>{
+      (c.invoices||[]).forEach(inv=>{
+        if(inv && inv.doc && inv.docId) db[inv.docId] = {...inv.doc, clientId:c.id};
+      });
+    });
+    return db;
+  }
+
+  /* Ligne résumée lue par l'admin et par l'espace client : mêmes champs qu'une
+     facture saisie à la main, plus le document complet et son identifiant. */
+  summaryRow(id, snap){
+    const t = this.totals(snap);
+    const label = String((snap.brief && snap.brief.objet) || "").trim()
+      || String((((snap.items||[])[0])||{}).d || "").trim()
+      || (snap.mode === "facture" ? "Facture" : "Devis");
+    return {docId:id, doc:snap, num:snap.docno||"", label:label.slice(0,90),
+      amount:this.money(t.total, snap.lang), date:snap.docdate||"",
+      status:snap.status === "paid" ? "Payée" : "À régler"};
+  }
+
+  writeDB(db){
+    let ok = true;
+    const local = {};
+    Object.keys(db).forEach(k=>{ if(!db[k].clientId) local[k] = db[k]; });
+    try{
+      const prev = localStorage.getItem(Component.KEY);
+      if(prev) localStorage.setItem(Component.BAK, prev);
+      localStorage.setItem(Component.KEY, JSON.stringify(local));
+    }catch(e){ ok = false; }
+    /* L'enregistrement automatique se déclenche toutes les 900 ms de frappe, et
+       une écriture dans le magasin pousse l'état entier vers la base. On ne
+       l'appelle donc que si une fiche client change réellement — taper dans un
+       brouillon local ne touche jamais au réseau. */
+    const cur = this.store();
+    let dirty = false;
+    if(cur){
+      (cur.clients||[]).forEach(c=>(c.invoices||[]).forEach(inv=>{
+        if(inv.docId && !(db[inv.docId] && db[inv.docId].clientId === c.id)) dirty = true;
+      }));
+      Object.keys(db).forEach(id=>{
+        const snap = db[id]; if(!snap.clientId) return;
+        const c = (cur.clients||[]).find(x=>x.id === snap.clientId); if(!c) return;
+        const row = (c.invoices||[]).find(x=>x.docId === id);
+        if(!row || JSON.stringify(row.doc) !== JSON.stringify(snap)) dirty = true;
+      });
+    }
+    if(window.NVStore && dirty){
+      window.NVStore.update(st=>{
+        (st.clients||[]).forEach(c=>{
+          // On ne touche jamais aux factures saisies à la main (sans docId).
+          c.invoices = (c.invoices||[]).filter(inv=>
+            !inv.docId || (db[inv.docId] && db[inv.docId].clientId === c.id));
+        });
+        Object.keys(db).forEach(id=>{
+          const snap = db[id]; if(!snap.clientId) return;
+          const c = (st.clients||[]).find(x=>x.id === snap.clientId); if(!c) return;
+          if(!c.invoices) c.invoices = [];
+          const row = this.summaryRow(id, snap);
+          const i = c.invoices.findIndex(x=>x.docId === id);
+          if(i >= 0) c.invoices[i] = {...c.invoices[i], ...row};
+          else c.invoices.push({id:window.NVStore.uid("inv"), ...row});
+        });
+      });
+    }
+    return ok;
+  }
+
+  /* Rattachement : le document déménage vers la fiche choisie (ou en repart).
+     Les champs client encore vides sont remplis avec la fiche. */
+  setClientId(id){
+    const s = this.store();
+    const c = id ? ((s && s.clients) || []).find(x=>x.id === id) : null;
+    this.setState(st=>{
+      const client = {...st.client};
+      if(c){
+        if(!String(client.name||"").trim()) client.name = c.name || "";
+        if(!String(client.email||"").trim()) client.email = c.email || "";
+      }
+      return {clientId:id || null, client};
+    }, ()=>this.persist(true));
+  }
+
+  toSnap(){
+    const s = this.state, t = this.totals(s);
+    return {v:2, mode:s.mode, lang:s.lang, status:s.status, paidDate:s.paidDate, kind:s.kind, clientId:s.clientId||null,
+      docno:s.docno, docdate:s.docdate, docvalid:s.docvalid, docdue:s.docdue,
+      taxable:s.taxable, sched:s.sched, signs:s.signs, depPct:s.depPct, deposit:s.deposit||"",
+      me:{...s.me}, client:{...s.client}, brief:{...s.brief},
+      items:s.items.map(i=>({d:i.d,q:i.q,p:i.p})), clauses:s.clauses.map(c=>({...c})), mentions:s.mentions.map(m=>({...m})),
+      notes:s.notes, sign:{...s.sign}, total:this.money(t.total,s.lang)};
+  }
+
+  fromSnap(s){
+    const base = this.fresh(s.mode || "devis", s.lang || "fr");
+    const legacy = s.me && Array.isArray(s.me.lines);
+    const out = {...base,
+      clientId:s.clientId||null,
+      mode:s.mode||"devis", lang:s.lang||"fr", status:s.status||"due", paidDate:s.paidDate||"",
+      kind:s.kind||base.kind, docno:s.docno||"", docdate:s.docdate||base.docdate,
+      docvalid:s.docvalid||base.docvalid, docdue:s.docdue||base.docdue,
+      taxable:s.taxable!==false, depPct:s.depPct!=null?String(s.depPct):"50", deposit:s.deposit!=null?String(s.deposit):"", notes:s.notes||"",
+      items:(s.items||[]).map((i,k)=>({id:"i"+Date.now()+k, d:i.d||"", q:String(i.q==null?1:i.q), p:String(i.p==null?0:i.p)})),
+      clauses:(s.clauses||base.clauses).map(c=>({t:this.strip(c.t), p:this.strip(c.p)})),
+      mentions:(s.mentions||base.mentions).map(m=>({t:this.strip(m.t), p:this.strip(m.p), tax:!!m.tax}))
+    };
+    out.sched = s.sched != null ? !!s.sched : !s.noSchedule;
+    out.signs = s.signs != null ? !!s.signs : !s.noSignature;
+    if(legacy){
+      const L = s.me.lines||[], C = (s.client&&s.client.lines)||[], B = s.brief||[], SM = s.signMeta||[];
+      out.me = {name:s.me.name||base.me.name, email:L[0]||"", phone:L[1]||"", address:L[2]||"", tax:L[3]||"", nas:L[4]||""};
+      out.client = {name:(s.client&&s.client.name)||"", email:C[0]||"", phone:C[1]||"", address:C[2]||"", ref:C[3]||""};
+      out.brief = {objet:B[0]||"", lieu:B[1]||"", livraison:B[2]||base.brief.livraison, delai:B[3]||base.brief.delai, nbimg:B[4]||""};
+      out.sign = {city:SM[0]||"Montréal", date:SM[1]||"", ccity:SM[2]||"", cdate:SM[3]||""};
+    } else {
+      out.me = {...base.me, ...(s.me||{})};
+      out.client = {...base.client, ...(s.client||{})};
+      out.brief = {...base.brief, ...(s.brief||{})};
+      out.sign = {...base.sign, ...(s.sign||{})};
+    }
+    return out;
+  }
+
+  strip(h){ const d = document.createElement("div"); d.innerHTML = String(h==null?"":h); return d.textContent || ""; }
+
+  persist(silent){
+    const snap = this.toSnap();
+    const no = (snap.docno || "").trim();
+    let id = this.state.curId || no || ("doc-" + Date.now());
+    snap._savedAt = Date.now();
+    const db = {...this.loadDB()};
+    if(this.state.curId && no && no !== this.state.curId && !db[no]){ delete db[this.state.curId]; id = no; }
+    db[id] = snap;
+    const ok = this.writeDB(db);
+    const now = new Date();
+    this.setState({db, curId:id, storeOk:ok,
+      savedAt: ok ? now.toLocaleTimeString(this.loc(),{hour:"2-digit",minute:"2-digit"}) : ""});
+    return ok;
+  }
+  worthSaving(){
+    const s = this.state;
+    if(s.curId) return true;
+    return !!(s.client.name||"").trim() || this.totals(s).sub > 0;
+  }
+  schedule(){
+    clearTimeout(this._timer);
+    this._timer = setTimeout(()=>{ if(this.worthSaving()) this.persist(true); }, 900);
+  }
+
+  /* ---------- numbering ---------- */
+  nextNo(mode, db){
+    const pre = mode === "facture" ? "FA" : "DV";
+    const y = new Date().getFullYear();
+    let max = 0;
+    Object.keys(db||{}).forEach(k=>{
+      const m = String((db[k]||{}).docno || "").match(/^(DV|FA)-(\d{4})-(\d+)$/);
+      if(m && m[1] === pre && +m[2] === y) max = Math.max(max, +m[3]);
+    });
+    return pre + "-" + y + "-" + String(max+1).padStart(3,"0");
+  }
+
+  /* ---------- lifecycle ---------- */
+  componentDidMount(){
+    let ok = true; try{ localStorage.setItem("nv_probe","1"); localStorage.removeItem("nv_probe"); }catch(e){ ok = false; }
+    this.setState({storeOk:ok});
+    /* Le magasin du site arrive de façon asynchrone (lecture de la base). On
+       attend l'hydratation avant de lister les documents — sinon les factures
+       déjà rattachées à un client manqueraient à l'appel — puis on reste
+       abonné pour suivre ce qui change dans l'admin. */
+    let tries = 0;
+    this._wait = setInterval(()=>{
+      const ready = window.NVStore && (!window.NVStore.hydrated || window.NVStore.hydrated());
+      if(!ready && ++tries < 80) return;
+      if(!window.NVStore) return;
+      clearInterval(this._wait); this._wait = null;
+      this.setState({locked: !(window.NVAuth && window.NVAuth.isAdmin())});
+      this._unsub = window.NVStore.subscribe(()=>this.setState({db:this.loadDB()}));
+      this.boot();
+    }, 60);
+    this._before = ()=>{ document.title = (this.state.docno || "document"); if(this.state.storeOk) this.persist(true); };
+    this._after = ()=>{ document.title = this.state.kind + " — Nicolas Vivaudou"; };
+    this._hide = ()=>{ if(document.visibilityState === "hidden") this.persist(true); };
+    window.addEventListener("beforeprint", this._before);
+    window.addEventListener("afterprint", this._after);
+    document.addEventListener("visibilitychange", this._hide);
+    this._key = e=>{ if(e.key === "Escape") this.setState({panel:null}); };
+    document.addEventListener("keydown", this._key);
+  }
+  /* Ouverture : ?id=<document>, ou ?client=<fiche>&mode=facture pour partir
+     d'un document neuf déjà rattaché — c'est le lien utilisé par l'admin. */
+  boot(){
+    const db = this.loadDB();
+    const p = new URLSearchParams(location.search);
+    const wantId = p.get("id"), wantClient = p.get("client"), wantMode = p.get("mode");
+    if(wantId && db[wantId]){ this.setState({db}, ()=>this.openDoc(wantId)); return; }
+    const mode = (wantMode === "facture" || wantMode === "devis") ? wantMode : this.state.mode;
+    const D = Component.DICT[this.state.lang];
+    this.setState({db, mode, kind: mode === "facture" ? D.kind_facture : D.kind_devis,
+      docno:this.nextNo(mode, db)},
+      ()=>{ if(wantClient) this.setClientId(wantClient); this.growAll(); });
+  }
+
+  componentWillUnmount(){
+    if(this._wait) clearInterval(this._wait);
+    if(this._unsub) this._unsub();
+    window.removeEventListener("beforeprint", this._before);
+    window.removeEventListener("afterprint", this._after);
+    document.removeEventListener("visibilitychange", this._hide);
+    document.removeEventListener("keydown", this._key);
+    clearTimeout(this._timer);
+  }
+  componentDidUpdate(){ this.growAll(); }
+  growAll(){
+    document.querySelectorAll("textarea[data-grow]").forEach(t=>{
+      t.style.height = "auto"; t.style.height = (t.scrollHeight + 2) + "px";
+    });
+  }
+
+  /* ---------- mutations ---------- */
+  upd(grp, k, v){ this.setState(s=>({[grp]:{...s[grp], [k]:v}}), ()=>this.schedule()); }
+  set(k, v){ this.setState({[k]:v}, ()=>this.schedule()); }
+
+  setMode(mode){
+    this.setState(s=>{
+      if(s.mode === mode) return null;
+      const D = Component.DICT[s.lang];
+      const db = this.loadDB();
+      return {mode, db, kind: mode==="facture"?D.kind_facture:D.kind_devis,
+        docno: s.noAuto ? this.nextNo(mode, db) : s.docno};
+    }, ()=>this.schedule());
+  }
+
+  setLang(lang){
+    this.setState(s=>{
+      const A = Component.DICT[s.lang], B = Component.DICT[lang];
+      const swap = (arr, from, to) => arr.map(x=>{
+        const i = from.findIndex(f=>f.t === x.t && f.p === x.p);
+        return i >= 0 ? {...x, t:to[i].t, p:to[i].p} : x;
+      });
+      const items = s.items.map(it=>{
+        const i = A.seed.findIndex(sd=>sd.d === it.d);
+        return i >= 0 ? {...it, d:B.seed[i].d} : it;
+      });
+      return {lang,
+        kind: s.kind === A.kind_devis ? B.kind_devis : (s.kind === A.kind_facture ? B.kind_facture : s.kind),
+        clauses: swap(s.clauses, A.clauses, B.clauses),
+        mentions: swap(s.mentions, A.mentions, B.mentions),
+        items,
+        brief:{...s.brief,
+          livraison: s.brief.livraison === A.val_livraison ? B.val_livraison : s.brief.livraison,
+          delai: s.brief.delai === A.val_delai ? B.val_delai : s.brief.delai}};
+    }, ()=>this.schedule());
+  }
+
+  newDoc(){
+    const db = this.loadDB();
+    const keep = this.state.clientId || null;
+    const s = this.fresh(this.state.mode, this.state.lang);
+    s.docno = this.nextNo(this.state.mode, db);
+    this.setState({...s, db, curId:null, noAuto:true, panel:null, nasOpen:false},
+      ()=>{ if(keep) this.setClientId(keep); });
+  }
+
+  dupToFacture(){
+    const db = this.loadDB();
+    this.setState(s=>({mode:"facture", curId:null, noAuto:true, status:"due", paidDate:"",
+      kind: Component.DICT[s.lang].kind_facture, docno:this.nextNo("facture", db), db}), ()=>this.persist(true));
+  }
+
+  openDoc(id){
+    const db = this.loadDB(); const s = db[id]; if(!s) return;
+    this.setState({...this.fromSnap(s), db, curId:id, noAuto:false, panel:null}, ()=>this.growAll());
+  }
+  dupDoc(id){
+    const db = this.loadDB(); const s = db[id]; if(!s) return;
+    const st = this.fromSnap(s);
+    st.status = "due"; st.paidDate = "";
+    st.docno = this.nextNo(st.mode, db);
+    st.docdate = this.fdate(new Date(), st.lang);
+    this.setState({...st, db, curId:null, noAuto:true, panel:null}, ()=>this.persist(true));
+  }
+  delDoc(id){
+    if(!confirm(this.dict().confirm_del)) return;
+    const db = {...this.loadDB()}; delete db[id];
+    this.writeDB(db);
+    this.setState(s=>({db, curId: s.curId === id ? null : s.curId}));
+  }
+  markPaid(id){
+    const db = {...this.loadDB()}; const s = db[id]; if(!s) return;
+    s.status = "paid"; if(!s.paidDate) s.paidDate = this.fdate(new Date(), this.state.lang);
+    this.writeDB(db);
+    this.setState(st=>({db, status: st.curId === id ? "paid" : st.status, paidDate: st.curId === id ? s.paidDate : st.paidDate}));
+  }
+
+  /* ---------- export ---------- */
+  download(name, blob){
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+  }
+  exportDB(){ this.download("sauvegarde-vivaudou.json", new Blob([JSON.stringify(this.loadDB(),null,2)],{type:"application/json"})); }
+  onImport(e){
+    const f = e.target.files && e.target.files[0]; if(!f) return;
+    const r = new FileReader();
+    r.onload = ()=>{ try{ const data = JSON.parse(r.result); const db = {...this.loadDB(), ...data}; this.writeDB(db); this.setState({db}); }catch(x){ alert("×"); } };
+    r.readAsText(f); e.target.value = "";
+  }
+  exportCSV(){
+    const fr = this.state.lang !== "en", sep = fr ? ";" : ",", dec = fr ? "," : ".";
+    const n2 = n=>(n||0).toFixed(2).replace(".",dec);
+    const head = fr ? ["Type","Nº","Date","Client","Statut","Payée le","Sous-total","TPS","TVQ","Total"]
+                    : ["Type","No.","Date","Client","Status","Paid on","Subtotal","GST","QST","Total"];
+    const db = this.loadDB();
+    const rows = [head];
+    Object.keys(db).map(k=>db[k]).sort((a,b)=>(a.docdate||"").localeCompare(b.docdate||"")).forEach(s=>{
+      const y = this.docYear(s); if(this.state.statYear !== "all" && y !== +this.state.statYear) return;
+      const t = this.totals(s);
+      rows.push([s.mode === "facture" ? (fr?"Facture":"Invoice") : (fr?"Devis":"Quote"), s.docno||"", s.docdate||"",
+        (s.client&&s.client.name)||"", s.mode === "facture" ? (s.status === "paid" ? (fr?"Payée":"Paid") : (fr?"En attente":"Outstanding")) : "",
+        s.paidDate||"", n2(t.sub), n2(t.tps), n2(t.tvq), n2(t.total)]);
+    });
+    const cell = x=>{ x = ""+x; return (x.indexOf(sep)>=0||x.indexOf('"')>=0||x.indexOf("\n")>=0) ? '"'+x.replace(/"/g,'""')+'"' : x; };
+    const csv = "\ufeff" + rows.map(r=>r.map(cell).join(sep)).join("\r\n");
+    this.download("stats-vivaudou.csv", new Blob([csv],{type:"text/csv;charset=utf-8"}));
+  }
+
+  copyEmail(){
+    const D = this.dict();
+    const body = D.email.replace("{client}", (this.state.client.name||"").trim() || (this.state.lang==="fr"?"[nom du client]":"[client name]"))
+      .replace("{kind}", (this.state.kind||"").toLowerCase()).replace("{no}", this.state.docno||"");
+    const done = ()=>{ this.setState({copied:true}); setTimeout(()=>this.setState({copied:false}), 1600); };
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(body).then(done).catch(()=>prompt("", body));
+    else prompt("", body);
+  }
+
+  remindEmail(id){
+    const s = this.loadDB()[id]; if(!s) return;
+    const fr = this.state.lang !== "en", t = this.totals(s);
+    const to = [s.client&&s.client.email].filter(x=>x&&/@/.test(x))[0] || "";
+    const no = s.docno||"", due = s.docdue||s.docdate||"", amt = this.money(t.total);
+    const subj = fr ? ("Rappel — facture "+no) : ("Reminder — invoice "+no);
+    const body = fr
+      ? "Bonjour,\n\nPetit rappel concernant la facture "+no+" au montant de "+amt+(due?", dont l'échéance était le "+due:"")+".\n\nSi le paiement a déjà été effectué, merci de ne pas tenir compte de ce message. Sinon, le règlement peut se faire par virement Interac à n.vivaudou@gmail.com.\n\nMerci et au plaisir,\nNicolas Vivaudou\nPhotographe · (514) 664-4473"
+      : "Hello,\n\nA friendly reminder about invoice "+no+" for "+amt+(due?", which was due on "+due:"")+".\n\nIf payment has already been made, please disregard this message. Otherwise, payment can be sent by Interac e-transfer to n.vivaudou@gmail.com.\n\nThank you,\nNicolas Vivaudou\nPhotographer · (514) 664-4473";
+    window.location.href = "mailto:"+encodeURIComponent(to)+"?subject="+encodeURIComponent(subj)+"&body="+encodeURIComponent(body);
+  }
+
+  /* ---------- stats helpers ---------- */
+  parseDate(str){
+    str = String(str||"").toLowerCase(); if(!str) return null;
+    const MO = {janvier:0,"février":1,fevrier:1,mars:2,avril:3,mai:4,juin:5,juillet:6,"août":7,aout:7,septembre:8,octobre:9,novembre:10,"décembre":11,decembre:11,
+      january:0,february:1,march:2,april:3,may:4,june:5,july:6,august:7,september:8,october:9,november:10,december:11};
+    const y = (str.match(/(20\d\d)/)||[])[1], d = (str.match(/(\d{1,2})/)||[])[1];
+    for(const k in MO){ if(str.indexOf(k) >= 0 && y) return new Date(+y, MO[k], d?+d:1); }
+    const mm = str.match(/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](20\d\d)/);
+    return mm ? new Date(+mm[3], +mm[2]-1, +mm[1]) : null;
+  }
+  docYear(s){ const d = this.parseDate(s.docdate) || (s._savedAt ? new Date(s._savedAt) : null); return d ? d.getFullYear() : null; }
+
+  stats(){
+    const db = this.state.db, year = this.state.statYear;
+    const st = {n:0, nFact:0, nDevis:0, totFact:0, totSub:0, totTax:0, paidSum:0, dueSum:0, paidCount:0, dueCount:0, byMonth:{}, byClient:{}};
+    Object.keys(db).forEach(k=>{
+      const s = db[k], y = this.docYear(s);
+      if(year !== "all" && y !== +year) return;
+      st.n++;
+      if(s.mode !== "facture"){ st.nDevis++; return; }
+      st.nFact++;
+      const t = this.totals(s);
+      st.totFact += t.total; st.totSub += t.sub; st.totTax += t.tax;
+      const paid = s.status === "paid";
+      const dep = Math.min(Math.max(0, this.num(s.deposit)), t.total);
+      const got = paid ? t.total : dep;
+      if(paid){ st.paidCount++; } else { st.dueCount++; st.dueSum += t.total - dep; }
+      st.paidSum += got;
+      const d = this.parseDate(s.docdate) || (s._savedAt ? new Date(s._savedAt) : null);
+      if(d){ const key = d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2);
+        const mb = st.byMonth[key] || (st.byMonth[key] = {inv:0, paid:0});
+        mb.inv += t.total; mb.paid += got; }
+      const cn = ((s.client&&s.client.name)||"").trim() || "—";
+      st.byClient[cn] = (st.byClient[cn]||0) + t.total;
+    });
+    st.avg = st.nFact ? st.totFact/st.nFact : 0;
+    return st;
+  }
+
+  reminders(){
+    const db = this.state.db, out = [], today = new Date(); today.setHours(0,0,0,0);
+    Object.keys(db).forEach(id=>{
+      const s = db[id]; if(s.mode !== "facture" || s.status === "paid") return;
+      const y = this.docYear(s); if(this.state.statYear !== "all" && y !== +this.state.statYear) return;
+      const due = this.parseDate(s.docdue) || this.parseDate(s.docdate) || (s._savedAt ? new Date(s._savedAt) : null);
+      out.push({id, s, due, amount:Math.max(0, this.totals(s).total - Math.max(0, this.num(s.deposit))), days: due ? Math.round((today-due)/86400000) : null});
+    });
+    return out.sort((a,b)=>(b.days==null?-1e9:b.days)-(a.days==null?-1e9:a.days));
+  }
+
+  /* ---------- render ---------- */
+  renderVals(){
+    const s = this.state, D = this.dict(), t = this.totals(s);
+    const F = (grp,k)=>({v:s[grp][k]||"", on:e=>this.upd(grp,k,e.target.value)});
+    const TOP = k=>({v:s[k]||"", on:e=>{ const v = e.target.value; this.setState(x=>({[k]:v, noAuto: k==="docno" ? false : x.noAuto}), ()=>this.schedule()); }});
+    const isDevis = s.mode === "devis", isFacture = !isDevis;
+    const pct = Math.min(100, Math.max(0, this.num(s.depPct)));
+
+    const tab = (on)=>"border:none;border-radius:999px;padding:6px 14px;font-size:12px;font-weight:500;cursor:pointer;transition:.15s;"+
+      (on ? "background:#17170F;color:#fff" : "background:transparent;color:#6E6E6C");
+    const chip = (on)=>"display:inline-flex;align-items:center;gap:6px;font-size:11.5px;cursor:pointer;border-radius:999px;padding:6px 12px;border:1px solid "+
+      (on ? "#E4CE7C;background:#FDF7E4;color:#17170F" : "#E2E0DA;background:#fff;color:#6E6E6C");
+    const ghost = "border:1px solid #DAD8D1;background:#fff;border-radius:9px;padding:7px 12px;font-size:11.5px;cursor:pointer;color:#4A4A46";
+
+    const lineIn = "width:100%;font-size:11.5px;line-height:1.6;color:#6E6E6C;background:transparent;border:none;border-radius:6px;padding:2px 6px;margin-left:-6px";
+    const nameIn = "width:100%;font-family:Newsreader,Georgia,serif;font-size:16px;letter-spacing:-.01em;background:transparent;border:none;border-radius:6px;padding:1px 6px;margin-left:-6px";
+    const cellIn = "width:100%;font-size:11.5px;line-height:1.5;background:transparent;border:none;border-radius:6px;padding:2px 6px;margin-left:-6px";
+    const metaIn = "width:100%;font-size:11.5px;background:transparent;border:none;border-radius:6px;padding:2px 6px;margin-left:-6px";
+    const signIn = "width:92px;font-size:11px;background:transparent;border:none;border-bottom:1px solid #DAD8D1;border-radius:4px;padding:1px 4px";
+    const signInWide = "width:118px;font-size:11px;background:transparent;border:none;border-bottom:1px solid #DAD8D1;border-radius:4px;padding:1px 4px";
+
+    const items = s.items.map((it,i)=>({
+      ...it, ph:D.ph_desc,
+      amount:this.money(this.num(it.q)*this.num(it.p)),
+      inD:"width:100%;font-size:12.5px;background:transparent;border:none;border-radius:6px;padding:6px",
+      inN:"width:100%;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px;background:transparent;border:none;border-radius:6px;padding:6px",
+      onD:e=>this.setItem(i,"d",e.target.value), onQ:e=>this.setItem(i,"q",e.target.value), onP:e=>this.setItem(i,"p",e.target.value),
+      onDel:()=>this.setState(x=>({items:x.items.filter((_,k)=>k!==i)}), ()=>this.schedule())
+    }));
+
+    const clauses = s.clauses.map((c,i)=>({
+      t:c.t, p:c.p, n:String(i+1).padStart(2,"0"),
+      onT:e=>this.setArr("clauses",i,"t",e.target.value), onP:e=>this.setArr("clauses",i,"p",e.target.value),
+      onDel:()=>this.setState(x=>({clauses:x.clauses.filter((_,k)=>k!==i)}), ()=>this.schedule())
+    }));
+    const mentions = s.mentions.map((m,i)=>({
+      t:m.t, p:m.p, disp:(m.tax && !s.taxable) ? "none" : "block",
+      onT:e=>this.setArr("mentions",i,"t",e.target.value), onP:e=>this.setArr("mentions",i,"p",e.target.value)
+    }));
+
+    /* carnet de clients */
+    const seen = {}, book = [];
+    Object.keys(s.db).map(k=>s.db[k]).sort((a,b)=>(b._savedAt||0)-(a._savedAt||0)).forEach(d=>{
+      const c = d.client || {}, n = (c.name||"").trim();
+      if(!n || seen[n] || book.length >= 12) return;
+      seen[n] = 1;
+      book.push({name:n, sub:[c.email, c.phone].filter(Boolean).join(" · ") || " ",
+        style:"display:block;width:100%;text-align:left;border:none;background:transparent;border-bottom:1px solid #F3F2EE;padding:8px 11px;cursor:pointer",
+        on:()=>this.setState({client:{name:n, email:c.email||"", phone:c.phone||"", address:c.address||"", ref:c.ref||""}, bookOpen:false}, ()=>this.schedule())});
+    });
+
+    /* documents panel */
+    const q = s.query.trim().toLowerCase();
+    const rows = Object.keys(s.db).map(id=>({id, s:s.db[id]}))
+      .filter(({s:d})=>{
+        if(s.filter === "devis" && d.mode !== "devis") return false;
+        if(s.filter === "facture" && d.mode !== "facture") return false;
+        if(s.filter === "due" && !(d.mode === "facture" && d.status !== "paid")) return false;
+        if(s.filter === "paid" && !(d.mode === "facture" && d.status === "paid")) return false;
+        if(!q) return true;
+        return ((d.docno||"")+" "+((d.client&&d.client.name)||"")+" "+(d.kind||"")+" "+(d.docdate||"")).toLowerCase().indexOf(q) >= 0;
+      })
+      .sort((a,b)=>(b.s._savedAt||0)-(a.s._savedAt||0));
+
+    const badge = (bg,fg)=>"font-size:10px;padding:3px 8px;border-radius:20px;white-space:nowrap;background:"+bg+";color:"+fg;
+    const docRows = rows.map(({id, s:d})=>{
+      const tt = this.totals(d);
+      const paid = d.status === "paid";
+      return {
+        client:((d.client&&d.client.name)||"—"),
+        sub:(d.docno||"—")+" · "+(d.docdate||""),
+        total:this.money(tt.total),
+        type:d.mode === "facture" ? D.seg_facture : D.seg_devis,
+        typeStyle:"font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:4px 7px;border-radius:6px;flex-shrink:0;"+
+          (d.mode === "facture" ? "background:#17170F;color:#ECC549" : "background:#F2F1EC;color:#6E6E6C"),
+        badge:d.mode === "facture" ? (paid ? D.status_paid : D.status_pending) : "",
+        badgeStyle:d.mode !== "facture" ? "display:none" : (paid ? badge("#E4F0DC","#3F6B30") : badge("#FBF3D8","#8A6D00")),
+        rowStyle:"display:grid;grid-template-columns:1fr auto;gap:6px 10px;align-items:center;padding:11px 0;border-bottom:1px solid #F3F2EE;"+
+          (id === s.curId ? "background:#FDFBF3;border-radius:8px;padding-left:8px;padding-right:8px" : ""),
+        onOpen:()=>this.openDoc(id), onDup:()=>this.dupDoc(id), onDel:()=>this.delDoc(id)
+      };
+    });
+    const docsSum = this.money(rows.reduce((a,r)=>a + (r.s.mode === "facture" ? this.totals(r.s).total : 0), 0));
+
+    const mkFilter = (k,label)=>({label, on:()=>this.setState({filter:k}),
+      style:"border-radius:999px;padding:5px 11px;font-size:11.5px;cursor:pointer;border:1px solid "+
+        (s.filter === k ? "#17170F;background:#17170F;color:#fff" : "#E2E0DA;background:#fff;color:#6E6E6C")});
+
+    /* stats */
+    const st = this.stats();
+    const yearsSet = {};
+    Object.keys(s.db).forEach(k=>{ const y = this.docYear(s.db[k]); if(y) yearsSet[y] = 1; });
+    const years = [{label:D.all_years, key:"all"}].concat(Object.keys(yearsSet).map(Number).sort((a,b)=>b-a).map(y=>({label:String(y), key:String(y)})))
+      .map(y=>({label:y.label, on:()=>this.setState({statYear:y.key}),
+        style:"border-radius:999px;padding:5px 11px;font-size:11.5px;cursor:pointer;border:1px solid "+
+          (String(s.statYear) === y.key ? "#17170F;background:#17170F;color:#fff" : "#E2E0DA;background:#fff;color:#6E6E6C")}));
+
+    const monthList = [];
+    if(s.statYear === "all"){ const now = new Date(); for(let i=11;i>=0;i--) monthList.push(new Date(now.getFullYear(), now.getMonth()-i, 1)); }
+    else for(let m=0;m<12;m++) monthList.push(new Date(+s.statYear, m, 1));
+    let maxV = 1; monthList.forEach(d=>{ const mb = st.byMonth[d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)]; if(mb && mb.inv > maxV) maxV = mb.inv; });
+    const bars = monthList.map(d=>{
+      const mb = st.byMonth[d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)] || {inv:0, paid:0};
+      const h = Math.round(110 * mb.inv / maxV), ph = mb.inv ? Math.round(h * mb.paid / mb.inv) : 0;
+      return {label:d.toLocaleDateString(this.loc(),{month:"narrow"}),
+        tip: mb.inv ? Math.round(mb.inv) : "",
+        invStyle:"width:100%;max-width:26px;height:"+Math.max(h,2)+"px;background:#F0DCA0;border-radius:3px 3px 0 0;display:flex;flex-direction:column;justify-content:flex-end",
+        paidStyle:"width:100%;height:"+ph+"px;background:#ECC549;border-radius:"+(ph>=h?"3px 3px 0 0":"0")+"" };
+    });
+
+    const maxC = Math.max(1, ...Object.keys(st.byClient).map(k=>st.byClient[k]));
+    const topClients = Object.keys(st.byClient).map(k=>({n:k, raw:st.byClient[k]})).sort((a,b)=>b.raw-a.raw).slice(0,6)
+      .map(c=>({n:c.n, v:this.money(c.raw), bar:"width:"+Math.round(c.raw/maxC*90)+"px;height:6px;background:#ECC549;border-radius:3px;display:inline-block"}));
+
+    const rems = this.reminders().map(r=>({
+      client:((r.s.client&&r.s.client.name)||"—"),
+      sub:(r.s.docno||"")+" · "+(this.state.lang==="fr"?"éch. ":"due ")+(r.s.docdue||r.s.docdate||"—"),
+      amount:this.money(r.amount),
+      badge:r.days == null ? D.pending : (r.days > 0 ? D.overdue+r.days+D.days : D.due_in+(-r.days)+D.days),
+      badgeStyle:r.days == null ? badge("#F2F1EC","#6E6E6C") : (r.days > 0 ? badge("#FBE3E0","#B3261E") : badge("#FBF3D8","#8A6D00")),
+      onRemind:()=>this.remindEmail(r.id), onPaid:()=>this.markPaid(r.id)
+    }));
+
+    return {
+      t:D, isDevis, isFacture, taxable:s.taxable, sched:s.sched, signs:s.signs,
+      lang:s.lang, query:s.query,
+      showSched:isDevis && s.sched, showSigns:isDevis && s.signs, showEntente:isDevis && !s.signs,
+      showNas:s.nasOpen || !!s.me.nas, hideNas:!(s.nasOpen || !!s.me.nas),
+      addNas:()=>this.setState({nasOpen:true}),
+      notesClass:(s.notes||"").trim() ? "" : "np",
+
+      tabDevis:tab(isDevis), tabFacture:tab(isFacture), tabFr:tab(s.lang==="fr"), tabEn:tab(s.lang==="en"),
+      chipTax:chip(s.taxable), chipSched:chip(s.sched), chipSigns:chip(s.signs), ghostBtn:ghost,
+      metaIn, lineIn, nameIn, cellIn, signIn, signInWide,
+
+      savedLabel: !s.storeOk ? D.storage_off : (s.savedAt ? D.saved_at+s.savedAt : ""),
+      emailBtnLabel: s.copied ? D.copied : D.copy_email,
+
+      clientLabel:isFacture ? D.eb_billed : D.eb_client,
+      itemsTitle:isFacture ? D.sec_details : D.sec_fees,
+      itemsIdx:isFacture ? "01" : "02",
+      grandLabel:isFacture ? D.t_total_due : D.t_total,
+      statusLabel:s.status === "paid" ? D.status_paid : D.status_pending,
+      statusStyle:"border:none;cursor:pointer;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;"+
+        (s.status === "paid" ? "background:#E4F0DC;color:#3F6B30" : "background:#FBF3D8;color:#8A6D00"),
+
+      subtotal:this.money(t.sub), tps:this.money(t.tps), tvq:this.money(t.tvq), grand:this.money(t.total),
+      pay1:this.money(t.total*pct/100), pay2:this.money(t.total-t.total*pct/100), pct2:Math.round((100-pct)*100)/100,
+
+      me:{name:F("me","name"), email:F("me","email"), phone:F("me","phone"), address:F("me","address"), tax:F("me","tax"), nas:F("me","nas")},
+      client:{name:F("client","name"), email:F("client","email"), phone:F("client","phone"), address:F("client","address"), ref:F("client","ref")},
+      brief:{objet:F("brief","objet"), lieu:F("brief","lieu"), livraison:F("brief","livraison"), delai:F("brief","delai"), nbimg:F("brief","nbimg")},
+      sign:{city:F("sign","city"), date:F("sign","date"), ccity:F("sign","ccity"), cdate:F("sign","cdate")},
+      top:{kind:TOP("kind"), docno:TOP("docno"), docdate:TOP("docdate"), docvalid:TOP("docvalid"), docdue:TOP("docdue"), notes:TOP("notes"), depPct:TOP("depPct"), deposit:TOP("deposit")},
+
+      locked:this.state.locked, unlocked:!this.state.locked,
+      // Rattachement à une fiche client (menu de l'en-tête).
+      clientId:s.clientId || "",
+      clientOptions:[{id:"", label:"— brouillon local"}].concat(
+        (((this.store()||{}).clients)||[]).map(c=>({id:c.id, label:c.name || c.email || "client"}))),
+      onClient:e=>this.setClientId(e.target.value),
+      chipClient:"display:inline-flex;align-items:center;gap:6px;background:#F2F1EC;border-radius:999px;padding:5px 11px;font-size:11.5px;cursor:pointer",
+      syncLabel:s.clientId ? "· fiche client" : "· brouillon local",
+
+      book, bookLabel:D.book, bookNone:D.book_none,
+      bookBtn:"border:1px solid #E2E0DA;background:#fff;border-radius:999px;padding:3px 9px;font-size:10px;cursor:pointer;color:#6E6E6C;"+(book.length?"":"display:none"),
+      bookStyle:"position:absolute;top:34px;right:12px;left:12px;z-index:5;background:#fff;border:1px solid #DAD8D1;border-radius:11px;box-shadow:0 18px 40px -20px rgba(0,0,0,.35);max-height:230px;overflow:auto;display:"+(s.bookOpen?"block":"none"),
+      toggleBook:()=>this.setState(x=>({bookOpen:!x.bookOpen, db:this.loadDB()})),
+      balance:this.money(Math.max(0, t.total - Math.max(0, this.num(s.deposit)))),
+      depClass:this.num(s.deposit) > 0 ? "" : "np",
+
+      items, clauses, mentions,
+      addItem:()=>this.setState(x=>({items:[...x.items, {id:"i"+Date.now(), d:"", q:"1", p:"0"}]}), ()=>this.schedule()),
+      addClause:()=>this.setState(x=>({clauses:[...x.clauses, {t:x.lang==="fr"?"Nouvelle clause":"New clause", p:""}]}), ()=>this.schedule()),
+
+      goDevis:()=>this.setMode("devis"), goFacture:()=>this.setMode("facture"),
+      setFr:()=>this.setLang("fr"), setEn:()=>this.setLang("en"),
+      toggleTax:e=>this.set("taxable", e.target.checked),
+      toggleSched:e=>this.set("sched", e.target.checked),
+      toggleSigns:e=>this.set("signs", e.target.checked),
+      toggleStatus:()=>this.setState(x=>({status:x.status==="due"?"paid":"due", paidDate:x.status==="due"?this.fdate(new Date(),x.lang):""}), ()=>this.schedule()),
+      newDoc:()=>this.newDoc(), dupToFacture:()=>this.dupToFacture(), copyEmail:()=>this.copyEmail(),
+      doPrint:()=>{ this.growAll(); setTimeout(()=>window.print(), 60); },
+
+      panelDisplay:s.panel ? "block" : "none",
+      panelTitle:s.panel === "stats" ? D.stats : D.docs,
+      isDocsPanel:s.panel === "docs", isStatsPanel:s.panel === "stats",
+      drawerStyle:"position:absolute;top:0;right:0;bottom:0;width:min(560px,100%);background:#fff;overflow:auto;box-shadow:-20px 0 60px -30px rgba(0,0,0,.5)",
+      openDocs:()=>this.setState({panel:"docs", db:this.loadDB()}),
+      openStats:()=>this.setState({panel:"stats", db:this.loadDB()}),
+      closePanel:()=>this.setState({panel:null}),
+      stop:e=>e.stopPropagation(),
+      onQuery:e=>this.setState({query:e.target.value}),
+      filters:[mkFilter("all",D.f_all), mkFilter("devis",D.f_devis), mkFilter("facture",D.f_facture), mkFilter("due",D.f_due), mkFilter("paid",D.f_paid)],
+      docRows, docsSum, docsCountLabel:rows.length+" "+(rows.length === 1 ? "document" : "documents"),
+      emptyDisplay:rows.length ? "none" : "block",
+      exportDB:()=>this.exportDB(), pickImport:()=>this.fileRef.current && this.fileRef.current.click(),
+      onImport:e=>this.onImport(e), fileRef:this.fileRef, exportCSV:()=>this.exportCSV(),
+
+      years, bars, topClients, reminders:rems,
+      noRemDisplay:rems.length ? "none" : "block",
+      chartTitle:s.statYear === "all" ? D.chart_12 : D.chart_y+s.statYear,
+      st:{totFact:this.money(st.totFact), paidSum:this.money(st.paidSum), dueSum:this.money(st.dueSum),
+        nFact:String(st.nFact), nDevis:String(st.nDevis), avg:this.money(st.avg), totTax:this.money(st.totTax)},
+      kpiBox:"background:#FAFAF8;border:1px solid #EFEEE9;border-radius:12px;padding:11px 13px",
+      kpiVal:"font-size:16px;font-weight:600;letter-spacing:-.01em;font-variant-numeric:tabular-nums",
+      kpiLab:"font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE;margin-top:3px"
+    };
+  }
+
+  setItem(i,k,v){ this.setState(s=>({items:s.items.map((x,j)=>j===i?{...x,[k]:v}:x)}), ()=>this.schedule()); }
+  setArr(arr,i,k,v){ this.setState(s=>({[arr]:s[arr].map((x,j)=>j===i?{...x,[k]:v}:x)}), ()=>this.schedule()); }
+}
+</script>
+</body>
+</html>

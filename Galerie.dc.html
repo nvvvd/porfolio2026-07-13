@@ -26,7 +26,7 @@
 <helmet>
 <script src="nv-theme.js?v=20260804b"></script>
 <script src="nv-config.js?v=20260806c"></script>
-<script src="nv-i18n.js?v=20260804b"></script>
+<script src="nv-i18n.js?v=20260812b"></script>
 <script src="nv-backend.js?v=20260812a"></script>
 <script src="nv-auth.js?v=20260804b"></script>
 <script src="store.js?v=20260812a"></script>
@@ -258,7 +258,7 @@ class Component extends DCLogic {
       menuBtn: 'display:' + (mobile ? 'block' : 'none') + ';border:none;background:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--ink);padding:0;',
       colWidth: mobile ? '160px' : '300px',
       gridOpacity: this.state.fade ? '0' : '1',
-      email: '', emailHref: '#', instagramHref: '#'
+      email: window.NVI18n.t('footer.write'), emailHref: '/contact', instagramHref: '#'
     };
     if (!this.state.ready || !window.NVStore) return { ...base, brandName: 'Nicolas Vivaudou', brandRole: ui.lang === 'en' ? 'Photographer' : 'Photographe', brandLoc: 'Montréal, QC', activeName: '', activeDesc: '', activeCount: 0, tabs: [], photos: [], lightboxOpen: false };
     const s = window.NVStore.get();
@@ -276,7 +276,7 @@ class Component extends DCLogic {
     return {
       ...base,
       brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn), brandLoc: s.brand.location,
-      email: s.contact.email, emailHref: 'mailto:' + s.contact.email,
+      email: window.NVI18n.t('footer.write'), emailHref: '/contact',
       instagramHref: 'https://instagram.com/' + String(s.contact.instagram || '').replace(/^@/, ''),
       activeName: g ? L(g.name, g.nameEn) : '', activeDesc: g ? L(g.desc, g.descEn) : '', activeCount: photoSrcs.length,
       tabs, photos,

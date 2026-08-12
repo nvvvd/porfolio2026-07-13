@@ -118,9 +118,10 @@
               </div>
             </sc-for>
             <div style="{{ cardTitle }};margin-top:18px;">Factures</div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
               <span style="font-size:13px;padding:7px 12px;border-radius:2px;background:#E8F0EA;color:#2F6B3F;">Encaissé : {{ paidTotal }}</span>
               <span style="font-size:13px;padding:7px 12px;border-radius:2px;background:#FBF1D8;color:#7A610F;">À encaisser : {{ dueTotal }}</span>
+              <a href="/facture" style="{{ ghostBtnSm }};padding:7px 12px;font-size:13px;text-decoration:none;">Devis &amp; factures →</a>
             </div>
           </section>
         </div>
@@ -384,17 +385,19 @@
               </section>
 
               <section style="{{ card }}">
-                <div style="{{ cardTitle }};display:flex;justify-content:space-between;align-items:center;"><span>Factures</span><button onClick="{{ c.addInvoice }}" style="{{ ghostBtnSm }}">+ facture</button></div>
+                <div style="{{ cardTitle }};display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;"><span>Factures</span><span style="display:flex;gap:6px;flex-wrap:wrap;"><a href="{{ c.newDocHref }}" style="{{ primaryBtnSm }}">rédiger une facture →</a><a href="{{ c.newQuoteHref }}" style="{{ ghostBtnSm }};text-decoration:none;">devis</a><button onClick="{{ c.addInvoice }}" style="{{ ghostBtnSm }}">+ ligne simple</button></span></div>
                 <sc-for list="{{ c.invoices }}" as="inv" hint-placeholder-count="2">
                   <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 0;border-top:1px solid #EEE;">
                     <input class="nvfield" value="{{ inv.label }}" onInput="{{ inv.setLabel }}" style="flex:2;min-width:140px;" />
                     <input class="nvfield" value="{{ inv.amount }}" onInput="{{ inv.setAmount }}" style="flex:1;min-width:80px;" />
                     <button onClick="{{ inv.toggle }}" style="{{ inv.badge }}">{{ inv.status }}</button>
+                    <sc-if value="{{ inv.fromEditor }}"><a href="{{ inv.editHref }}" title="{{ inv.editTitle }}" style="{{ inv.editBtn }}">✎ ouvrir</a></sc-if>
                     <label style="{{ inv.fileBtn }}">{{ inv.fileLabel }}<input type="file" accept="application/pdf,image/*" onChange="{{ inv.onFile }}" style="display:none;" /></label>
                     <button onClick="{{ inv.remove }}" style="{{ dangerBtnSm }}">✕</button>
                   </div>
                 </sc-for>
                 <sc-if value="{{ c.noInvoices }}"><div style="font-size:13px;color:#9A9A9A;">Aucune facture pour ce client.</div></sc-if>
+                <p style="font-size:12px;color:#9A9A9A;line-height:1.55;margin:10px 0 0;">« Rédiger » ouvre l'éditeur de devis et factures, déjà rattaché à ce client : le document s'enregistre dans sa fiche, s'affiche ici et dans son espace, et s'imprime en PDF pour un envoi par courriel. « Ligne simple » n'ajoute qu'un montant, sans document.</p>
               </section>
             </div>
 
@@ -832,6 +835,7 @@ class Component extends DCLogic {
     const primaryBtn = 'border:none;background:#111;color:#fff;border-radius:2px;padding:11px 16px;font-size:13px;cursor:pointer;font-family:inherit;';
     const ghostBtn = 'border:1px solid #E0E0E0;background:#fff;color:#333;border-radius:2px;padding:11px 16px;font-size:13px;cursor:pointer;font-family:inherit;';
     const ghostBtnSm = 'border:1px solid #E0E0E0;background:#fff;color:#333;border-radius:2px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit;';
+    const primaryBtnSm = 'border:none;background:#111;color:#fff;border-radius:2px;padding:6px 11px;font-size:12px;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block;';
     const dangerBtn = 'border:1px solid #E7C9C4;background:#fff;color:#C0392B;border-radius:2px;padding:9px 14px;font-size:12px;cursor:pointer;font-family:inherit;';
     const dangerBtnSm = 'border:none;background:#F3E3E0;color:#C0392B;border-radius:2px;width:28px;height:28px;font-size:12px;cursor:pointer;flex:none;';
     const uploadBtn = 'display:inline-block;border:1px solid #E0E0E0;background:#FAFAFA;color:#333;border-radius:2px;padding:9px 14px;font-size:13px;cursor:pointer;';
@@ -1072,7 +1076,18 @@ class Component extends DCLogic {
         fileBtn: 'border:1px solid #E0E0E0;border-radius:2px;padding:6px 11px;font-size:12px;cursor:pointer;font-family:inherit;flex:none;' + (inv.fileUrl ? 'background:#E8F0EA;color:#2F6B3F;' : 'background:#fff;color:#5A5A5A;'),
         onFile: (e) => { const f = e.target.files[0]; e.target.value = ''; if (!f) return; if (!window.NVStorage || !window.NVStorage.enabled()) { alert('Aucun endpoint d\'upload configuré.'); return; } this.setState({ invUploading: inv.id }); window.NVStorage.upload(f, 'facture-' + inv.id + '-' + f.name).then((url) => { this.upd((st) => { const y = st.clients.find(x => x.id === c.id).invoices.find(z => z.id === inv.id); if (y) y.fileUrl = url; }); this.setState({ invUploading: null }); }).catch((err) => { alert('Échec de l\'envoi : ' + (err.message || err)); this.setState({ invUploading: null }); }); },
         badge: 'border:none;border-radius:2px;padding:6px 11px;font-size:12px;cursor:pointer;font-family:inherit;flex:none;' + (inv.status === 'Payée' ? 'background:#E8F0EA;color:#2F6B3F;' : 'background:#FBF1D8;color:#7A610F;'),
-        toggle: U((st) => { const iv = st.clients.find(x => x.id === c.id).invoices.find(y => y.id === inv.id); iv.status = iv.status === 'Payée' ? 'À régler' : 'Payée'; }),
+        /* Facture rédigée dans l'éditeur (/facture) : elle porte le document
+           complet. On l'ouvre pour la modifier ou la réimprimer. */
+        fromEditor: !!inv.docId,
+        editHref: '/facture?id=' + encodeURIComponent(inv.docId || ''),
+        editTitle: 'Ouvrir dans l\u2019éditeur' + (inv.num ? ' — ' + inv.num : ''),
+        editBtn: 'border:1px solid #E0E0E0;background:#fff;color:#333;border-radius:2px;padding:6px 11px;font-size:12px;font-family:inherit;flex:none;text-decoration:none;',
+        toggle: U((st) => {
+          const iv = st.clients.find(x => x.id === c.id).invoices.find(y => y.id === inv.id);
+          iv.status = iv.status === 'Payée' ? 'À régler' : 'Payée';
+          // Le document conserve son propre statut : on le garde aligné.
+          if (iv.doc) iv.doc.status = iv.status === 'Payée' ? 'paid' : 'due';
+        }),
         remove: U((st) => { const cc = st.clients.find(x => x.id === c.id); cc.invoices = cc.invoices.filter(y => y.id !== inv.id); })
       }));
       // Statistiques d'activité du client.
@@ -1217,6 +1232,9 @@ class Component extends DCLogic {
         downloadUrl: c.downloadUrl || '', setDownloadUrl: onInput((st, v) => st.clients.find(x => x.id === c.id).downloadUrl = v),
         downloadSelLabel: this.state.zipBusyId === c.id ? ('préparation… ' + (this.state.zipProgress || '')) : '↓ télécharger la sélection (.zip)',
         downloadSel: () => this.downloadSelectionZip(c, selectedIds),
+        // Éditeur de devis et factures (/facture), ouvert sur la fiche de ce client.
+        newDocHref: '/facture?client=' + encodeURIComponent(c.id) + '&mode=facture',
+        newQuoteHref: '/facture?client=' + encodeURIComponent(c.id) + '&mode=devis',
         addInvoice: U((st) => { const cc = st.clients.find(x => x.id === c.id); cc.invoices.push({ id: window.NVStore.uid('inv'), num: 'F-2026', label: 'Nouvelle prestation', amount: '0 $', date: '2026', status: 'À régler' }); }),
         remove: () => { if (confirm('Supprimer ce client ?')) this.upd((st) => { st.clients = st.clients.filter(x => x.id !== c.id); if (st.settings.archivedClients) delete st.settings.archivedClients[c.id]; }); }
       };
@@ -1301,7 +1319,7 @@ class Component extends DCLogic {
       serviceList,
       addService: U((st) => { if (!st.services) st.services = []; st.services.push({ id: window.NVStore.uid('sv'), name: 'Nouvelle prestation', nameEn: '', price: 'sur devis', priceEn: '', desc: '', descEn: '' }); }),
       twoCol: mobile ? '1fr' : '1fr 1fr',
-      card, cardTitle, primaryBtn, ghostBtn, ghostBtnSm, dangerBtn, dangerBtnSm, uploadBtn,
+      card, cardTitle, primaryBtn, primaryBtnSm, ghostBtn, ghostBtnSm, dangerBtn, dangerBtnSm, uploadBtn,
 
       ...content,
 

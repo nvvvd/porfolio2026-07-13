@@ -26,7 +26,7 @@
 <helmet>
 <script src="/nv-theme.js?v=20260804b"></script>
 <script src="/nv-config.js?v=20260806c"></script>
-<script src="/nv-i18n.js?v=20260804b"></script>
+<script src="/nv-i18n.js?v=20260812b"></script>
 <script src="/nv-backend.js?v=20260812a"></script>
 <script src="/nv-auth.js?v=20260804b"></script>
 <script src="/store.js?v=20260812a"></script>
@@ -145,7 +145,7 @@ class Component extends DCLogic {
       toggleMenu: () => this.setState({ menuOpen: !this.state.menuOpen }),
       deskNav: 'display:' + (mobile ? 'none' : 'block') + ';font-size:14px;letter-spacing:-.01em;',
       menuBtn: 'display:' + (mobile ? 'block' : 'none') + ';border:none;background:none;cursor:pointer;font-family:inherit;font-size:14px;color:var(--ink);padding:0;',
-      email: '', emailHref: '#', instagramHref: '#',
+      email: window.NVI18n.t('footer.write'), emailHref: '/contact', instagramHref: '#',
       // Sur ordinateur, la page tient dans la hauteur de l'écran : la grille absorbe
       // l'espace restant et les cartes se compriment (images recadrées) au besoin.
       pageFit: mobile ? '' : 'height:100vh;overflow:hidden;display:flex;flex-direction:column;',
@@ -181,7 +181,7 @@ class Component extends DCLogic {
     else if (sort === 'count') galleries.sort((a, b) => b.count - a.count);
     if (sort !== 'curated') galleries = galleries.map((g, i) => ({ ...g, num: ('0' + (i + 1)).slice(-2) }));
     return { ...base, brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn), brandLoc: s.brand.location, galleryCount: pub.length, galleries,
-      email: s.contact.email, emailHref: 'mailto:' + s.contact.email,
+      email: window.NVI18n.t('footer.write'), emailHref: '/contact',
       instagramHref: 'https://instagram.com/' + String(s.contact.instagram || '').replace(/^@/, '') };
   }
 }

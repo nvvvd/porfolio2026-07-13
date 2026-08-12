@@ -5,6 +5,9 @@ branch: main
 date: 2026-08-12T00:00:00Z
 
 ### Updated in this project
+- Éditeur de devis et factures intégré au site : page /facture (privée, réservée à l'admin). Un document rattaché à une fiche client est rangé dans `client.invoices` — donc synchronisé, visible dans l'admin et dans l'espace du client ; sans client, il reste un brouillon local. Impression PDF et courriel d'accompagnement pour un envoi indépendant.
+- Admin, carte Factures d'un client : « rédiger une facture / devis » ouvre l'éditeur déjà rattaché ; les lignes issues de l'éditeur ont un bouton « ouvrir ».
+- Adresses courriel en clair remplacées par des liens vers /contact (mentions légales, guide client, pieds de page) : Cloudflare les masquait en « [email protected] ».
 - Aperçu des liens partagés réglable depuis l'admin (onglet Contenu) : titre, texte et photo par page — accueil, portfolio, galeries, contact — avec aperçu en direct de la carte reçue dans une messagerie.
 - Nouvelle fonction functions/_middleware.js : les robots de partage ne lisent pas le JavaScript, les réglages sont donc injectés dans les balises og:/twitter: avant l'envoi de la page. Un champ laissé vide garde la balise écrite dans le HTML ; /galerie/* est ignoré, sa propre fonction s'en charge déjà.
 - store.js v9 : clé `share`. nv-backend.js synchronisait `settings` mais ni `services` ni `share` — l'hydratation remplaçant l'état, les prestations de la page contact revenaient vides après un rechargement. Les deux clés sont désormais poussées et relues, avec repli sur l'état local.
@@ -69,4 +72,5 @@ date: 2026-08-07T13:05:00Z
 | (interne, non publiée) | Verification.dc.html | nv-config |
 | Aperçu de lien /galerie/* | functions/galerie/[[path]].js | galeries, photos (Supabase) |
 | Aperçu de lien des pages fixes | functions/_middleware.js | site.data.share (Supabase) |
+| Devis & factures (/facture) | Facture.dc.html → facture.html | clients.invoices (Supabase) |
 | Plan de site /sitemap.xml | functions/sitemap.xml.js | galeries, photos (Supabase) |

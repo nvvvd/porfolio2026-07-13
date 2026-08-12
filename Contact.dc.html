@@ -26,7 +26,7 @@
 <helmet>
 <script src="nv-theme.js?v=20260804b"></script>
 <script src="nv-config.js?v=20260806c"></script>
-<script src="nv-i18n.js?v=20260804b"></script>
+<script src="nv-i18n.js?v=20260812b"></script>
 <script src="nv-backend.js?v=20260812a"></script>
 <script src="nv-auth.js?v=20260804b"></script>
 <script src="store.js?v=20260812a"></script>
@@ -419,8 +419,8 @@ class Component extends DCLogic {
       isServicesOpen: this.state.servicesPanel, servicesOpen: String(this.state.servicesPanel),
       servicesTitle: ui.lang === 'en' ? 'services & rates' : 'prestations & tarifs',
       year: new Date().getFullYear(), brandName: s.brand.name, brandRole: L(s.brand.role, s.brand.roleEn), brandLoc: s.brand.location,
-      heading: L(s.contact.heading, s.contact.headingEn), intro: L(s.contact.intro, s.contact.introEn), email: s.contact.email, instagram: s.contact.instagram,
-      emailHref: 'mailto:' + s.contact.email,
+      heading: L(s.contact.heading, s.contact.headingEn), intro: L(s.contact.intro, s.contact.introEn), email: window.NVI18n.t('footer.write'), instagram: s.contact.instagram,
+      emailHref: '/contact',
       instagramHref: 'https://instagram.com/' + String(s.contact.instagram || '').replace(/^@/, ''),
       aboutName: s.about.name, aboutPhoto: window.NVStore.resolveSrc(s.about.photo), aboutText: L(s.about.text, s.about.textEn),
       hasBackstage: (s.about.backstage || []).length > 0,

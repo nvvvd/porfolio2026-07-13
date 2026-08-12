@@ -26,6 +26,9 @@
     'nav.contact':   { fr: 'contact',  en: 'contact' },
     'nav.menu':      { fr: 'menu',     en: 'menu' },
     'nav.site':      { fr: '← site',   en: '← site' },
+    // Pied de page : remplace l'adresse courriel, que Cloudflare masquait en
+    // « [email protected] ». Le lien mène au formulaire de contact.
+    'footer.write':  { fr: 'écrire',   en: 'write' },
 
     // --- Accueil ---
     'home.index':       { fr: 'index',  en: 'index' },
