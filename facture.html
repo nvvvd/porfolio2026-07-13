@@ -97,6 +97,8 @@
         </select>
       </label>
       <span style="flex:1"></span>
+      <button onClick="{{ saveNow }}" style="border:1px solid #C9A420;background:#FCF6E3;border-radius:999px;padding:6px 13px;font-size:11.5px;font-weight:500;cursor:pointer;color:#6B5300" style-hover="background:#F8EDCB">{{ saveLabel }}</button>
+      <button onClick="{{ delCurrent }}" style="border:1px solid #DAD8D1;background:#fff;border-radius:999px;padding:6px 12px;font-size:11.5px;cursor:pointer;color:#4A4A46" style-hover="border-color:#B4453A;color:#B4453A">{{ t.del_doc }}</button>
       <button onClick="{{ newDoc }}" style="border:1px solid #DAD8D1;background:#fff;border-radius:999px;padding:6px 12px;font-size:11.5px;cursor:pointer;color:#4A4A46" style-hover="border-color:#17170F;color:#17170F">{{ t.new_doc }}</button>
       <sc-if value="{{ isDevis }}" hint-placeholder-val="{{ true }}">
         <button onClick="{{ dupToFacture }}" style="border:1px solid #DAD8D1;background:#fff;border-radius:999px;padding:6px 12px;font-size:11.5px;cursor:pointer;color:#4A4A46" style-hover="border-color:#17170F;color:#17170F">{{ t.dup }}</button>
@@ -273,7 +275,7 @@
           <sc-if value="{{ isFacture }}" hint-placeholder-val="{{ false }}">
             <div class="avoid" style="background:#FAFAF8;border:1px solid #EFEEE9;border-radius:13px;padding:13px 15px">
               <div style="font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:#B4B3AE;margin-bottom:8px">{{ t.pay_h }}</div>
-              <div style="display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:3px 0"><span style="color:#6E6E6C">{{ t.pay_interac }}</span><b style="font-weight:500">n.vivaudou@gmail.com</b></div>
+              <div style="display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:3px 0"><span style="color:#6E6E6C">{{ t.pay_interac }}</span><input value="{{ me.email.v }}" onChange="{{ me.email.on }}" spellcheck="false" style="flex:1;min-width:0;text-align:right;font-size:11.5px;font-weight:500;background:transparent;border:none;border-radius:4px;padding:1px 4px" style-hover="background:#F1F0EA" style-focus="background:#fff;outline:1.5px solid #ECC549"></div>
               <div style="display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:3px 0"><span style="color:#6E6E6C">{{ t.pay_cheque }}</span><b style="font-weight:500">{{ t.pay_cheque_v }}</b></div>
               <div style="display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:3px 0"><span style="color:#6E6E6C">{{ t.pay_due }}</span><b style="font-weight:500">{{ top.docdue.v }}</b></div>
               <div class="{{ depClass }}" style="display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:11.5px;padding:5px 0 3px;margin-top:4px;border-top:1px solid #EFEEE9">
@@ -521,6 +523,7 @@ class Component extends DCLogic {
       kind_devis:"Devis · Contrat", kind_facture:"Facture",
       tax_label:"Assujetti TPS/TVQ", opt_schedule:"Échéancier", opt_signatures:"Signatures",
       new_doc:"Nouveau", dup:"Dupliquer → facture", copy_email:"Copier le courriel", copied:"Copié ✓",
+      save_doc:"Enregistrer", saved_ok:"Enregistré ✓", del_doc:"Supprimer",
       docs:"Documents", stats:"Statistiques", print:"Imprimer / PDF",
       saving:"Enregistrement…", saved_at:"Enregistré à ", storage_off:"Stockage indisponible",
       lbl_date:"Émis le", lbl_valid:"Validité", lbl_due:"Échéance", lbl_status:"Statut", total_cad:"Total CAD",
@@ -586,6 +589,7 @@ class Component extends DCLogic {
       kind_devis:"Quote · Contract", kind_facture:"Invoice",
       tax_label:"GST/QST registered", opt_schedule:"Schedule", opt_signatures:"Signatures",
       new_doc:"New", dup:"Duplicate → invoice", copy_email:"Copy email", copied:"Copied ✓",
+      save_doc:"Save", saved_ok:"Saved ✓", del_doc:"Delete",
       docs:"Documents", stats:"Statistics", print:"Print / PDF",
       saving:"Saving…", saved_at:"Saved at ", storage_off:"Storage unavailable",
       lbl_date:"Issued", lbl_valid:"Valid until", lbl_due:"Due", lbl_status:"Status", total_cad:"Total CAD",
@@ -993,6 +997,28 @@ class Component extends DCLogic {
     this.writeDB(db);
     this.setState(s=>({db, curId: s.curId === id ? null : s.curId}));
   }
+  /* Enregistrement explicite depuis la barre d'outils : même chemin que
+     l'enregistrement automatique, avec un accusé de réception de 1,6 s. */
+  saveNow(){
+    const ok = this.persist(false);
+    if(!ok) return;
+    clearTimeout(this._savedFlag);
+    this.setState({justSaved:true});
+    this._savedFlag = setTimeout(()=>this.setState({justSaved:false}), 1600);
+  }
+
+  /* Supprime le document ouvert (de la sauvegarde locale et, s'il est rattaché
+     à un client, de sa fiche via writeDB) puis repart d'un document vierge. */
+  delCurrent(){
+    if(!confirm(this.dict().confirm_del)) return;
+    const db = {...this.loadDB()};
+    const id = this.state.curId;
+    if(id && db[id]){ delete db[id]; this.writeDB(db); }
+    const s = this.fresh(this.state.mode, this.state.lang);
+    s.docno = this.nextNo(this.state.mode, db);
+    this.setState({...s, db, curId:null, noAuto:true, panel:null, nasOpen:false, justSaved:false});
+  }
+
   markPaid(id){
     const db = {...this.loadDB()}; const s = db[id]; if(!s) return;
     s.status = "paid"; if(!s.paidDate) s.paidDate = this.fdate(new Date(), this.state.lang);
@@ -1284,6 +1310,8 @@ class Component extends DCLogic {
       toggleSigns:e=>this.set("signs", e.target.checked),
       toggleStatus:()=>this.setState(x=>({status:x.status==="due"?"paid":"due", paidDate:x.status==="due"?this.fdate(new Date(),x.lang):""}), ()=>this.schedule()),
       newDoc:()=>this.newDoc(), dupToFacture:()=>this.dupToFacture(), copyEmail:()=>this.copyEmail(),
+      saveNow:()=>this.saveNow(), delCurrent:()=>this.delCurrent(),
+      saveLabel: s.justSaved ? D.saved_ok : D.save_doc,
       doPrint:()=>{ this.growAll(); setTimeout(()=>window.print(), 60); },
 
       panelDisplay:s.panel ? "block" : "none",
