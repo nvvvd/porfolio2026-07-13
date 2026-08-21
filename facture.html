@@ -83,6 +83,13 @@
     </div>
 
     <div style="max-width:1080px;margin:0 auto;padding:0 clamp(12px,3vw,24px) 9px;display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+      <label style="{{ chipCur }}">{{ t.cur_label }}
+        <select value="{{ cur }}" onChange="{{ setCur }}" style="border:none;background:transparent;font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:#17170F;cursor:pointer;padding:0 2px">
+          <option value="CAD">CAD $</option>
+          <option value="USD">USD $</option>
+          <option value="EUR">EUR €</option>
+        </select>
+      </label>
       <label style="{{ chipTax }}"><input type="checkbox" checked="{{ taxable }}" onChange="{{ toggleTax }}" style="margin:0;width:13px;height:13px;accent-color:#C9A420">{{ t.tax_label }}</label>
       <sc-if value="{{ isDevis }}" hint-placeholder-val="{{ true }}">
         <label style="{{ chipSched }}"><input type="checkbox" checked="{{ sched }}" onChange="{{ toggleSched }}" style="margin:0;width:13px;height:13px;accent-color:#C9A420">{{ t.opt_schedule }}</label>
@@ -232,7 +239,7 @@
         <div style="display:flex;align-items:baseline;gap:13px;border-bottom:1px solid #17170F;padding-bottom:6px">
           <span style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#B4B3AE">{{ itemsIdx }}</span>
           <h2 style="margin:0;font-family:Newsreader,Georgia,serif;font-weight:400;font-size:19px;letter-spacing:-.01em">{{ itemsTitle }}</h2>
-          <span style="margin-left:auto;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE">{{ t.note_cad }}</span>
+          <span style="margin-left:auto;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:#B4B3AE">{{ curNote }}</span>
         </div>
 
         <table style="width:100%;border-collapse:collapse;margin-top:4px;font-size:12.5px">
@@ -246,11 +253,14 @@
           <tbody>
             <sc-for list="{{ items }}" as="it" hint-placeholder-count="3">
               <tr style="border-top:1px solid #EFEEE9">
-                <td style="padding:3px 6px 3px 0"><input value="{{ it.d }}" onChange="{{ it.onD }}" placeholder="{{ it.ph }}" style="{{ it.inD }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549"></td>
-                <td style="padding:3px 6px"><input value="{{ it.q }}" onChange="{{ it.onQ }}" inputmode="decimal" style="{{ it.inN }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549"></td>
-                <td style="padding:3px 6px"><input value="{{ it.p }}" onChange="{{ it.onP }}" inputmode="decimal" placeholder="0" style="{{ it.inN }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549"></td>
-                <td style="padding:3px 0 3px 6px;text-align:right;font-family:'IBM Plex Mono',monospace;font-weight:500;white-space:nowrap">{{ it.amount }}</td>
-                <td class="np" style="text-align:right"><button onClick="{{ it.onDel }}" title="×" style="border:none;background:transparent;color:#D3D2CC;font-size:16px;line-height:1;padding:2px 4px;cursor:pointer" style-hover="color:#B3261E">×</button></td>
+                <td style="padding:3px 6px 3px 0;vertical-align:top">
+                  <input value="{{ it.d }}" onChange="{{ it.onD }}" placeholder="{{ it.ph }}" style="{{ it.inD }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549">
+                  <textarea class="{{ it.subClass }}" data-grow="1" value="{{ it.sd }}" onChange="{{ it.onSd }}" rows="1" placeholder="{{ t.ph_detail }}" style="width:100%;display:block;font-size:10.5px;line-height:1.55;font-weight:300;color:#8C8C8A;background:transparent;border:none;border-radius:6px;padding:0 6px 4px;resize:none;font-family:inherit" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;color:#6E6E6C;outline:1.5px solid #ECC549"></textarea>
+                </td>
+                <td style="padding:3px 6px;vertical-align:top"><input value="{{ it.q }}" onChange="{{ it.onQ }}" inputmode="decimal" style="{{ it.inN }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549"></td>
+                <td style="padding:3px 6px;vertical-align:top"><input value="{{ it.p }}" onChange="{{ it.onP }}" inputmode="decimal" placeholder="0" style="{{ it.inN }}" style-hover="background:#F6F5F1" style-focus="background:#FBF9F2;outline:1.5px solid #ECC549"></td>
+                <td style="padding:9px 0 3px 6px;text-align:right;vertical-align:top;font-family:'IBM Plex Mono',monospace;font-weight:500;white-space:nowrap">{{ it.amount }}</td>
+                <td class="np" style="text-align:right;vertical-align:top"><button onClick="{{ it.onDel }}" title="×" style="border:none;background:transparent;color:#D3D2CC;font-size:16px;line-height:1;padding:2px 4px;cursor:pointer" style-hover="color:#B3261E">×</button></td>
               </tr>
             </sc-for>
           </tbody>
@@ -538,6 +548,7 @@ class Component extends DCLogic {
       lbl_delai:"Délai de remise", val_delai:"Sous 15 jours ouvrables après la séance",
       lbl_nbimg:"Images livrées", ph_nbimg:"Ex. : 25 images retouchées",
       sec_fees:"Honoraires", sec_details:"Détail", note_cad:"montants en CAD",
+      note_amounts:"montants en", cur_label:"Devise", ph_detail:"Détail de la prestation (facultatif)",
       th_desc:"Description", th_qty:"Qté", th_pu:"Prix unitaire", th_amount:"Montant", ph_desc:"Désignation",
       add_row:"+ Ajouter une ligne", add_clause:"+ Ajouter une clause",
       t_subtotal:"Sous-total", t_gst:"TPS", t_qst:"TVQ", t_gst_rate:"(5 %)", t_qst_rate:"(9,975 %)", t_total:"Total", t_total_due:"Total à payer",
@@ -604,6 +615,7 @@ class Component extends DCLogic {
       lbl_delai:"Turnaround", val_delai:"Within 15 business days after the session",
       lbl_nbimg:"Images delivered", ph_nbimg:"E.g.: 25 edited images",
       sec_fees:"Fees", sec_details:"Details", note_cad:"amounts in CAD",
+      note_amounts:"amounts in", cur_label:"Currency", ph_detail:"Service details (optional)",
       th_desc:"Description", th_qty:"Qty", th_pu:"Unit price", th_amount:"Amount", ph_desc:"Item",
       add_row:"+ Add a line", add_clause:"+ Add a clause",
       t_subtotal:"Subtotal", t_gst:"GST", t_qst:"QST", t_gst_rate:"(5%)", t_qst_rate:"(9.975%)", t_total:"Total", t_total_due:"Total due",
@@ -668,7 +680,14 @@ class Component extends DCLogic {
   /* ---------- helpers ---------- */
   dict(l){ return Component.DICT[l || this.state.lang]; }
   loc(l){ return (l || this.state.lang) === "fr" ? "fr-CA" : "en-CA"; }
-  money(n,l){ try{ return new Intl.NumberFormat(this.loc(l),{style:"currency",currency:"CAD"}).format(n||0); }catch(e){ return (n||0).toFixed(2)+" $"; } }
+  /* Devise affichée : CAD par défaut, modifiable (USD, EUR) et enregistrée
+     avec le document — `c` permet de formater un autre document que l'ouvert. */
+  cur(c){ return c || this.state.cur || "CAD"; }
+  money(n,l,c){
+    const cur = this.cur(c);
+    try{ return new Intl.NumberFormat(this.loc(l),{style:"currency",currency:cur}).format(n||0); }
+    catch(e){ return (n||0).toFixed(2)+(cur==="EUR"?" €":" $"); }
+  }
   fdate(d,l){ try{ return d.toLocaleDateString(this.loc(l),{day:"numeric",month:"long",year:"numeric"}); }catch(e){ return d.toISOString().slice(0,10); } }
   plus(d,n){ const x = new Date(d); x.setDate(x.getDate()+n); return x; }
   num(v){ let s = String(v==null?"":v).replace(/[^\d.,-]/g,""); if(s.indexOf(",")>-1 && s.indexOf(".")===-1) s = s.replace(",","."); else s = s.replace(/,/g,""); const n = parseFloat(s); return isNaN(n)?0:n; }
@@ -679,11 +698,11 @@ class Component extends DCLogic {
       lang, mode, status:"due", paidDate:"", clientId:null,
       kind: mode === "facture" ? D.kind_facture : D.kind_devis,
       docno:"", docdate:this.fdate(now,lang), docvalid:this.fdate(this.plus(now,30),lang), docdue:this.fdate(this.plus(now,15),lang),
-      taxable:true, sched:true, signs:true, depPct:"50", deposit:"",
+      taxable:true, sched:true, signs:true, depPct:"50", deposit:"", cur:"CAD",
       me:{name:"Nicolas Vivaudou", email:"n.vivaudou@gmail.com", phone:"(514) 664-4473", address:"901 boul. St-Joseph E., H1J 2K7, Montréal (QC)", tax:"", nas:""},
       client:{name:"", email:"", phone:"", address:"", ref:""},
       brief:{objet:"", lieu:"", livraison:D.val_livraison, delai:D.val_delai, nbimg:""},
-      items: D.seed.map((s,i)=>({id:"i"+Date.now()+i, d:s.d, q:String(s.q), p:String(s.p)})),
+      items: D.seed.map((s,i)=>({id:"i"+Date.now()+i, d:s.d, sd:"", q:String(s.q), p:String(s.p)})),
       clauses: D.clauses.map(c=>({t:c.t,p:c.p})),
       mentions: D.mentions.map(m=>({t:m.t,p:m.p,tax:!!m.tax})),
       notes:"", sign:{city:"Montréal", date:this.fdate(now,lang), ccity:"", cdate:""}
@@ -727,7 +746,7 @@ class Component extends DCLogic {
       || String((((snap.items||[])[0])||{}).d || "").trim()
       || (snap.mode === "facture" ? "Facture" : "Devis");
     return {docId:id, doc:snap, num:snap.docno||"", label:label.slice(0,90),
-      amount:this.money(t.total, snap.lang), date:snap.docdate||"",
+      amount:this.money(t.total, snap.lang, snap.cur), date:snap.docdate||"",
       status:snap.status === "paid" ? "Payée" : "À régler"};
   }
 
@@ -797,10 +816,10 @@ class Component extends DCLogic {
     const s = this.state, t = this.totals(s);
     return {v:2, mode:s.mode, lang:s.lang, status:s.status, paidDate:s.paidDate, kind:s.kind, clientId:s.clientId||null,
       docno:s.docno, docdate:s.docdate, docvalid:s.docvalid, docdue:s.docdue,
-      taxable:s.taxable, sched:s.sched, signs:s.signs, depPct:s.depPct, deposit:s.deposit||"",
+      taxable:s.taxable, sched:s.sched, signs:s.signs, depPct:s.depPct, deposit:s.deposit||"", cur:s.cur||"CAD",
       me:{...s.me}, client:{...s.client}, brief:{...s.brief},
-      items:s.items.map(i=>({d:i.d,q:i.q,p:i.p})), clauses:s.clauses.map(c=>({...c})), mentions:s.mentions.map(m=>({...m})),
-      notes:s.notes, sign:{...s.sign}, total:this.money(t.total,s.lang)};
+      items:s.items.map(i=>({d:i.d,sd:i.sd||"",q:i.q,p:i.p})), clauses:s.clauses.map(c=>({...c})), mentions:s.mentions.map(m=>({...m})),
+      notes:s.notes, sign:{...s.sign}, total:this.money(t.total,s.lang,s.cur)};
   }
 
   fromSnap(s){
@@ -812,7 +831,8 @@ class Component extends DCLogic {
       kind:s.kind||base.kind, docno:s.docno||"", docdate:s.docdate||base.docdate,
       docvalid:s.docvalid||base.docvalid, docdue:s.docdue||base.docdue,
       taxable:s.taxable!==false, depPct:s.depPct!=null?String(s.depPct):"50", deposit:s.deposit!=null?String(s.deposit):"", notes:s.notes||"",
-      items:(s.items||[]).map((i,k)=>({id:"i"+Date.now()+k, d:i.d||"", q:String(i.q==null?1:i.q), p:String(i.p==null?0:i.p)})),
+      cur:s.cur||"CAD",
+      items:(s.items||[]).map((i,k)=>({id:"i"+Date.now()+k, d:i.d||"", sd:i.sd||"", q:String(i.q==null?1:i.q), p:String(i.p==null?0:i.p)})),
       clauses:(s.clauses||base.clauses).map(c=>({t:this.strip(c.t), p:this.strip(c.p)})),
       mentions:(s.mentions||base.mentions).map(m=>({t:this.strip(m.t), p:this.strip(m.p), tax:!!m.tax}))
     };
@@ -1150,7 +1170,9 @@ class Component extends DCLogic {
     const signInWide = "width:118px;font-size:11px;background:transparent;border:none;border-bottom:1px solid #DAD8D1;border-radius:4px;padding:1px 4px";
 
     const items = s.items.map((it,i)=>({
-      ...it, ph:D.ph_desc,
+      ...it, ph:D.ph_desc, sd:it.sd||"",
+      subClass:(it.sd||"").trim() ? "" : "np",
+      onSd:e=>this.setItem(i,"sd",e.target.value),
       amount:this.money(this.num(it.q)*this.num(it.p)),
       inD:"width:100%;font-size:12.5px;background:transparent;border:none;border-radius:6px;padding:6px",
       inN:"width:100%;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:12px;background:transparent;border:none;border-radius:6px;padding:6px",
@@ -1199,7 +1221,7 @@ class Component extends DCLogic {
       return {
         client:((d.client&&d.client.name)||"—"),
         sub:(d.docno||"—")+" · "+(d.docdate||""),
-        total:this.money(tt.total),
+        total:this.money(tt.total, null, d.cur),
         type:d.mode === "facture" ? D.seg_facture : D.seg_devis,
         typeStyle:"font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:4px 7px;border-radius:6px;flex-shrink:0;"+
           (d.mode === "facture" ? "background:#17170F;color:#ECC549" : "background:#F2F1EC;color:#6E6E6C"),
@@ -1245,7 +1267,7 @@ class Component extends DCLogic {
     const rems = this.reminders().map(r=>({
       client:((r.s.client&&r.s.client.name)||"—"),
       sub:(r.s.docno||"")+" · "+(this.state.lang==="fr"?"éch. ":"due ")+(r.s.docdue||r.s.docdate||"—"),
-      amount:this.money(r.amount),
+      amount:this.money(r.amount, null, r.s.cur),
       badge:r.days == null ? D.pending : (r.days > 0 ? D.overdue+r.days+D.days : D.due_in+(-r.days)+D.days),
       badgeStyle:r.days == null ? badge("#F2F1EC","#6E6E6C") : (r.days > 0 ? badge("#FBE3E0","#B3261E") : badge("#FBF3D8","#8A6D00")),
       onRemind:()=>this.remindEmail(r.id), onPaid:()=>this.markPaid(r.id)
@@ -1261,6 +1283,8 @@ class Component extends DCLogic {
 
       tabDevis:tab(isDevis), tabFacture:tab(isFacture), tabFr:tab(s.lang==="fr"), tabEn:tab(s.lang==="en"),
       chipTax:chip(s.taxable), chipSched:chip(s.sched), chipSigns:chip(s.signs), ghostBtn:ghost,
+      chipCur:chip(false), cur:this.cur(), curNote:D.note_amounts+" "+this.cur(),
+      setCur:e=>this.set("cur", e.target.value),
       metaIn, lineIn, nameIn, cellIn, signIn, signInWide,
 
       savedLabel: !s.storeOk ? D.storage_off : (s.savedAt ? D.saved_at+s.savedAt : ""),
@@ -1300,7 +1324,7 @@ class Component extends DCLogic {
       depClass:this.num(s.deposit) > 0 ? "" : "np",
 
       items, clauses, mentions,
-      addItem:()=>this.setState(x=>({items:[...x.items, {id:"i"+Date.now(), d:"", q:"1", p:"0"}]}), ()=>this.schedule()),
+      addItem:()=>this.setState(x=>({items:[...x.items, {id:"i"+Date.now(), d:"", sd:"", q:"1", p:"0"}]}), ()=>this.schedule()),
       addClause:()=>this.setState(x=>({clauses:[...x.clauses, {t:x.lang==="fr"?"Nouvelle clause":"New clause", p:""}]}), ()=>this.schedule()),
 
       goDevis:()=>this.setMode("devis"), goFacture:()=>this.setMode("facture"),
